@@ -1,0 +1,590 @@
+.table-responsive-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}table {
+    border-collapse: collapse;
+    width: 100%;
+}table th, table td {
+    padding: 12px;
+    text-align: left;
+    white-space: nowrap;
+}table th {
+    background: #1a4080;
+    color: white;
+}.performance-row {
+    transition: background 0.2s;
+}.performance-row:hover {
+    background: #e5eeff !important;
+}.document-upload-area .progress-bar .progress-fill {
+    height: 100%;
+    background: #1a4080;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}.table-responsive-container {
+    display: block;
+    width: 100%;
+    overflow-x: scroll; 
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    scrollbar-width: thin;
+    scrollbar-color: #1a4080 #f0f0f0;
+    min-height: 80px; 
+    padding-bottom: 10px; 
+}.table-responsive-container::-webkit-scrollbar {
+    height: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+}.table-responsive-container::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 5px;
+}.table-responsive-container::-webkit-scrollbar-thumb {
+    background: #1a4080;
+    border-radius: 5px;
+}.table-responsive-container::-webkit-scrollbar-thumb:hover {
+    background: #0e2045;
+}table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 600px; 
+}table th, table td {
+    padding: 12px;
+    text-align: left;
+    white-space: nowrap;
+}table th {
+    background: #1a4080;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}#lawyerDashboard .cases-table {
+    margin-left: 0 !important;
+    table-layout: auto;
+    width: 100%;
+}#lawyerDashboard .cases-table th,
+#lawyerDashboard .cases-table td {
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+    white-space: normal !important;
+    word-break: break-word;
+}#lawyerDashboard .cases-table td:nth-child(1) { 
+    min-width: 90px;
+    white-space: nowrap !important;
+}#lawyerDashboard .cases-table td:nth-child(2) { 
+    max-width: 90px;
+}#lawyerDashboard .cases-table td:nth-child(3) { 
+    max-width: 100px;
+}#lawyerDashboard .cases-table td:nth-child(4) { 
+    max-width: 110px;
+}#lawyerDashboard .cases-table td:nth-child(5) { 
+    white-space: nowrap !important;
+}#lawyerDashboard .cases-table td:nth-child(6) { 
+    white-space: nowrap !important;
+    width: 1px;           
+    min-width: 0;
+}#lawyerDashboard .cases-table td:nth-child(6) .btn,
+#lawyerDashboard .cases-table td:nth-child(6) button {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 2px 1px !important;
+    padding: 3px 7px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+}#myCasesPage .table-responsive-container {
+    overflow-x: hidden !important; 
+}#myCasesPage table.cases-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: unset !important;
+    border-collapse: collapse;
+    font-size: 12px;
+}#myCasesPage table.cases-table th,
+#myCasesPage table.cases-table td {
+    padding: 10px 8px !important;
+    white-space: normal !important;
+    word-break: break-word;
+    vertical-align: middle;
+}
+
+
+
+#myCasesPage table.cases-table th:nth-child(1),
+#myCasesPage table.cases-table td:nth-child(1) { width: 16%; }#myCasesPage table.cases-table th:nth-child(2),
+#myCasesPage table.cases-table td:nth-child(2) { width: 12%; }#myCasesPage table.cases-table th:nth-child(3),
+#myCasesPage table.cases-table td:nth-child(3) { width: 13%; }#myCasesPage table.cases-table th:nth-child(4),
+#myCasesPage table.cases-table td:nth-child(4) {
+    width: 17%;
+    max-width: 0;          
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap !important;
+}#myCasesPage table.cases-table th:nth-child(5),
+#myCasesPage table.cases-table td:nth-child(5) { width: 16%; }#myCasesPage table.cases-table td:nth-child(5) input[type="file"] {
+    font-size: 10px;
+    width: 100%;
+    max-width: 100%;
+}#myCasesPage table.cases-table th:nth-child(6),
+#myCasesPage table.cases-table td:nth-child(6) { width: 26%; }#myCasesPage table.cases-table td:nth-child(6) .cases-table-actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+}#myCasesPage table.cases-table td:nth-child(6) .btn,
+#myCasesPage table.cases-table td:nth-child(6) button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    min-width: 44px;
+    box-sizing: border-box;
+    padding: 4px 7px !important;
+    font-size: 10px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    vertical-align: middle;
+    border-radius: 5px;
+}.mtp-stepper-line-fill {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  height: 3px;
+  background: #1a3270;
+  border-radius: 2px;
+  z-index: 0;
+  transition: width 0.8s ease;
+}
+
+
+
+
+
+
+
+
+@media (max-width: 767px) {
+    #myCasesPage .table-responsive-container {
+        overflow-x: hidden !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+    #myCasesPage .table-responsive-container > button {
+        width: 100%;
+        text-align: center;
+    }
+    #myCasesPage .table-responsive-container table {
+        min-width: 0 !important;
+    }
+    #myCasesPage table.cases-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        table-layout: fixed;
+        font-size: 10.5px;
+    }
+    #myCasesPage table.cases-table th,
+    #myCasesPage table.cases-table td {
+        padding: 6px 4px !important;
+        font-size: 10.5px;
+        white-space: normal !important;
+        word-break: break-word;
+    }
+    #myCasesPage table.cases-table th:nth-child(1),
+    #myCasesPage table.cases-table td:nth-child(1) { width: 17%; }
+    #myCasesPage table.cases-table th:nth-child(2),
+    #myCasesPage table.cases-table td:nth-child(2) { width: 10%; }
+    #myCasesPage table.cases-table th:nth-child(3),
+    #myCasesPage table.cases-table td:nth-child(3) {
+        width: 16%;
+        overflow: hidden;
+    }
+    #myCasesPage table.cases-table th:nth-child(4),
+    #myCasesPage table.cases-table td:nth-child(4) {
+        width: 15%;
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap !important;
+    }
+    #myCasesPage table.cases-table th:nth-child(5),
+    #myCasesPage table.cases-table td:nth-child(5) { width: 17%; }
+    #myCasesPage table.cases-table td:nth-child(5) input[type="file"] {
+        font-size: 8px;
+        width: 100%;
+        max-width: 100%;
+    }
+    #myCasesPage table.cases-table th:nth-child(6),
+    #myCasesPage table.cases-table td:nth-child(6) { width: 25%; }
+
+    #myCasesPage table.cases-table td:nth-child(3) .badge {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 9px;
+        padding: 3px 5px;
+    }
+
+    #myCasesPage table.cases-table td:nth-child(6) .cases-table-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+    }
+    
+
+
+
+    #myCasesPage table.cases-table td:nth-child(6) .cases-table-actions .case-row-secondary-action {
+        display: none !important;
+    }
+    
+
+    #myCasesPage table.cases-table td:nth-child(6) .cases-table-actions > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+    #myCasesPage table.cases-table td:nth-child(6) .btn,
+    #myCasesPage table.cases-table td:nth-child(6) button {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box;
+        margin: 0 !important;
+        padding: 5px 2px !important;
+        font-size: 9px !important;
+        white-space: nowrap !important;
+        border-radius: 5px;
+    }
+}
+
+.case-browser {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.case-browser-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.case-browser-title {
+    color: #1a4080;
+    margin: 0;
+    font-size: 18px;
+}
+
+.case-browser-sub {
+    color: #6b7a90;
+    font-size: 13px;
+    margin: 4px 0 0;
+}
+
+.case-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.case-filter-input,
+.case-filter-select {
+    padding: 9px 12px;
+    border: 1px solid #cfd8ea;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    color: #24334d;
+    min-height: 40px;
+    box-sizing: border-box;
+}
+
+.case-filter-input {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.case-filter-select {
+    flex: 0 1 170px;
+    min-width: 0;
+}
+
+.case-filter-clear {
+    padding: 9px 16px;
+    background: #fff;
+    color: #1a4080;
+    border: 1px solid #1a4080;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 40px;
+}
+
+.case-result-count {
+    font-size: 12px;
+    color: #6b7a90;
+    margin-bottom: 10px;
+    min-height: 16px;
+}
+
+.case-list {
+    display: grid;
+    gap: 10px;
+}
+
+.case-list-empty {
+    color: #8b97a8;
+    text-align: center;
+    padding: 34px 10px;
+    font-size: 13.5px;
+    margin: 0;
+}
+
+.case-list-error {
+    color: #c0392b;
+    text-align: center;
+    padding: 24px 10px;
+    font-size: 13.5px;
+    margin: 0;
+}
+
+.case-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e7ecf5;
+}
+
+.case-pagination-btn {
+    padding: 7px 14px;
+    background: #fff;
+    color: #1a4080;
+    border: 1px solid #1a4080;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 34px;
+}
+
+.case-pagination-btn:disabled {
+    color: #a9b4c4;
+    border-color: #d7ddea;
+    cursor: not-allowed;
+}
+
+.case-pagination-info {
+    font-size: 12.5px;
+    color: #6b7a90;
+}
+
+.case-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #f7f9fe;
+    border: 1px solid #e4e9f4;
+    border-radius: 10px;
+    padding: 13px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.case-item:hover,
+.case-item:focus-visible {
+    background: #eef3ff;
+    box-shadow: 0 2px 8px rgba(26, 64, 128, 0.12);
+    outline: none;
+}
+
+.case-item-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.case-item-title {
+    font-weight: 600;
+    color: #1a2e55;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.case-item-ref {
+    font-size: 11.5px;
+    color: #7c8aa0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    margin-top: 2px;
+}
+
+.case-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+    font-size: 12px;
+    color: #607080;
+    margin-top: 6px;
+}
+
+.case-item-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.case-item-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.case-item-chevron {
+    color: #9aa8bd;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.case-status-pill {
+    display: inline-block;
+    padding: 3px 11px;
+    border-radius: 11px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.case-status-pending   { background: #e8eeff; color: #27407e; }
+.case-status-progress  { background: #e2f0fb; color: #12527c; }
+.case-status-lawyer    { background: #e7f0ff; color: #1a3a7c; }
+.case-status-resolved  { background: #e4f4e8; color: #216b34; }
+.case-status-closed    { background: #ecf0f6; color: #4b5e8a; }
+
+@media (max-width: 600px) {
+    .case-browser {
+        padding: 16px 14px;
+        border-radius: 10px;
+    }
+    .case-filter-input,
+    .case-filter-select,
+    .case-filter-clear {
+        flex: 1 1 100%;
+    }
+    .case-item {
+        padding: 12px 13px;
+    }
+    .case-item-title {
+        white-space: normal;
+        overflow: visible;
+    }
+    .case-item-side {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+    }
+}
+
+.case-detail-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(12, 22, 44, 0.62);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.case-detail-panel {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 14px 50px rgba(0, 0, 0, 0.3);
+}
+
+.case-detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px 22px 14px;
+    border-bottom: 1px solid #edf0f6;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-radius: 14px 14px 0 0;
+}
+
+.case-detail-head h3 {
+    margin: 0;
+    color: #1a4080;
+    font-size: 17px;
+}
+
+.case-detail-close {
+    background: none;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    color: #7c8aa0;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.case-detail-body {
+    padding: 16px 22px 22px;
+}
+
+.case-detail-row {
+    display: flex;
+    gap: 14px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f2f4f9;
+    font-size: 13.5px;
+}
+
+.case-detail-row:last-child { border-bottom: none; }
+
+.case-detail-label {
+    color: #7c8aa0;
+    flex: 0 0 132px;
+    font-size: 12.5px;
+}
+
+.case-detail-value {
+    color: #24334d;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.case-detail-note {
+    margin: 14px 0 0;
+    padding: 10px 13px;
+    background: #f5f8ff;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #607080;
+}

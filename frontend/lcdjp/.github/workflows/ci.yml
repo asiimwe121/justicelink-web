@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # `verify` runs the unit tests, writes the JaCoCo report and enforces the
+      # coverage floor set in pom.xml.
+      - name: mvn verify
+        run: mvn -B -ntp verify
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f target/site/jacoco/jacoco.csv ]; then
+            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import csv
+          covered = missed = 0
+          with open("target/site/jacoco/jacoco.csv") as f:
+              for row in csv.DictReader(f):
+                  covered += int(row["INSTRUCTION_COVERED"])
+                  missed += int(row["INSTRUCTION_MISSED"])
+          total = covered + missed
+          pct = 100 * covered / total if total else 0
+          print(f"### Test coverage\n\n**{pct:.1f}%** of instructions covered ({covered:,} of {total:,})")
+          PY
+          fi
+
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            target/surefire-reports
+            target/site/jacoco
+          if-no-files-found: ignore
+
+  frontend-syntax:
+    name: JavaScript syntax check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: node --check on every script
+        run: |
+          status=0
+          for f in src/main/resources/static/*.js; do
+            node --check "$f" || status=1
+          done
+          exit $status
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      # Scans the files in the checkout for API keys, passwords and tokens.
+      # (History is cleaned separately, see docs/SECRETS.md.)
+      - name: gitleaks (working tree)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --no-git --source /repo --redact --no-banner --exit-code 1

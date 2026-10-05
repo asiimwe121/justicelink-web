@@ -1,0 +1,882 @@
+
+
+
+
+
+:root[data-theme="dark"] {
+    --primary: #1a237e;
+    --primary-dark: #0d1442;
+    --primary-light: #3949ab;
+    --secondary: #1a4080;
+    --secondary-light: #2255a4;
+    --dark: #e8eaf2;
+    --gray: #b4b8cc;
+    --gray-light: #232636;
+    --white: #1a1d2b;
+    --border: #333750;
+    --success: #4caf50;
+    --warning: #ffb74d;
+    --danger: #ef5350;
+    --info: #64b5f6;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.5);
+
+    
+    --lcdjp-bg: #12141f;
+    --lcdjp-surface: #1a1d2b;
+    --lcdjp-surface-2: #212437;
+    --lcdjp-text: #e8eaf2;
+    --lcdjp-text-muted: #a4a8c0;
+    --lcdjp-border: #333750;
+}
+
+
+html[data-theme="dark"] body {
+    background: var(--lcdjp-bg);
+    color: var(--lcdjp-text);
+}
+
+html[data-theme="dark"] #dashboardPage,
+html[data-theme="dark"] .page,
+html[data-theme="dark"] .dashboard-view,
+html[data-theme="dark"] #contentArea,
+html[data-theme="dark"] .wrapper,
+html[data-theme="dark"] .dashboard-layout {
+    background: var(--lcdjp-bg);
+    color: var(--lcdjp-text);
+}
+
+
+html[data-theme="dark"] .form-card,
+html[data-theme="dark"] .form-page,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .dashboard-card,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .info-card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .table-responsive-container {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    box-shadow: var(--shadow);
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .form-card h2,
+html[data-theme="dark"] .form-page h2,
+html[data-theme="dark"] .form-card label,
+html[data-theme="dark"] .form-page label {
+    color: var(--lcdjp-text) !important;
+}
+
+html[data-theme="dark"] .form-card input,
+html[data-theme="dark"] .form-card select,
+html[data-theme="dark"] .form-card textarea,
+html[data-theme="dark"] .form-page input,
+html[data-theme="dark"] .form-page select,
+html[data-theme="dark"] .form-page textarea,
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] input[type="tel"],
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] ::placeholder {
+    color: var(--lcdjp-text-muted);
+    opacity: 1;
+}
+
+
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .cm-bar,
+html[data-theme="dark"] .lm-bar,
+html[data-theme="dark"] .lm-header,
+html[data-theme="dark"] header.topbar {
+    background: var(--lcdjp-surface-2) !important;
+}
+
+
+
+
+
+
+html[data-theme="dark"] .cm-header,
+html[data-theme="dark"] .cm-header.cm-header-clean,
+html[data-theme="dark"] #citizenMobileView .cm-header.cm-header-clean {
+    background: linear-gradient(135deg, #12141f 0%, #1a1d2b 100%) !important;
+}
+
+
+
+
+
+
+html[data-theme="dark"] #mainFooter.footer {
+    background: var(--lcdjp-surface-2) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] #mainSidebar {
+    background: var(--lcdjp-surface) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+
+
+
+
+
+
+html[data-theme="dark"] body.admin-dashboard-mode #adminTopbarBrand {
+    background: var(--lcdjp-surface) !important;
+}
+
+html[data-theme="dark"] .menu-title {
+    color: var(--primary-light) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+
+html[data-theme="dark"] .cm-account-dropdown,
+html[data-theme="dark"] #cdtProfileMenu,
+html[data-theme="dark"] #accountMenu {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .cm-menu-item,
+html[data-theme="dark"] #cdtProfileMenu > div {
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .cm-menu-item:hover,
+html[data-theme="dark"] #cdtProfileMenu > div:hover {
+    background: var(--lcdjp-surface-2) !important;
+}
+
+
+html[data-theme="dark"] table {
+    color: var(--lcdjp-text);
+}
+html[data-theme="dark"] table th {
+    background: var(--lcdjp-surface-2);
+    color: var(--lcdjp-text);
+}
+html[data-theme="dark"] table td {
+    border-color: var(--lcdjp-border);
+}
+html[data-theme="dark"] table tr:hover {
+    background: var(--lcdjp-surface-2);
+}
+
+
+html[data-theme="dark"] .back-btn {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--lcdjp-bg);
+}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--lcdjp-border);
+    border-radius: 8px;
+}
+
+
+
+
+.theme-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-top: 1px solid #e8e8ed;
+    margin-top: 8px;
+}
+html[data-theme="dark"] .theme-toggle-row {
+    border-color: var(--lcdjp-border);
+}
+.theme-toggle-row .ttr-label {
+    font-weight: 600;
+    font-size: 15px;
+    color: inherit;
+}
+.theme-toggle-row .ttr-sub {
+    font-weight: 400;
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+html[data-theme="dark"] .theme-toggle-row .ttr-sub {
+    color: var(--lcdjp-text-muted);
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+    flex-shrink: 0;
+}
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.theme-switch .ts-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: 0.2s;
+}
+.theme-switch .ts-slider::before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.theme-switch input:checked + .ts-slider {
+    background-color: #1a4080;
+}
+.theme-switch input:checked + .ts-slider::before {
+    transform: translateX(20px);
+}
+
+
+
+
+
+
+.menu-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+}
+
+
+
+
+
+
+
+
+body.lawyer-dashboard-mode #userSettingsDropdownOpt { display: none !important; }
+body.lawyer-dashboard-mode #accountMenuThemeToggle { display: flex !important; }
+
+body.admin-dashboard-mode #accountMenuEditProfileOpt { display: none !important; }
+body.admin-dashboard-mode #userSettingsDropdownOpt { display: none !important; }
+body.admin-dashboard-mode #accountMenuThemeToggle { display: flex !important; }
+
+
+
+
+
+
+
+
+
+
+
+
+html[data-theme="dark"] .cm-activity,
+html[data-theme="dark"] .cm-stat-card,
+html[data-theme="dark"] .cdg-stat,
+html[data-theme="dark"] .cm-nearby-list,
+html[data-theme="dark"] .cm-case-card,
+html[data-theme="dark"] .cm-body,
+html[data-theme="dark"] .cm-wrap.cm-active,
+html[data-theme="dark"] .cm-map-section,
+html[data-theme="dark"] .cm-route-stat,
+html[data-theme="dark"] #cmMobileNotifPanel,
+html[data-theme="dark"] #cmRoutePanel,
+html[data-theme="dark"] #mobileTrackPanel,
+html[data-theme="dark"] #_lcdjpNearbyCard,
+html[data-theme="dark"] .content-area,
+html[data-theme="dark"] .content-modal,
+html[data-theme="dark"] .welcome-banner,
+html[data-theme="dark"] body.citizen-dashboard-mode #cdDesktopGreeting,
+html[data-theme="dark"] body.citizen-dashboard-mode #contentArea,
+html[data-theme="dark"] body.citizen-dashboard-mode #dynamicFormPage,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-body,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-bottom-cols > div,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-case-card,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-map-section,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-wrap,
+html[data-theme="dark"] body.citizen-dashboard-mode .lcdjp-desktop-page-shell {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .cm-bottom-nav,
+html[data-theme="dark"] .lm-bottom-nav,
+html[data-theme="dark"] .cm-map-chip,
+html[data-theme="dark"] .cm-map-refresh-btn,
+html[data-theme="dark"] body.citizen-dashboard-mode .topbar {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+}
+
+
+
+
+html[data-theme="dark"] .cm-nav,
+html[data-theme="dark"] .cm-nav svg,
+html[data-theme="dark"] .lm-nav-item,
+html[data-theme="dark"] .lm-nav-item svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+
+html[data-theme="dark"] #aiAssistantPanel,
+html[data-theme="dark"] .ai-cat-btn,
+html[data-theme="dark"] .ai-contact-card,
+html[data-theme="dark"] .ai-input-row {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .ai-bubble,
+html[data-theme="dark"] .ai-typing {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+}
+html[data-theme="dark"] .ai-bubble.user {
+    background: var(--primary) !important;
+    color: #fff !important;
+}
+html[data-theme="dark"] .ai-text-input {
+    background: var(--lcdjp-bg) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .ai-text-input:focus {
+    background: var(--lcdjp-bg) !important;
+}
+html[data-theme="dark"] .ai-choice-btn {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+
+html[data-theme="dark"] .mtp-search-card,
+html[data-theme="dark"] .mtp-result-card,
+html[data-theme="dark"] .mtp-stepper,
+html[data-theme="dark"] .mtp-statement,
+html[data-theme="dark"] .case-card,
+html[data-theme="dark"] .case-section,
+html[data-theme="dark"] .case-submission-card,
+html[data-theme="dark"] .document-card,
+html[data-theme="dark"] .document-upload-area,
+html[data-theme="dark"] .doc-upload-zone,
+html[data-theme="dark"] .upload-drop,
+html[data-theme="dark"] .notification-card,
+html[data-theme="dark"] .appointment-card,
+html[data-theme="dark"] .service-card,
+html[data-theme="dark"] .user-type-card,
+html[data-theme="dark"] .voice-message-case,
+html[data-theme="dark"] .lm-case,
+html[data-theme="dark"] .lm-wrap,
+html[data-theme="dark"] .stat-box,
+html[data-theme="dark"] .phone-display-box,
+html[data-theme="dark"] .specialization-item,
+html[data-theme="dark"] .doc-viewer-modal .viewer-content,
+html[data-theme="dark"] .idv-modal-box,
+html[data-theme="dark"] #forcePasswordChangeOverlay .fpc-modal,
+html[data-theme="dark"] #statisticsContainer,
+html[data-theme="dark"] #locationSection,
+html[data-theme="dark"] .login-container,
+html[data-theme="dark"] #loginPage,
+html[data-theme="dark"] #loginOtpPage {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .upload-btn {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .upload-btn.upload-btn-camera {
+    background: #1a4080 !important;
+    color: #fff !important;
+    border-color: #1a4080 !important;
+}
+html[data-theme="dark"] .mtp-search-card input {
+    background: var(--lcdjp-bg) !important;
+    color: var(--lcdjp-text) !important;
+}
+
+
+html[data-theme="dark"] .mobile-messages-panel,
+html[data-theme="dark"] .mobile-role-panel-empty,
+html[data-theme="dark"] #mobileDynamicOverlay,
+html[data-theme="dark"] #mobileFullPage .submenu,
+html[data-theme="dark"] .submenu,
+html[data-theme="dark"] .submenu > div,
+html[data-theme="dark"] body.citizen-dashboard-mode #citizenNotificationsPage #notificationsContainer > div {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .submenu > div:hover,
+html[data-theme="dark"] #mobileFullPage .menu-title:active {
+    background: var(--lcdjp-surface-2) !important;
+}
+
+
+html[data-theme="dark"] .account-menu {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .account-menu div:hover {
+    background: var(--lcdjp-surface-2) !important;
+}
+
+
+html[data-theme="dark"] .cdt-lang-select,
+html[data-theme="dark"] .cdt-search-wrap,
+html[data-theme="dark"] .lm-search,
+html[data-theme="dark"] .cm-chips-row,
+html[data-theme="dark"] #villageLocation_manual,
+html[data-theme="dark"] #languageSelect,
+html[data-theme="dark"] .otp-digit {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] body.citizen-dashboard-mode #languageSelect option,
+html[data-theme="dark"] body.lawyer-dashboard-mode #languageSelect option {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+}
+
+
+html[data-theme="dark"] .cdt-icon-btn:hover,
+html[data-theme="dark"] .cdt-user-wrap:hover,
+html[data-theme="dark"] .cdt-hamburger:hover {
+    background: rgba(255,255,255,0.08) !important;
+}
+
+
+
+
+html[data-theme="dark"] .cdt-icon-btn,
+html[data-theme="dark"] .cdt-user-wrap {
+    background: var(--lcdjp-surface-2) !important;
+    border-color: var(--lcdjp-border) !important;
+    color: var(--lcdjp-text) !important;
+}
+html[data-theme="dark"] .cdt-avatar {
+    background: var(--primary) !important;
+}
+
+
+
+
+
+html[data-theme="dark"] #chatLabels,
+html[data-theme="dark"] #chatWindow,
+html[data-theme="dark"] #chatInputRow,
+html[data-theme="dark"] #chatFooterBar {
+    background: var(--lcdjp-surface) !important;
+}
+html[data-theme="dark"] #chatMessages {
+    background: var(--lcdjp-bg) !important;
+}
+html[data-theme="dark"] #chatLabels > div > div,
+html[data-theme="dark"] #chatUserName {
+    color: var(--lcdjp-text) !important;
+}
+html[data-theme="dark"] #chatInput {
+    background: var(--lcdjp-surface-2) !important;
+    border-color: var(--lcdjp-border) !important;
+    color: var(--lcdjp-text) !important;
+}
+
+
+html[data-theme="dark"] body.citizen-dashboard-mode #myCasesPage table.cases-table,
+html[data-theme="dark"] body.citizen-dashboard-mode #myCasesPage table.cases-table th {
+    background: var(--lcdjp-surface-2) !important;
+    color: var(--lcdjp-text) !important;
+}
+html[data-theme="dark"] body.citizen-dashboard-mode #myCasesPage table.cases-table tr:hover td {
+    background: var(--lcdjp-surface) !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+html[data-theme="dark"] .account-menu div,
+html[data-theme="dark"] body.citizen-dashboard-mode #languageSelect option,
+html[data-theme="dark"] body.lawyer-dashboard-mode #languageSelect option,
+html[data-theme="dark"] .lm-section-title h2,
+html[data-theme="dark"] .lm-filter,
+html[data-theme="dark"] .lm-search input,
+html[data-theme="dark"] .lm-case-id,
+html[data-theme="dark"] .lm-case-type,
+html[data-theme="dark"] .lm-details strong,
+html[data-theme="dark"] .lm-btn,
+html[data-theme="dark"] .cm-menu-item,
+html[data-theme="dark"] .cm-case-top strong,
+html[data-theme="dark"] .cm-section-head h2,
+html[data-theme="dark"] .cm-link,
+html[data-theme="dark"] .cm-shortcut span,
+html[data-theme="dark"] .cm-activity-row strong,
+html[data-theme="dark"] .cm-map-chip.cm-map-chip-active,
+html[data-theme="dark"] #cmEmergencyCategorySection .cm-section-head h2,
+html[data-theme="dark"] .cm-stat-num,
+html[data-theme="dark"] .cm-map-section-title,
+html[data-theme="dark"] .cm-map-refresh-btn,
+html[data-theme="dark"] .cm-bottom-col-title,
+html[data-theme="dark"] .cm-col-link,
+html[data-theme="dark"] .cm-nearby-name,
+html[data-theme="dark"] .cm-nav-fab-label,
+html[data-theme="dark"] .cdt-user-name,
+html[data-theme="dark"] .cdg-heading,
+html[data-theme="dark"] .cdg-stat-num,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-bottom-col-title,
+html[data-theme="dark"] .cm-map-count,
+html[data-theme="dark"] .mobile-role-panel-head h2,
+html[data-theme="dark"] .case-card h3,
+html[data-theme="dark"] .stat-box h2,
+html[data-theme="dark"] .submenu strong,
+html[data-theme="dark"] .ai-bubble,
+html[data-theme="dark"] .ai-cat-btn,
+html[data-theme="dark"] .ai-text-input,
+html[data-theme="dark"] .ai-choice-btn,
+html[data-theme="dark"] .cm-route-back,
+html[data-theme="dark"] .cm-route-title strong,
+html[data-theme="dark"] .cm-route-stat strong,
+html[data-theme="dark"] .cm-route-spinner,
+html[data-theme="dark"] .mtp-info-value,
+html[data-theme="dark"] .nc-title,
+html[data-theme="dark"] .nc-btn-secondary,
+html[data-theme="dark"] .nc-btn-ghost {
+    color: var(--lcdjp-text) !important;
+}
+
+html[data-theme="dark"] .account-menu div:hover,
+html[data-theme="dark"] .service-card p,
+html[data-theme="dark"] .lm-avatar,
+html[data-theme="dark"] .lm-search,
+html[data-theme="dark"] .lm-eyebrow,
+html[data-theme="dark"] .lm-details label,
+html[data-theme="dark"] .lm-chip,
+html[data-theme="dark"] .lm-empty,
+html[data-theme="dark"] .cm-menu-item svg,
+html[data-theme="dark"] .cm-menu-logout,
+html[data-theme="dark"] .cm-menu-logout svg,
+html[data-theme="dark"] .cm-avatar,
+html[data-theme="dark"] .cm-case-top p,
+html[data-theme="dark"] .cm-stage,
+html[data-theme="dark"] .cm-stage strong,
+html[data-theme="dark"] .cm-no-case,
+html[data-theme="dark"] .cm-round,
+html[data-theme="dark"] .cm-activity-row p,
+html[data-theme="dark"] .cm-map-chip,
+html[data-theme="dark"] .cm-stat-label,
+html[data-theme="dark"] .cm-qa-label,
+html[data-theme="dark"] .cm-nearby-dist,
+html[data-theme="dark"] .cdt-hamburger,
+html[data-theme="dark"] .cdt-search-input,
+html[data-theme="dark"] .cdt-lang-select,
+html[data-theme="dark"] .cdt-icon-btn,
+html[data-theme="dark"] .cdt-user-role,
+html[data-theme="dark"] .cdg-subtitle,
+html[data-theme="dark"] .cdg-stat-lbl,
+html[data-theme="dark"] body.citizen-dashboard-mode #myCasesPage table.cases-table th,
+html[data-theme="dark"] body.citizen-dashboard-mode #myCasesPage table.cases-table td,
+html[data-theme="dark"] .mobile-role-panel-close,
+html[data-theme="dark"] .mobile-role-panel-empty,
+html[data-theme="dark"] .mobile-role-panel-empty p,
+html[data-theme="dark"] #mobileFullPage .submenu div,
+html[data-theme="dark"] #mobileFullPage .submenu strong,
+html[data-theme="dark"] #mobileFullPage .submenu p,
+html[data-theme="dark"] .account-menu,
+html[data-theme="dark"] .menu-title,
+html[data-theme="dark"] .welcome-text h1,
+html[data-theme="dark"] .services-title,
+html[data-theme="dark"] .service-card h3,
+html[data-theme="dark"] .stat-card h3,
+html[data-theme="dark"] .stat-card p,
+html[data-theme="dark"] .notification-title,
+html[data-theme="dark"] .notification-message,
+html[data-theme="dark"] .notification-date,
+html[data-theme="dark"] .case-card p,
+html[data-theme="dark"] .stat-box p,
+html[data-theme="dark"] .admin-menu-item.admin-active,
+html[data-theme="dark"] .submenu p,
+html[data-theme="dark"] .voice-message-case .text-label,
+html[data-theme="dark"] .document-card .doc-name,
+html[data-theme="dark"] .typing-text,
+html[data-theme="dark"] .typing-name,
+html[data-theme="dark"] .lawyer-dashboard-mode .account-menu div:hover,
+html[data-theme="dark"] #lcdjpSidebarClose,
+html[data-theme="dark"] .upload-drop p,
+html[data-theme="dark"] .cm-route-title span,
+html[data-theme="dark"] .cm-route-mode-btn,
+html[data-theme="dark"] .cm-route-step,
+html[data-theme="dark"] .cm-route-error,
+html[data-theme="dark"] .mtp-search-card .mtp-sc-label,
+html[data-theme="dark"] .mtp-search-card input,
+html[data-theme="dark"] .mtp-statement,
+html[data-theme="dark"] .user-type-card.police-admin-card .type-label,
+html[data-theme="dark"] .pro-creds-title,
+html[data-theme="dark"] .doc-upload-label,
+html[data-theme="dark"] .nc-close-btn,
+html[data-theme="dark"] .nc-meta,
+html[data-theme="dark"] .da-sidebar-header,
+html[data-theme="dark"] .da-nav-item,
+html[data-theme="dark"] .da-nav-item:hover,
+html[data-theme="dark"] .form-page h2,
+html[data-theme="dark"] .form-card h2,
+html[data-theme="dark"] .modal-body,
+html[data-theme="dark"] .modal-body h4,
+html[data-theme="dark"] .reg-step-dot .dot-circle,
+html[data-theme="dark"] .reg-step-dot .dot-label,
+html[data-theme="dark"] .step-section-head p,
+html[data-theme="dark"] .otp-resend-row,
+html[data-theme="dark"] #forcePasswordChangeOverlay .fpc-field label,
+html[data-theme="dark"] .map-popup-card p {
+    color: var(--lcdjp-text-muted) !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+html[data-theme="dark"] .cm-nearby-list.cm-nearby-list-horizontal .cm-nearby-item,
+html[data-theme="dark"] body.citizen-dashboard-mode .cm-nearby-list.cm-nearby-list-horizontal .cm-nearby-item,
+html[data-theme="dark"] .cm-nearby-item:active {
+    background: var(--lcdjp-surface-2) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .cm-nearby-type,
+html[data-theme="dark"] .cm-nearby-list.cm-nearby-list-horizontal .cm-nearby-name,
+html[data-theme="dark"] .cm-nearby-list.cm-nearby-list-horizontal .cm-nearby-dist {
+    color: var(--lcdjp-text) !important;
+}
+
+
+
+
+
+
+html[data-theme="dark"][data-theme="dark"][data-theme="dark"] #citizenMobileView :is(p, span, div, h1, h2, h3, h4, h5, h6, strong, b, label, li, td, th, small, a) {
+    color: var(--lcdjp-text);
+}
+
+
+
+
+html[data-theme="dark"] #citizenMobileView .cm-nav-fab,
+html[data-theme="dark"] #citizenMobileView .cm-nav-fab *,
+html[data-theme="dark"] #citizenMobileView button[style*="background"],
+html[data-theme="dark"] #citizenMobileView .cm-map-chip-active {
+    color: inherit;
+}
+
+
+
+
+
+
+
+
+
+
+html[data-theme="dark"] .cm-emerg-help-card {
+    background: var(--lcdjp-surface) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+html[data-theme="dark"] .cm-emerg-help-title {
+    color: var(--lcdjp-text) !important;
+}
+html[data-theme="dark"] .cm-emerg-help-sub {
+    color: var(--lcdjp-text-muted) !important;
+}
+html[data-theme="dark"] #citizenMobileView .cm-quick-actions-card {
+    background: var(--lcdjp-surface) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+html[data-theme="dark"] #caseDetailsModal,
+html[data-theme="dark"] .lcdjp-desktop-page-body,
+html[data-theme="dark"] #myCasesPage,
+html[data-theme="dark"] #citizenNotificationsPage,
+html[data-theme="dark"] #notificationsContainer {
+    background: var(--lcdjp-surface) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"][data-theme="dark"][data-theme="dark"] #caseDetailsModal :is(p, span, div, h1, h2, h3, h4, h5, h6, strong, b, label, li, td, th, small, a, i),
+html[data-theme="dark"][data-theme="dark"][data-theme="dark"] .lcdjp-desktop-page-body :is(p, span, div, h1, h2, h3, h4, h5, h6, strong, b, label, li, td, th, small, a, i),
+html[data-theme="dark"][data-theme="dark"][data-theme="dark"] #myCasesPage :is(p, span, div, h1, h2, h3, h4, h5, h6, strong, b, label, li, td, th, small, a, i),
+html[data-theme="dark"][data-theme="dark"][data-theme="dark"] #notificationsContainer :is(p, span, div, h1, h2, h3, h4, h5, h6, strong, b, label, li, td, th, small, a, i),
+html[data-theme="dark"][data-theme="dark"][data-theme="dark"] #aiAssistantPanel :is(p, span, div, h1, h2, h3, h4, h5, h6, strong, b, label, li, small, a) {
+    color: var(--lcdjp-text);
+}
+
+
+
+
+html[data-theme="dark"] #caseDetailsModal .badge,
+html[data-theme="dark"] #caseDetailsModal button[style*="background"],
+html[data-theme="dark"] .lcdjp-desktop-page-body .badge,
+html[data-theme="dark"] .lcdjp-desktop-page-body button[style*="background"],
+html[data-theme="dark"] #myCasesPage .badge,
+html[data-theme="dark"] #myCasesPage button[style*="background"],
+html[data-theme="dark"] #notificationsContainer button[style*="background"],
+html[data-theme="dark"] #notificationsContainer [style*="background"],
+html[data-theme="dark"] #aiAssistantPanel button[style*="background"],
+html[data-theme="dark"] #aiAssistantPanel .ai-bubble.user,
+html[data-theme="dark"] #aiAssistantPanel .ai-bubble.user * {
+    color: inherit;
+}
+
+.lcdjp-has-avatar {
+    position: relative !important;
+    overflow: hidden !important;
+    color: transparent !important;
+    background-color: transparent !important;
+}
+
+.lcdjp-has-avatar > svg,
+.lcdjp-has-avatar > span,
+.lcdjp-has-avatar > i {
+    visibility: hidden !important;
+}
+
+.lcdjp-avatar-img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: inherit !important;
+    display: block !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+}
+
+
+html[data-theme="dark"] .case-browser,
+html[data-theme="dark"] .case-detail-panel,
+html[data-theme="dark"] .case-detail-head {
+    background: var(--lcdjp-surface) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .case-browser-title,
+html[data-theme="dark"] .case-detail-head h3 {
+    color: var(--lcdjp-text) !important;
+}
+
+html[data-theme="dark"] .case-filter-input,
+html[data-theme="dark"] .case-filter-select,
+html[data-theme="dark"] .case-filter-clear {
+    background: var(--lcdjp-bg) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .case-pagination {
+    border-top-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .case-pagination-btn {
+    background: var(--lcdjp-bg) !important;
+    color: var(--lcdjp-text) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .case-pagination-info {
+    color: var(--lcdjp-text-muted, var(--lcdjp-text)) !important;
+}
+
+html[data-theme="dark"] .case-item {
+    background: var(--lcdjp-bg) !important;
+    border-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .case-item:hover,
+html[data-theme="dark"] .case-item:focus-visible {
+    background: var(--lcdjp-surface) !important;
+}
+
+html[data-theme="dark"] .case-item-title,
+html[data-theme="dark"] .case-detail-value {
+    color: var(--lcdjp-text) !important;
+}
+
+html[data-theme="dark"] .case-detail-row {
+    border-bottom-color: var(--lcdjp-border) !important;
+}
+
+html[data-theme="dark"] .case-detail-note {
+    background: var(--lcdjp-bg) !important;
+}

@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "JusticeLink Uganda",
+  "short_name": "JusticeLink",
+  "description": "Report incidents, find nearby police and LC offices, and get legal aid — JusticeLink connects you to the right help.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1a237e",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/images/justicelink-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/justicelink-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: lcdjp-mysql
+    restart: always
+    command: --mysql-native-password=ON --bind-address=0.0.0.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: lcdjp
+      MYSQL_USER: lcdjp_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -h 127.0.0.1 -P 3306 -u root -p${MYSQL_ROOT_PASSWORD} lcdjp -e 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - lcdjp-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lcdjp-redis
+    restart: always
+    command: --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - lcdjp-network
+
+  lcdjp-app:
+    build: .
+    user: "100:1001"
+    container_name: lcdjp-backend
+    restart: always
+    stop_grace_period: 30s
+    ports:
+      - "8080:8080"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:mysql://lcdjp-mysql:3306/lcdjp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000&socketTimeout=30000
+      DB_USERNAME: lcdjp_user
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: lcdjp-redis
+      REDIS_PORT: 6379
+      SHOW_SQL: false
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      GOOGLE_MAPS_PUBLIC_KEY: ${GOOGLE_MAPS_PUBLIC_KEY:-${GOOGLE_MAPS_API_KEY}}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL}
+      JWT_SECRET: ${JWT_SECRET}
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY}
+      SUNBIRD_API_TOKEN: ${SUNBIRD_API_TOKEN:-}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY:-}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
+      LEGAL_KNOWLEDGE_DIR: /app/legal-knowledge
+    volumes:
+      - ./logs:/app/logs
+      # Host-side location of the legal document library. Must be set in
+      # your own .env as LEGAL_KNOWLEDGE_DIR_HOST — no default is provided
+      # here since the correct path is machine-specific (e.g. a Windows
+      # dev box vs. a Linux server). See .env.example.
+      - ${LEGAL_KNOWLEDGE_DIR_HOST:?LEGAL_KNOWLEDGE_DIR_HOST must be set in .env}:/app/legal-knowledge
+    networks:
+      - lcdjp-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  mysql-data:
+
+networks:
+  lcdjp-network:
+    driver: bridge

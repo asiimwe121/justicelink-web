@@ -1,0 +1,11 @@
+title = "JusticeLink gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and throw-away values used only by tests"
+paths = [
+  '''^\.env\.example$''',
+  '''^src/test/''',
+]

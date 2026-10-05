@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /reset-password.html
+Disallow: /api-docs/
+Disallow: /swagger-ui/
+Disallow: /swagger-ui.html
+Disallow: /actuator/
+
+Sitemap: https://justicelinkug.org/sitemap.xml

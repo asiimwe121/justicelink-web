@@ -1,40 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>LCDJP Login</title>
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<h2>Login Page</h2>
+<title>Log In | JusticeLink Uganda</title>
+<meta name="description" content="Log in to JusticeLink Uganda as a citizen, lawyer, legal organisation, police officer or administrator. New citizens can register for free.">
+<link rel="canonical" href="https://justicelinkug.org/login.html">
 
-<input type="text" id="username" placeholder="Username"><br><br>
-<input type="password" id="password" placeholder="Password"><br><br>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="images/justicelink-icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/justicelink-icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/justicelink-icon-180.png">
 
-<button onclick="login()">Login</button>
 
-<p id="message"></p>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a237e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="JusticeLink">
 
-<script>
-    function login() {
-        let username = document.getElementById("username").value;
-        let password = document.getElementById("password").value;
+<meta property="og:title" content="Log In | JusticeLink Uganda" />
+<meta property="og:description" content="Log in to JusticeLink Uganda as a citizen, lawyer, legal organisation, police officer or administrator." />
+<meta property="og:image" content="https://justicelinkug.org/images/justicelink-horizontal.png" />
+<meta property="og:url" content="https://justicelinkug.org/login.html" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="JusticeLink Uganda" />
 
-        fetch("http://localhost:8080/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
-        })
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("message").innerText = data;
-            });
-    }
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Log In | JusticeLink Uganda",
+  "url": "https://justicelinkug.org/login.html",
+  "isPartOf": { "@type": "WebSite", "name": "JusticeLink Uganda", "url": "https://justicelinkug.org/" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"Home","item":"https://justicelinkug.org/"},
+    {"@type":"ListItem","position":2,"name":"Log In","item":"https://justicelinkug.org/login.html"}
+  ]
+}
 </script>
 
+<link rel="stylesheet" href="marketing.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="mkt-header">
+  <div class="mkt-header-inner">
+    <a class="mkt-logo" href="/" aria-label="JusticeLink Uganda home">
+      <img src="images/justicelink-horizontal.png" alt="JusticeLink Uganda">
+    </a>
+    <button class="mkt-nav-toggle" aria-expanded="false" aria-controls="mktNav" onclick="const n=document.getElementById('mktNav');const open=n.classList.toggle('open');this.setAttribute('aria-expanded',open);">☰</button>
+    <nav class="mkt-nav" id="mktNav" aria-label="Primary">
+      <a href="solutions.html">Solutions</a>
+      <a href="who-we-are.html">Who We Are</a>
+      <a href="careers.html">Careers</a>
+      <a href="contact.html">Contact</a>
+      <a class="mkt-cta" href="/" aria-current="page">Log In</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="mkt-hero">
+    <div class="wrap">
+      <p class="mkt-eyebrow">Access Your Account</p>
+      <h1>Log in to JusticeLink</h1>
+      <p class="lead">Citizens, lawyers, legal organisations, police officers and administrators all sign in from the same secure page.</p>
+      <div class="mkt-hero-actions">
+        <a class="btn-gold" href="/">Continue to secure login →</a>
+        <a class="btn-outline" href="/">Create a citizen account</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="mkt-section">
+    <div class="wrap">
+      <h2>Who can log in</h2>
+      <p class="section-lead">Access depends on your role. Most citizens register themselves; a few roles are issued directly by an administrator for verification reasons.</p>
+      <div class="card-grid">
+        <div class="mkt-card">
+          <span class="tag">Self-registered</span>
+          <h3>Citizens</h3>
+          <p>Create a free account with your name, phone number and national ID to start reporting cases.</p>
+        </div>
+        <div class="mkt-card">
+          <span class="tag">Self-registered</span>
+          <h3>Lawyers</h3>
+          <p>Register with your work ID and certificate for verification, then get matched to cases.</p>
+        </div>
+        <div class="mkt-card">
+          <span class="tag">Admin-issued</span>
+          <h3>Police officers &amp; legal organisations</h3>
+          <p>These accounts are created by a System Administrator. Contact your Station Commander, District Police Commander, or JusticeLink admin to get one set up.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mkt-section alt">
+    <div class="wrap">
+      <h2>Trouble logging in?</h2>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <h3>Forgot your password</h3>
+          <p>Use the "Forgot password" link on the login page with your registered email address to reset it.</p>
+          <a class="btn-outline" style="color:var(--navy-deep);border-color:var(--navy-deep);" href="/">Go to login</a>
+        </div>
+        <div class="contact-card">
+          <h3>Still stuck?</h3>
+          <p>Use the in-app Contact Support chat once you reach the login page, or see our contact options.</p>
+          <a class="btn-outline" style="color:var(--navy-deep);border-color:var(--navy-deep);" href="contact.html">Contact us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="mkt-footer">
+  <div class="mkt-footer-grid wrap">
+    <div>
+      <h4>JusticeLink Uganda</h4>
+      <p style="font-size:14px;max-width:36ch;">A digital platform connecting citizens to Local Council offices, police services and legal aid.</p>
+    </div>
+    <div>
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="solutions.html">Solutions</a></li>
+        <li><a href="who-we-are.html">Who We Are</a></li>
+        <li><a href="/">Log In</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Organisation</h4>
+      <ul>
+        <li><a href="careers.html">Careers</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="terms.html">Terms of Service</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="cookies.html">Cookie Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="mkt-footer-bottom wrap">
+    <span>© 2026 JusticeLink Uganda. All rights reserved.</span>
+    <span>justicelinkug.org</span>
+  </div>
+</footer>
+<script src="pwa.js?v=20260901-pwa-install-1"></script>
 </body>
 </html>
