@@ -1,22 +1,4 @@
-# Build output
-target/
-
-# Secrets and local configuration: never commit
+# database dumps written by scripts/fix-flyway-checksums.sh and deploy.sh
+backups/
+# secrets
 .env
-*.env
-!.env.example
-application-local.properties
-application-secret*.properties
-
-# Backups and logs
-*.sql.gz
-*.log
-
-# IDE
-.idea/
-*.iml
-.vscode/
-
-# Private keys and raw database dumps: never commit
-*.pem
-*.key

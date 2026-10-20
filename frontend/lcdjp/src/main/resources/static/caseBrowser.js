@@ -235,6 +235,15 @@
              + '</div>';
     }
 
+    // API_ENDPOINTS is a top-level `const` in config.js, so it is NOT a property of window.
+    // Resolve it as a bare identifier (global lexical scope) instead of global.API_ENDPOINTS.
+    function caseEndpoint(ref) {
+        var endpoints = (typeof API_ENDPOINTS !== 'undefined') ? API_ENDPOINTS : global.API_ENDPOINTS;
+        var enc = encodeURIComponent(ref);
+        if (endpoints && typeof endpoints.case === 'function') return endpoints.case(enc);
+        return '/api/cases/' + enc;
+    }
+
     function openDetail(ref) {
         ref = String(ref == null ? '' : ref).trim();
         if (!ref) {
@@ -267,9 +276,10 @@
         });
         backdrop.querySelector('.case-detail-close').addEventListener('click', closeDetail);
 
+        var caseUrl = caseEndpoint(ref);
         var fetcher = (typeof global.authFetch === 'function')
-            ? global.authFetch(global.API_ENDPOINTS.case(encodeURIComponent(ref)), { method: 'GET' })
-            : fetch(global.API_ENDPOINTS.case(encodeURIComponent(ref)), {
+            ? global.authFetch(caseUrl, { method: 'GET' })
+            : fetch(caseUrl, {
                   method: 'GET',
                   headers: (typeof global.getAuthHeaders === 'function') ? global.getAuthHeaders() : {}
               });

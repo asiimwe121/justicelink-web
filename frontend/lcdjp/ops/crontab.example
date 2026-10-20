@@ -1,7 +1,3 @@
-# Install on the app server:   crontab -e   (as a user that can run docker)
-# Database backup every night at 02:30 server time, restore proof on the 1st of each month.
-30 2 * * *   BACKUP_REMOTE="" HEALTHCHECK_PING_URL="" /opt/justicelink/ops/backup-db.sh  >> /var/log/justicelink-backup.log 2>&1
-15 4 1 * *   /opt/justicelink/ops/restore-test.sh >> /var/log/justicelink-restore-test.log 2>&1
-
-# Install on a DIFFERENT machine:
-# * * * * *  ALERT_WEBHOOK="https://example.invalid/hook" /opt/justicelink/ops/healthcheck.sh >> /var/log/justicelink-health.log 2>&1
+# /etc/cron.d/justicelink  (env vars live in /etc/justicelink/backup.env, mode 600)
+30 1 * * *  root  set -a; . /etc/justicelink/backup.env; set +a; /opt/justicelink/ops/backup-mysql.sh >> /var/log/justicelink-backup.log 2>&1
+0 4 1 * *   root  set -a; . /etc/justicelink/backup.env; set +a; HEALTHCHECK_URL="$RESTORE_HEALTHCHECK_URL" /opt/justicelink/ops/restore-test.sh >> /var/log/justicelink-restore-test.log 2>&1

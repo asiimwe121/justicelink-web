@@ -35,7 +35,7 @@ const LCDJP_UGANDA_DISTRICTS = [
     'Ngora', 'Ntoroko', 'Ntungamo', 'Nwoya', 'Obongi', 'Omoro', 'Otuke',
     'Oyam', 'Pader', 'Pakwach', 'Pallisa', 'Rakai', 'Rubanda', 'Rubirizi',
     'Rukiga', 'Rukungiri', 'Rwampara', 'Serere', 'Sheema', 'Sironko',
-    'Soroti', 'Ssembabule', 'Tororo', 'Wakiso', 'Yumbe', 'Zombo'
+    'Soroti', 'Ssembabule', 'Terego', 'Tororo', 'Wakiso', 'Yumbe', 'Zombo'
 ];
 
 function regGetDistricts() {
@@ -401,16 +401,32 @@ async function regVerifyOTP() {
 
 function _regInitOTPInputs() {
     const inputs = [...document.querySelectorAll('#regStep3 .otp-digit')];
+    const refresh = () => {
+        const verifyBtn = document.getElementById('reg_verifyOtpBtn');
+        if (verifyBtn) verifyBtn.disabled = _regGetEnteredOTP().length < 6;
+    };
+    // Spread a whole code (pasted, or autofilled from an SMS/email) across the boxes, starting at `from`.
+    const fill = (digits, from) => {
+        const chars = [...digits.replace(/\D/g, '')].slice(0, inputs.length - from);
+        chars.forEach((ch, i) => { inputs[from + i].value = ch; inputs[from + i].classList.add('filled'); });
+        if (from === 0) {
+            inputs.slice(chars.length).forEach(i => { i.value = ''; i.classList.remove('filled'); });
+        }
+        inputs[Math.min(from + chars.length, inputs.length - 1)].focus();
+        refresh();
+    };
     inputs.forEach((inp, idx) => {
         if (inp.dataset.otpBound === 'true') return;
         inp.dataset.otpBound = 'true';
+        inp.removeAttribute('maxlength');           // a 1-char limit cuts off pasted/autofilled codes
+        if (idx === 0) inp.setAttribute('autocomplete', 'one-time-code');
         inp.addEventListener('input', e => {
             const v = e.target.value.replace(/\D/g, '');
+            if (v.length > 1) { fill(v, idx); return; }   // autofill / multi-digit insert
             e.target.value = v ? v[0] : '';
             if (v && idx < inputs.length - 1) inputs[idx + 1].focus();
             inp.classList.toggle('filled', !!e.target.value);
-            const verifyBtn = document.getElementById('reg_verifyOtpBtn');
-            if (verifyBtn) verifyBtn.disabled = _regGetEnteredOTP().length < 6;
+            refresh();
         });
         inp.addEventListener('keydown', e => {
             if (e.key === 'Backspace' && !inp.value && idx > 0) {
@@ -420,11 +436,10 @@ function _regInitOTPInputs() {
         });
         inp.addEventListener('paste', e => {
             e.preventDefault();
-            const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-            [...text.slice(0, 6)].forEach((ch, i) => { if (inputs[i]) { inputs[i].value = ch; inputs[i].classList.add('filled'); } });
-            inputs[Math.min(text.length, inputs.length - 1)].focus();
-            const verifyBtn = document.getElementById('reg_verifyOtpBtn');
-            if (verifyBtn) verifyBtn.disabled = _regGetEnteredOTP().length < 6;
+            const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+            // A full pasted code always starts from the first box, wherever the cursor was.
+            const digits = text.replace(/\D/g, '');
+            if (digits) fill(digits, digits.length >= inputs.length ? 0 : idx);
         });
     });
 }
@@ -574,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (value.length > 0) {
                 if (result.valid) {
-                    validationDiv.innerHTML = `<span style="color: #28a745; background: #d4edda; padding: 5px 10px; border-radius: 4px; display: inline-block;">${result.message}</span>`;
+                    validationDiv.innerHTML = `<span style="color: #28a745; background: #d4edda; padding: 5px 10px; border-radius: 4px; display: inline-block;">${escapeHtml(result.message)}</span>`;
                     
                     if (genderSelect && result.gender) {
                         genderSelect.value = result.gender;
@@ -583,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.style.borderColor = '#28a745';
                     this.style.background = '#f0fff4';
                 } else {
-                    validationDiv.innerHTML = `<span style="color: #dc3545; background: #f8d7da; padding: 5px 10px; border-radius: 4px; display: inline-block;">${result.message}</span>`;
+                    validationDiv.innerHTML = `<span style="color: #dc3545; background: #f8d7da; padding: 5px 10px; border-radius: 4px; display: inline-block;">${escapeHtml(result.message)}</span>`;
                     this.style.borderColor = '#dc3545';
                     this.style.background = '#fff5f5';
                 }
@@ -738,197 +753,7 @@ function clearRegistrationDistrict() {
 let _caseLocationIndex = null;
 
 
-var pickerMap = null;
-var pickerMarker = null;
-var selectedPickerLocation = null;
-var pickerLatLng = null;
-
-function openMapPicker() {
-    var overlay = document.getElementById('mapPickerOverlay');
-    if (!overlay) { console.error('mapPickerOverlay not found'); return; }
-
-    if (pickerMap) {
-        try { pickerMap.remove(); } catch(e) {}
-        pickerMap = null;
-    }
-    pickerMarker = null;
-    selectedPickerLocation = null;
-    pickerLatLng = null;
-
-    var info = document.getElementById('pickerLocationInfo');
-    if (info) info.style.display = 'none';
-
-    
-    window._pickerScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-
-    overlay.style.display = 'flex';
-    overlay.style.pointerEvents = '';
-    lockScroll();
-    
-    setTimeout(function() {
-        var _ov = document.getElementById('mapPickerOverlay');
-        if (_ov && _ov.style.display === 'none' && document.body.style.overflow === 'hidden') {
-            unlockScroll();
-        }
-    }, 800);
-
-    var loading = document.getElementById('pickerMapLoading');
-    if (loading) loading.style.display = 'block';
-
-    setTimeout(function() { initializePickerMap(); }, 100);
-}
-
-function closeMapPicker() {
-    if (pickerMarker && pickerMap) {
-        try { pickerMap.removeLayer(pickerMarker); } catch(e) {}
-        pickerMarker = null;
-    }
-    if (pickerMap) {
-        try { pickerMap.remove(); } catch(e) {}
-        pickerMap = null;
-    }
-    var overlay = document.getElementById('mapPickerOverlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-        overlay.style.pointerEvents = 'none';
-    }
-    
-    unlockScroll();
-    document.documentElement.style.height = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    if (typeof window._pickerScrollY === 'number') {
-        window.scrollTo(0, window._pickerScrollY);
-        window._pickerScrollY = undefined;
-    }
-
-    var info = document.getElementById('pickerLocationInfo');
-    if (info) info.style.display = 'none';
-
-    selectedPickerLocation = null;
-    pickerLatLng = null;
-}
-
-
-function reverseGeocodeLocation(lat, lng) {
-    var url = 'https://nominatim-disabled.invalid/reverse?lat=' + lat + '&lon=' + lng +
-              '&format=json&addressdetails=1&zoom=18&accept-language=en';
-
-    fetch(url, {
-        credentials: 'omit',
-         headers:{ 'Accept-Language':'en' } })
-        .then(function(r){ return r.json(); })
-        .then(function(data) {
-            var a = data.address || {};
-            var displayName = data.display_name || '';
-
-            var raw = [
-                a.state_district || a.county || a.state || '',
-                a.county         || a.city_district || '',
-                a.suburb         || a.city_district || a.quarter || '',
-                a.neighbourhood  || a.quarter || '',
-                a.hamlet         || a.village || a.residential || a.road || ''
-            ].map(function(v){ return (v || '').trim(); });
-
-            var seen = {};
-            raw = raw.map(function(v) {
-                if (!v) return '';
-                var k = v.toLowerCase();
-                if (seen[k]) return '';
-                seen[k] = true;
-                return v;
-            });
-
-            var district  = findBestMatchLocation(raw[0]) || raw[0];
-            var county    = raw[1];
-            var subCounty = raw[2];
-            var parish    = raw[3];
-            var village   = raw[4];
-
-            selectedPickerLocation = {
-                lat:lat, lng:lng,
-                district:district, county:county,
-                subCounty:subCounty, parish:parish, village:village,
-                displayName:displayName
-            };
-
-            var addrEl  = document.getElementById('pickerAddressDisplay');
-            var coordEl = document.getElementById('pickerCoordsDisplay');
-            var info    = document.getElementById('pickerLocationInfo');
-
-            var filled  = [district, county, subCounty, parish, village].filter(Boolean).length;
-            var allOk   = filled === 5;
-            var badge   = allOk
-                ? '<span style="background:#28a745;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;"> All 5 fields</span>'
-                : '<span style="background:#ff9800;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;"> ' + filled + '/5 fields</span>';
-
-            function _f(label, val) {
-                return '<b>' + label + ':</b> ' +
-                    (val || '<span style="color:#dc3545;font-style:italic;">not found</span>');
-            }
-
-            if (addrEl) {
-                addrEl.innerHTML =
-                    badge + '<br>' +
-                    '<span style="font-size:12px;line-height:1.9;">' +
-                    _f('District', district) + ' &bull; ' + _f('County', county) + ' &bull; ' +
-                    _f('Sub-county', subCounty) + '<br>' +
-                    _f('Parish', parish) + ' &bull; ' + _f('Village', village) +
-                    '</span>';
-                addrEl.style.color = '#333';
-            }
-            if (coordEl) {
-                coordEl.textContent = ' Lat: ' + lat.toFixed(5) + ', Lng: ' + lng.toFixed(5);
-            }
-            if (info) {
-                info.style.display = 'block';
-                info.style.background = allOk ? '#e8f5e9' : '#fff3cd';
-                info.style.borderLeft = '4px solid ' + (allOk ? '#28a745' : '#ff9800');
-            }
-            if (typeof showToast === 'function') {
-                showToast(allOk
-                    ? ' All 5 fields found! Tap \u201cUse This Location\u201d.'
-                    : ' Found ' + filled + '/5 fields \u2014 missing fields can be typed manually.');
-            }
-        })
-        .catch(function() {
-            var nearest;
-            try { nearest = (typeof findNearestDistrict === 'function') ? findNearestDistrict(lat, lng) : ''; } catch(e) { nearest = ''; }
-
-            selectedPickerLocation = {
-                lat:lat, lng:lng,
-                district: nearest || 'Unknown District',
-                county:'', subCounty:'', parish:'', village:'',
-                displayName:'Location at ' + lat.toFixed(4) + ', ' + lng.toFixed(4)
-            };
-
-            var addrEl = document.getElementById('pickerAddressDisplay');
-            var coordEl= document.getElementById('pickerCoordsDisplay');
-            var info   = document.getElementById('pickerLocationInfo');
-
-            if (addrEl)  { addrEl.innerHTML = ' <strong>' + (nearest || 'Unknown location') + '</strong> (approximate)'; addrEl.style.color = '#ff9800'; }
-            if (coordEl) { coordEl.textContent = ' Lat: ' + lat.toFixed(5) + ', Lng: ' + lng.toFixed(5); }
-            if (info)    { info.style.display = 'block'; info.style.background = '#fff3cd'; info.style.borderLeft = '4px solid #ff9800'; }
-
-            if (typeof showToast === 'function') showToast(' Could not get address. Using approximate location.');
-        });
-}
-function findBestMatchLocation(input) {
-    if (!input) return input;
-    var _ud = null;
-    try { _ud = ugandaDistricts; } catch(e) { _ud = null; }
-    if (!_ud) return input;
-    var lowerInput = input.toLowerCase().trim();
-    for (var i = 0; i < _ud.length; i++) {
-        if (_ud[i].toLowerCase() === lowerInput) return _ud[i];
-    }
-    for (var j = 0; j < _ud.length; j++) {
-        if (_ud[j].toLowerCase().indexOf(lowerInput) !== -1 || lowerInput.indexOf(_ud[j].toLowerCase()) !== -1) {
-            return _ud[j];
-        }
-    }
-    return input;
-}
+// Map picker (openMapPicker, closeMapPicker, reverseGeocodeLocation and the picker state) lives in maps.js.
 
 
 function fillCaseFormFromLocation(loc) {
@@ -1003,7 +828,7 @@ function fillCaseFormFromLocation(loc) {
                         if (banner) {
                             var pts = [loc.district, loc.county, loc.subCounty, loc.parish, loc.village].filter(Boolean);
                             banner.innerHTML = ' <strong>Location filled:</strong> ' +
-                                (pts.join(' \u203a ') || 'Location set') +
+                                escapeHtml(pts.join(' \u203a ') || 'Location set') +
                                 ' <span style="font-size:11px;color:#888;">(' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4) + ')</span>';
                             banner.style.display = 'block';
                         }
@@ -1036,7 +861,7 @@ function showLocationBanner(loc) {
         '<div>' +
             '<strong style="color:#28a745;"> Location filled from map</strong>' +
             '<div style="font-size:13px;color:#555;margin-top:3px;">' +
-                (locationText || 'Location selected') +
+                escapeHtml(locationText || 'Location selected') +
                 '<span style="font-size:11px;color:#888;margin-left:8px;">(' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4) + ')</span>' +
             '</div>' +
         '</div>' +
@@ -1073,9 +898,9 @@ function populateDistricts() {
     districtSelect.innerHTML = '<option value="">-- Select District --</option>';
     if (typeof ugandaDistricts !== 'undefined' && ugandaDistricts.length > 0) {
         ugandaDistricts.sort().forEach(district => {
-            districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+            districtSelect.innerHTML += `<option value="${escapeHtml(district)}">${escapeHtml(district)}</option>`;
         });
-        console.log(` Populated ${ugandaDistricts.length} districts`);
+        console.log(`Populated ${ugandaDistricts.length} districts`);
     } else {
         const fallbackDistricts = [
             "Kampala", "Wakiso", "Mukono", "Gulu", "Jinja", "Mbarara", 
@@ -1083,10 +908,17 @@ function populateDistricts() {
             "Fort Portal", "Entebbe", "Jinja", "Tororo", "Busia"
         ];
         fallbackDistricts.sort().forEach(district => {
-            districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+            districtSelect.innerHTML += `<option value="${escapeHtml(district)}">${escapeHtml(district)}</option>`;
         });
         console.warn('Using fallback districts list');
     }
+}
+
+// The district chosen above the county / sub-county / parish / village lists. Those lists are looked up by
+// their full path (district > county > sub-county > parish), never by a bare name.
+function regDistrictValue() {
+    const el = document.getElementById("district");
+    return el ? el.value : '';
 }
 
 function onDistrictChange() {
@@ -1111,7 +943,7 @@ function onDistrictChange() {
             countySelect.style.display = "block";
             countySelect.innerHTML = '<option value="">Select County</option>';
             ugandaCounties[district].forEach(county => {
-                countySelect.innerHTML += `<option value="${county}">${county}</option>`;
+                countySelect.innerHTML += `<option value="${escapeHtml(county)}">${escapeHtml(county)}</option>`;
             });
             countySelect.disabled = false;
             removeManualInput('county');
@@ -1141,11 +973,12 @@ function onCountyChange() {
     if (county) {
         subCountyContainer.style.display = "block";
         
-        if (ugandaSubCounties[county] && ugandaSubCounties[county].length > 0) {
+        const subCountyList = ugandaGeo.subCounties(regDistrictValue(), county);
+        if (subCountyList.length > 0) {
             subCountySelect.style.display = "block";
             subCountySelect.innerHTML = '<option value="">Select Sub-county</option>';
-            ugandaSubCounties[county].forEach(subCounty => {
-                subCountySelect.innerHTML += `<option value="${subCounty}">${subCounty}</option>`;
+            subCountyList.forEach(subCounty => {
+                subCountySelect.innerHTML += `<option value="${escapeHtml(subCounty)}">${escapeHtml(subCounty)}</option>`;
             });
             subCountySelect.disabled = false;
             showManualEntryOption('subCounty');
@@ -1172,11 +1005,12 @@ function onSubCountyChange() {
     if (subCounty) {
         parishContainer.style.display = "block";
         
-        if (ugandaParishes[subCounty] && ugandaParishes[subCounty].length > 0) {
+        const parishList = ugandaGeo.parishes(regDistrictValue(), getLocationValue('county'), subCounty);
+        if (parishList.length > 0) {
             parishSelect.style.display = "block";
             parishSelect.innerHTML = '<option value="">Select Parish</option>';
-            ugandaParishes[subCounty].forEach(parish => {
-                parishSelect.innerHTML += `<option value="${parish}">${parish}</option>`;
+            parishList.forEach(parish => {
+                parishSelect.innerHTML += `<option value="${escapeHtml(parish)}">${escapeHtml(parish)}</option>`;
             });
             parishSelect.disabled = false;
             showManualEntryOption('parishLocation');
@@ -1200,11 +1034,12 @@ function onParishChange() {
     if (parish) {
         villageContainer.style.display = "block";
         
-        if (ugandaVillages[parish] && ugandaVillages[parish].length > 0) {
+        const villageList = ugandaGeo.villages(regDistrictValue(), getLocationValue('county'), getLocationValue('subCounty'), parish);
+        if (villageList.length > 0) {
             villageSelect.style.display = "block";
             villageSelect.innerHTML = '<option value="">Select Village</option>';
-            ugandaVillages[parish].forEach(village => {
-                villageSelect.innerHTML += `<option value="${village}">${village}</option>`;
+            villageList.forEach(village => {
+                villageSelect.innerHTML += `<option value="${escapeHtml(village)}">${escapeHtml(village)}</option>`;
             });
             villageSelect.disabled = false;
             showManualEntryOption('villageLocation');
@@ -1244,7 +1079,7 @@ function showManualEntryOption(fieldId) {
     const optionHtml = `
         <div id="${fieldId}_manual_option" style="margin-top: 5px; font-size: 12px;">
             <span style="color: #999;">Can't find your ${label.toLowerCase()}?</span>
-            <span onclick="enableManualInput('${fieldId}')" style="color: #1a4080; cursor: pointer; font-weight: bold;"> Type it manually →</span>
+            <span onclick="enableManualInput(${escapeHtml(JSON.stringify(String(fieldId)))})" style="color: #1a4080; cursor: pointer; font-weight: bold;"> Type it manually →</span>
         </div>
     `;
     

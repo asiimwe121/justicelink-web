@@ -1,0 +1,11 @@
+.git
+.github
+target
+logs
+backups
+mysql-init
+legal-knowledge
+.env
+*.zip
+**/*.log
+CHANGES.md

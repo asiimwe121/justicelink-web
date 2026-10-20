@@ -12,7 +12,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="images/justicelink-icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="images/justicelink-icon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="images/justicelink-icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/justicelink-apple-touch-180.png">
 
 
 <link rel="manifest" href="/manifest.json">
@@ -116,13 +116,21 @@ window.__lcdjpLoaderStart = Date.now();
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" async></script>
 <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
-    <link rel="stylesheet" href="dashboard.css?v=20260930-ai-panel-safe-area-1">
-    <link rel="stylesheet" href="forms.css?v=20261002-reset-lockout-1">
-    <link rel="stylesheet" href="maps.css?v=20260820-mobile-sidebar-fix-1">
-    <link rel="stylesheet" href="mobile.css?v=20261002-reset-lockout-1">
-    <link rel="stylesheet" href="tables.css?v=20260916-readonly-cases-1">
-    <link rel="stylesheet" href="theme.css?v=20261002-reset-lockout-1">
-    <script src="theme.js?v=20260819-dark-mode-1"></script>
+    <link rel="stylesheet" href="dashboard-part1.css?v=d903fe6dc8">
+    <link rel="stylesheet" href="dashboard-part2.css?v=d79d2b5b74">
+    <link rel="stylesheet" href="dashboard-part3.css?v=38cca605e2">
+    <link rel="stylesheet" href="dashboard-part4.css?v=95412a6804">
+    <link rel="stylesheet" href="forms.css?v=lgcaptcha03">
+    <link rel="stylesheet" href="datePicker.css?v=dp02">
+    <link rel="stylesheet" href="supportHelp.css?v=sh05">
+    <link rel="stylesheet" href="maps.css?v=669004361e">
+    <link rel="stylesheet" href="mobile-part1.css?v=2e1585928c">
+    <link rel="stylesheet" href="mobile-part2.css?v=d82cb1dee9">
+    <link rel="stylesheet" href="mobile-part3.css?v=fba4e87beb">
+    <link rel="stylesheet" href="mobile-part4.css?v=6e5a20e1e8">
+    <link rel="stylesheet" href="tables.css?v=4aa0b86f33">
+    <link rel="stylesheet" href="theme.css?v=e2351eb96c">
+    <script src="theme.js?v=54edc58c4a"></script>
     <style>
     #appLoader {
         position: fixed; inset: 0;
@@ -269,15 +277,16 @@ window.__lcdjpLoaderStart = Date.now();
                     <p class="lg-sub">Sign in to your account to continue.</p>
                     <hr class="lg-rule">
 
+                    <form id="loginForm" novalidate onsubmit="loginUser(); return false;">
                     <label class="lg-label" for="username">Username</label>
-                    <input type="text" id="username" class="lg-input" placeholder="Enter your username" autocapitalize="none" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();loginUser();}">
+                    <input type="text" id="username" class="lg-input" placeholder="Enter your username" enterkeyhint="next" autocapitalize="none" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();loginUser();}">
 
                     <div class="lg-label-row">
                         <label class="lg-label" for="password">Password</label>
                         <a class="lg-forgot" href="#" onclick="showForgotPassword(); return false;">Forgot Password?</a>
                     </div>
                     <div class="lg-pw">
-                        <input type="password" id="password" class="lg-input" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();loginUser();}">
+                        <input type="password" id="password" class="lg-input" placeholder="Enter your password" enterkeyhint="go" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();loginUser();}">
                         <button class="lg-pw-toggle" type="button" aria-label="Show password" title="Show password" onclick="togglePwVisibility('password', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     </div>
 
@@ -288,7 +297,10 @@ window.__lcdjpLoaderStart = Date.now();
 
                     <div id="lgRecaptcha" class="lg-recaptcha" style="display:none;"></div>
 
-                    <button class="btn login-btn lg-submit" type="button" onclick="loginUser()">Login</button>
+                    <div id="loginError" class="lg-error" role="alert" aria-live="assertive" style="display:none; margin-top:16px;"></div>
+
+                    <button class="btn login-btn lg-submit" type="submit">Login</button>
+                    </form>
 
                     <div class="lg-or"><span>New to JusticeLink?</span></div>
                     <button class="btn register-btn lg-secondary" type="button" onclick="showRegister()">Create an account</button>
@@ -296,16 +308,15 @@ window.__lcdjpLoaderStart = Date.now();
             </div>
         </div>
     </div>
-    <footer style="max-width:1100px; margin:0 auto; padding:6px 24px 28px; display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:center; font-size:13px;">
-        <a href="solutions.html" style="color:#7a8bab; text-decoration:none;">Solutions</a>
-        <a href="who-we-are.html" style="color:#7a8bab; text-decoration:none;">Who We Are</a>
-        <a href="careers.html" style="color:#7a8bab; text-decoration:none;">Careers</a>
-        <a href="contact.html" style="color:#7a8bab; text-decoration:none;">Contact</a>
-        <a href="login.html" style="color:#7a8bab; text-decoration:none;">Login</a>
-        <a href="terms.html" style="color:#7a8bab; text-decoration:none;">Terms</a>
-        <a href="privacy.html" style="color:#7a8bab; text-decoration:none;">Privacy</a>
-        <a href="cookies.html" style="color:#7a8bab; text-decoration:none;">Cookies</a>
-        <span style="color:#a6b2c9;">&copy; 2026 JusticeLink Uganda</span>
+    <footer class="lg-footer">
+        <nav class="lg-footer-links" aria-label="Legal and help">
+            <a href="contact.html">Contact</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="cookies.html">Cookies</a>
+            <a href="/download.html" class="lg-footer-app">Get the App</a>
+        </nav>
+        <span class="lg-footer-copy">&copy; 2026 JusticeLink Uganda</span>
     </footer>
 </div>
 
@@ -399,7 +410,7 @@ window.__lcdjpLoaderStart = Date.now();
                 <div id="err_username" class="field-err">Please choose a valid username (3–40 characters, no spaces).</div>
 
                 <label style="font-weight:600; display:block; margin-top:14px;">Date of Birth <span style="color:red;">*</span></label>
-                <input id="reg_dob" aria-label="Date of birth" class="input-box" type="date" style="cursor:pointer;" max="">
+                <input id="reg_dob" aria-label="Date of birth" class="input-box" type="date" data-datepicker style="cursor:pointer;">
                 <div id="err_dob" class="field-err">Please select your date of birth.</div>
 
                 <label style="font-weight:600; display:block; margin-top:14px;">Gender <span style="color:red;">*</span></label>
@@ -558,6 +569,53 @@ window.__lcdjpLoaderStart = Date.now();
     </div>
 
     
+    <div id="accountTypePage" class="page" style="display:none;">
+        <div class="form-page">
+            <h2 style="text-align:center; color:#1a4080; font-size:26px; margin-bottom:8px;">CREATE ACCOUNT</h2>
+            <p style="text-align:center; color:#666; margin-bottom:20px; font-size:14px;">Who are you signing up as?</p>
+
+            <div style="display:grid; gap:12px;">
+                <button type="button" onclick="lcdjpChooseCitizen()" style="text-align:left; padding:16px; background:#fff; border:1px solid #c5d5f5; border-radius:10px; cursor:pointer; font-family:inherit;">
+                    <strong style="display:block; color:#1a4080; font-size:16px;">I am a citizen</strong>
+                    <span style="color:#555; font-size:13px;">Report a case and get legal help. You can register right now.</span>
+                </button>
+                <button type="button" onclick="lcdjpChooseLc()" style="text-align:left; padding:16px; background:#fff; border:1px solid #c5d5f5; border-radius:10px; cursor:pointer; font-family:inherit;">
+                    <strong style="display:block; color:#1a4080; font-size:16px;">I am a Local Council (LC) leader</strong>
+                    <span style="color:#555; font-size:13px;">LC accounts are opened by invitation. You request a link and an administrator decides.</span>
+                </button>
+            </div>
+
+            <button class="btn back-btn" onclick="lcdjpBackToLoginFromSignup()" style="margin-top:16px;">Back to Login</button>
+        </div>
+    </div>
+
+    <div id="lcRequestPage" class="page" style="display:none;">
+        <div class="form-page">
+            <h2 style="text-align:center; color:#1a4080; font-size:26px; margin-bottom:8px;">REQUEST A SIGN-UP LINK</h2>
+
+            <div id="lcReqFormBox">
+                <p style="text-align:center; color:#666; margin-bottom:20px; font-size:14px;">Tell us where you serve and your email. An administrator will look at your request and, if approved, email you a link to create your LC account.</p>
+
+                <label style="font-weight:600; display:block; margin-top:4px;">District <span style="color:red;">*</span></label>
+                <select id="lcReqDistrict" aria-label="District you serve in" class="input-box" style="cursor:pointer; background:white; -webkit-appearance:auto; appearance:auto;"></select>
+
+                <label style="font-weight:600; display:block; margin-top:14px;">Email Address <span style="color:red;">*</span></label>
+                <input id="lcReqEmail" aria-label="Email address" class="input-box" type="email" placeholder="Email address" maxlength="120" autocomplete="email">
+
+                <div id="lcReqMsg" role="alert" style="display:none; margin-top:12px; padding:10px 12px; border-radius:8px; font-size:13.5px;"></div>
+
+                <button id="lcReqBtn" class="btn login-btn" style="margin-top:20px;" onclick="lcdjpSubmitLinkRequest()">Request link</button>
+                <button class="btn back-btn" onclick="lcdjpShowAccountTypeChooser()" style="margin-top:8px;">Back</button>
+            </div>
+
+            <div id="lcReqDoneBox" style="display:none; text-align:center; padding:12px 0;">
+                <h3 style="color:#2e7d32; margin-bottom:8px;">Request received</h3>
+                <p id="lcReqDoneText" style="color:#4a4a6a; font-size:14px; line-height:1.6;"></p>
+                <button class="btn login-btn" style="margin-top:16px; width:100%;" onclick="lcdjpBackToLoginFromSignup()">Back to Login</button>
+            </div>
+        </div>
+    </div>
+
     <div id="forgotPage" class="page" style="display:none;">
         <div class="form-page">
             <h2> RESET PASSWORD</h2>
@@ -848,28 +906,28 @@ window.__lcdjpLoaderStart = Date.now();
                     </div>
                 </li>
                 <li>
-                    <span class="fl-icon" style="color:#ccc;">&#128274;</span>
+                    <span class="fl-icon" style="color:#6b7280;">&#128274;</span>
                     <div style="opacity:0.6;">
                         <strong>Official Case Submission</strong>
                         <p style="font-size:12px; color:#4a4a6a;">Requires identity verification</p>
                     </div>
                 </li>
                 <li>
-                    <span class="fl-icon" style="color:#ccc;">&#128274;</span>
+                    <span class="fl-icon" style="color:#6b7280;">&#128274;</span>
                     <div style="opacity:0.6;">
                         <strong>Evidence Upload</strong>
                         <p style="font-size:12px; color:#4a4a6a;">Requires identity verification</p>
                     </div>
                 </li>
                 <li>
-                    <span class="fl-icon" style="color:#ccc;">&#128274;</span>
+                    <span class="fl-icon" style="color:#6b7280;">&#128274;</span>
                     <div style="opacity:0.6;">
                         <strong>Direct Chat with Officials</strong>
                         <p style="font-size:12px; color:#4a4a6a;">Requires identity verification</p>
                     </div>
                 </li>
                 <li>
-                    <span class="fl-icon" style="color:#ccc;">&#128274;</span>
+                    <span class="fl-icon" style="color:#6b7280;">&#128274;</span>
                     <div style="opacity:0.6;">
                         <strong>Legal Assistance Requests</strong>
                         <p style="font-size:12px; color:#4a4a6a;">Requires identity verification</p>
@@ -1542,6 +1600,7 @@ window.__lcdjpLoaderStart = Date.now();
 
         
         <div id="daCasesContainer" style="display:none;">
+            <div id="daPendingCasesHost"></div>
             <div class="case-browser">
                 <div class="case-browser-head">
                     <div>
@@ -1818,6 +1877,9 @@ window.__lcdjpLoaderStart = Date.now();
             <div class="cm-menu-item" onclick="openBlog(); closeCmQuickMenu();">
               Blog
             </div>
+            <div class="cm-menu-item" onclick="if (window.JusticeLinkDrafts) window.JusticeLinkDrafts.open(); closeCmQuickMenu();">
+              Case drafts <span id="jlOdMenuBadge" style="display:none;margin-left:6px;background:#ffb300;color:#1a1a2e;border-radius:999px;min-width:20px;padding:1px 6px;font-size:12px;text-align:center;"></span>
+            </div>
           </div>
         </div>
 
@@ -1951,22 +2013,21 @@ window.__lcdjpLoaderStart = Date.now();
     
     
     <button id="chatMobileBtn" onclick="toggleChat()" data-translate="contact_support" aria-label="Contact Support">
-    <span style="font-size:14px;"></span> <span data-translate="contact_support">Contact Support</span>
+    <span style="display:inline-flex;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> <span data-translate="contact_support">Contact Support</span>
 </button>
 
 <div id="chatLabels" style="background:white; border-radius:14px; padding:10px 14px 14px 14px; box-shadow:0 4px 16px rgba(0,0,0,0.08); border:1px solid rgba(26,64,128,0.08); max-width:160px; transition:all 0.3s ease;">
         <div style="position:relative; margin-bottom:5px;">
-            <div style="font-size:30px; opacity:0.08; position:absolute; top:-8px; right:-5px; user-select:none;"></div>
             <div style="font-weight:700; font-size:13px; color:#1a1a2e; position:relative; z-index:1;">Need Help?</div>
         </div>
         
-        <div style="font-size:11px; color:#666; line-height:1.3; margin-bottom:8px; padding-left:2px;">
+        <div style="font-size:12px; color:#666; line-height:1.3; margin-bottom:8px; padding-left:2px;">
             We're here to support you.
         </div>
         
         <button onclick="toggleChat()" 
-                style="width:100%; background:#1a4080; color:white; border:none; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; box-shadow:0 2px 10px rgba(26,64,128,0.2); transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:5px;">
-            <span style="font-size:13px;"></span> Contact Support
+                style="width:100%; background:#1a4080; color:white; border:none; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; box-shadow:0 2px 10px rgba(26,64,128,0.2); transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:5px;">
+            <span style="display:inline-flex;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Contact Support
         </button>
     </div>
 
@@ -1976,16 +2037,16 @@ window.__lcdjpLoaderStart = Date.now();
         
         <div style="background:#1a4080; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); flex-shrink:0;">
             <div style="display:flex; align-items:center; gap:7px;">
-                <div style="width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:12px; color:white;"></div>
+                <img src="images/justicelink-icon-512.png" alt="JusticeLink logo" width="30" height="30" style="width:30px; height:30px; border-radius:50%; background:white; padding:2px; object-fit:contain; flex:0 0 auto; display:block;">
                 <div>
-                    <div style="font-weight:700; font-size:12px; color:white;">Need Help?</div>
-                    <div style="font-size:8px; color:rgba(255,255,255,0.7); display:flex; align-items:center; gap:3px;">
-                        <span style="display:inline-block; width:4px; height:4px; border-radius:50%; background:#4caf50;"></span>
+                    <div style="font-weight:700; font-size:15px; color:white;">JusticeLink</div>
+                    <div style="font-size:12px; color:rgba(255,255,255,0.85); display:flex; align-items:center; gap:3px;">
+                        <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#4caf50;"></span>
                         Online
                     </div>
                 </div>
             </div>
-            <button onclick="toggleChat()" style="background:rgba(255,255,255,0.15); border:none; color:white; width:22px; height:22px; border-radius:50%; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">
+            <button onclick="toggleChat()" style="background:rgba(255,255,255,0.15); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" aria-label="Close chat">
                 ✕
             </button>
         </div>
@@ -1993,56 +2054,55 @@ window.__lcdjpLoaderStart = Date.now();
         
         <div style="padding:3px 12px; background:#fafafa; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
             <div style="display:flex; align-items:center; gap:4px;">
-                <span id="chatUserName" style="font-size:10px; font-weight:600; color:#333;">You</span>
-                <span id="chatUserRole" style="font-size:7px; background:#d8e8ff; color:#1a4080; padding:1px 6px; border-radius:6px; font-weight:500;"></span>
+                <span id="chatUserName" style="font-size:13px; font-weight:600; color:#333;">You</span>
+                <span id="chatUserRole" style="font-size:12px; background:#d8e8ff; color:#1a4080; padding:1px 6px; border-radius:6px; font-weight:500;"></span>
             </div>
-            <div style="font-size:8px; color:#bbb;">
+            <div style="font-size:12px; color:#6b7280;">
                 <span id="chatTimeDisplay">Today</span>
             </div>
         </div>
         
         
         <div id="chatMessages" style="flex:1; padding:8px 12px; overflow-y:auto; background:#f8f9fa; min-height:150px; max-height:180px;">
-            <div class="welcome-msg" style="text-align:center; color:#bbb; padding:15px 0; font-size:10px; display:flex; flex-direction:column; align-items:center; gap:3px;">
-                <div style="font-size:22px; opacity:0.4;"></div>
-                <div style="font-weight:500; color:#999; font-size:10px;">Welcome to LCDJP Support</div>
-                <div style="font-size:9px; color:#ccc;">Send us a message</div>
+            <div class="welcome-msg" style="text-align:center; color:#6b7280; padding:15px 0; font-size:13px; display:flex; flex-direction:column; align-items:center; gap:3px;">
+                <div style="font-weight:500; color:#4b5563; font-size:13px;">Welcome to LCDJP Support</div>
+                <div style="font-size:13px; color:#6b7280;">Send us a message</div>
             </div>
         </div>
         
         
         <div id="chatInputRow" style="padding:6px 10px; border-top:1px solid #f0f0f0; background:white; display:flex; gap:4px; align-items:center; flex-shrink:0;">
-            <button id="voiceRecordBtn" onclick="toggleVoiceRecording()" 
-                    style="padding:3px 5px; background:transparent; color:#999; border:none; border-radius:50%; cursor:pointer; font-size:12px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                🎤
+            <button id="voiceRecordBtn" onclick="toggleVoiceRecording()" aria-label="Record a voice message" aria-pressed="false"
+                    style="padding:0; background:transparent; color:#6b7280; border:none; border-radius:50%; cursor:pointer; font-size:13px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
             </button>
             
             <input type="text" id="chatInput" aria-label="Message" placeholder="Message..." 
-                   style="flex:1; padding:4px 10px; border:1px solid #e8e8e8; border-radius:16px; font-size:10px; outline:none; background:#f5f5f5; transition:all 0.2s; min-width:50px; height:28px;"
+                   style="flex:1; padding:4px 10px; border:1px solid #e8e8e8; border-radius:16px; font-size:16px; outline:none; background:#f5f5f5; transition:all 0.2s; min-width:50px; height:36px;"
                    onfocus="this.style.borderColor='#1a4080'; this.style.background='white';"
                    onblur="this.style.borderColor='#e8e8e8'; this.style.background='#f5f5f5';"
                    onkeypress="if(event.key==='Enter') sendChatMessage()">
             
             <button onclick="sendChatMessage()" 
-                    style="padding:4px 10px; background:#1a4080; color:white; border:none; border-radius:16px; cursor:pointer; font-weight:600; font-size:10px; transition:all 0.3s; white-space:nowrap; flex-shrink:0; box-shadow:0 2px 6px rgba(26,64,128,0.15); height:28px;">
+                    style="padding:4px 10px; background:#1a4080; color:white; border:none; border-radius:16px; cursor:pointer; font-weight:600; font-size:13px; transition:all 0.3s; white-space:nowrap; flex-shrink:0; box-shadow:0 2px 6px rgba(26,64,128,0.15); height:36px;">
                 Send
             </button>
         </div>
 
         
-        <div id="voiceRecordingStatus" style="display:none; padding:3px 10px; background:#fff8e1; border-top:1px solid #ffc107; text-align:center; font-size:9px; color:#856404; flex-shrink:0;">
+        <div id="voiceRecordingStatus" style="display:none; padding:3px 10px; background:#fff8e1; border-top:1px solid #ffc107; text-align:center; font-size:13px; color:#856404; flex-shrink:0;">
             <span id="voiceTimer"> Recording... 0s</span>
-            <button onclick="stopVoiceRecording()" style="margin-left:4px; padding:2px 8px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-size:8px;">Stop</button>
+            <button onclick="stopVoiceRecording()" style="margin-left:4px; padding:2px 8px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">Stop</button>
         </div>
         
         
-        <div id="chatFooterBar" style="padding:3px 10px; background:white; font-size:7px; color:#ccc; text-align:center; border-top:1px solid #f0f0f0; display:flex; justify-content:center; gap:6px; flex-shrink:0;">
+        <div id="chatFooterBar" style="padding:3px 10px; background:white; font-size:12px; color:#6b7280; text-align:center; border-top:1px solid #f0f0f0; display:flex; justify-content:center; gap:6px; flex-shrink:0;">
             <span id="adminOnlineStatus" style="display:flex; align-items:center; gap:2px;">
-                <span style="display:inline-block; width:3px; height:3px; border-radius:50%; background:#4caf50;"></span>
+                <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:#4caf50;"></span>
                 Online
             </span>
-            <span style="color:#ddd;">•</span>
-            <span style="color:#bbb;">Secure</span>
+            <span style="color:#9ca3af;">•</span>
+            <span style="color:#6b7280;">Secure</span>
         </div>
     </div>
 </div>            
@@ -2389,6 +2449,7 @@ window.__lcdjpLoaderStart = Date.now();
 
                     
                     <div id="adminCasesContainer" style="display:none;">
+                        <div id="adminPendingCasesHost"></div>
                         <div class="case-browser">
                             <div class="case-browser-head">
                                 <div>
@@ -2775,6 +2836,7 @@ window.__lcdjpLoaderStart = Date.now();
                     <div id="trackingResultContainer" style="margin-top: 25px;"></div>
                     <div id="messagingContainer" style="display:none; margin-top: 30px; border-top: 2px solid #1a4080; padding-top: 20px;">
                         <h3>Direct Message to Lawyer</h3>
+                        <div id="citizenMessageThread" role="log" aria-live="polite" aria-label="Messages on this case" style="max-height:260px; overflow-y:auto; background:#f8f9fa; border:1px solid #e3e7f0; border-radius:10px; padding:10px 12px; margin-bottom:12px; display:none;"></div>
                         <textarea id="citizenMessageToLawyer" aria-label="Message to lawyer" class="input-box" rows="3" placeholder="Type your message to the lawyer here..."></textarea>
                         <button class="btn login-btn" style="max-width:200px;" onclick="sendCitizenMessage()">Send Message</button>
                     </div>
@@ -2801,7 +2863,7 @@ window.__lcdjpLoaderStart = Date.now();
                         <div id="lawyerNotificationsPageList" style="max-height:500px; overflow-y:auto;">
                             
                             <div style="text-align:center; padding:60px 20px; color:#999;">
-                                <div style="font-size:48px; margin-bottom:10px; color:#ccc;">&#8203;</div>
+                                <div style="font-size:48px; margin-bottom:10px; color:#6b7280;">&#8203;</div>
                                 <p>No notifications yet</p>
                             </div>
                         </div>
@@ -2880,9 +2942,9 @@ window.__lcdjpLoaderStart = Date.now();
     <div class="ai-header">
       <div class="ai-header-top">
         <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:38px; height:38px; background:rgba(255,255,255,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; border:1.5px solid rgba(255,255,255,0.3);"></div>
+          <img src="images/justicelink-icon-512.png" alt="JusticeLink logo" width="38" height="38" style="width:38px; height:38px; border-radius:50%; background:white; padding:3px; object-fit:contain; flex:0 0 auto; display:block; border:1.5px solid rgba(255,255,255,0.3);">
           <div>
-            <div id="aiHeaderTitle" style="font-weight:700; font-size:16px; color:white;">Emergency Assistant</div>
+            <div id="aiHeaderTitle" style="font-weight:700; font-size:16px; color:white;">JusticeLink</div>
             <div style="font-size:11px; color:rgba(255,255,255,0.75); display:flex; align-items:center; gap:5px;">
               <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#4caf50; animation:ai-pulse 2s ease-in-out infinite;"></span>
               <span id="aiHeaderSubtitle">Online &middot; Ready to help</span>
@@ -2912,28 +2974,50 @@ window.__lcdjpLoaderStart = Date.now();
   </div>
 </div>
 
-    <script src="config.js?v=20260916-verification-restore-1"></script>
-<script src="utils.js?v=20260827-scroll-lock-refactor-2"></script>
+    <script src="debugPanel.js?v=dbg01"></script>
+    <script src="config.js?v=nolegalda01"></script>
+<script src="utils.js?v=files01a1"></script>
+<script src="datePicker.js?v=dp01"></script>
 
-<script src="notifications.js?v=20260919-notif-403-1"></script>
-<script src="auth.js?v=20261002-reset-lockout-1"></script>
-<script src="registration.js?v=20261002-reset-lockout-1"></script>
-<script src="verification.js?v=20260827-scroll-lock-refactor-2"></script>
-<script src="citizen.js?v=20260913-ui-fixes-2"></script>
-<script src="lawyer.js?v=20260827-scroll-lock-refactor-2"></script>
-<script src="caseMatching.js?v=20260807-jwt-auth-fix-1"></script>
-<script src="messaging.js?v=20260919-notif-403-1"></script>
-<script src="lc.js?v=20260919-lc-desk-modern-2"></script>
-<script src="dashboard.js?v=20260919-lc-desk-modern-1"></script>
-<script src="accountVerification.js?v=20260914-otp-account-creation-1"></script>
-<script src="caseBrowser.js?v=20260916-readonly-cases-1"></script>
-<script src="districtAdmin.js?v=20261004-deactivate-1"></script>
-<script src="systemAdmin.js?v=20261004-deactivate-1"></script>
-<script src="analytics.js?v=20260807-jwt-auth-fix-1"></script>
-<script src="reports.js?v=20260916-case-export-message-1"></script>
-<script src="maps.js?v=20260827-scroll-lock-refactor-1"></script>
-<script src="app.js?v=20261002-reset-lockout-1"></script>
-<script src="machineTranslate.js?v=20261004-mt-1"></script>
-<script src="pwa.js?v=20260901-pwa-install-1"></script>
+<script src="notifications.js?v=09cd08a730"></script>
+<script src="uganda-geo.js?v=5a5cbe5a3c" defer></script>
+<script src="auth-part1.js?v=c77a2d6f94"></script>
+<script src="auth-part2.js?v=9f32e445f4"></script>
+<script src="auth-part3.js?v=de222f03ef"></script>
+<script src="registration.js?v=00ce530efe"></script>
+<script src="verification.js?v=ebe71570bd"></script>
+<script src="citizen.js?v=files01a1"></script>
+<script src="lawyer.js?v=48e9bf8651"></script>
+<script src="caseMatching.js?v=048abbd253"></script>
+<script src="messaging-part1.js?v=232a812a66"></script>
+<script src="messaging-part2.js?v=5f9d4a1754"></script>
+<script src="messaging-part3.js?v=cdabeb065f"></script>
+<script src="lc.js?v=f3e292ef0b"></script>
+<script src="dashboard-core.js?v=6022e91a4c"></script>
+<script src="dashboard-citizen-home.js?v=0034bb5837"></script>
+<script src="dashboard-admin-search.js?v=e8649b94c2"></script>
+<script src="dashboard-mobile-shell.js?v=9544b9fda4"></script>
+<script src="dashboard-mobile-overrides.js?v=5c8c098410"></script>
+<script src="dashboard-mobile-case-tracking.js?v=940db095f8"></script>
+<script src="locationPicker.js?v=578f2411ae"></script>
+<script src="dashboard-ai-assistant.js?v=0aeab90d7f"></script>
+<script src="dashboard-citizen-desktop.js?v=8a01391f41"></script>
+<script src="dashboard-citizen-alerts.js?v=b87311b044"></script>
+<script src="dashboard-verification-and-voice.js?v=20debd50cc"></script>
+<script src="accountVerification.js?v=04b05a49ca"></script>
+<script src="caseBrowser.js?v=1717daf6e9"></script>
+<script src="pendingCases.js?v=pend01"></script>
+<script src="districtAdmin.js?v=a7ec649868"></script>
+<script src="systemAdmin.js?v=822d62efef"></script>
+<script src="lcInvites.js?v=lci01"></script>
+<script src="analytics.js?v=57fcaeaf4c"></script>
+<script src="reports.js?v=c28ab59d0f"></script>
+<script src="maps.js?v=7643e7ce0e"></script>
+<script src="app.js?v=d800147469"></script>
+<script src="machineTranslate.js?v=9f4f84d18d"></script>
+<script src="offlineDrafts.js?v=7f54cc66ca"></script>
+<script src="quickExit.js?v=05da53ad82"></script>
+<script src="pwa.js?v=6b3f0c91e5"></script>
+<script src="supportHelp.js?v=sh06"></script>
 </body>
 </html>

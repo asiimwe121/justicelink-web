@@ -106,37 +106,37 @@ async function updateLcDashboardCases() {
         const isMine = c.assigned_lc === currentUsername || c.current_handler === currentUsername;
         const isUnclaimed = !c.assigned_lc && !c.current_handler;
 
-        const locBadge = `${_cVillage || 'N/A'}, ${_cParish || _cDistrict || 'N/A'}`;
+        const locBadge = `${escapeHtml(_cVillage || 'N/A')}, ${escapeHtml(_cParish || _cDistrict || 'N/A')}`;
 
         let actionsHtml, statusBadge;
         if (isResolved) {
             statusBadge = '<span class="badge badge-resolved">Resolved</span>';
-            actionsHtml = `<button onclick="viewCase('${caseRef}')" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>`;
+            actionsHtml = `<button onclick="viewCase(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>`;
         } else if (isMine) {
             activeCases++;
-            statusBadge = `<span class="badge badge-success">${c.status || 'Accepted by LC'}</span>`;
+            statusBadge = `<span class="badge badge-success">${escapeHtml(c.status || 'Accepted by LC')}</span>`;
             actionsHtml = `
-                <button onclick="viewCase('${caseRef}')" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>
-                <button onclick="resolveCase('${caseRef}')" class="btn btn-sm" style="background:#1a237e;color:white;border:none;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Resolve</button>
-                <button onclick="showForwardRouterForm('${caseRef}')" class="btn btn-sm" style="background:#af7100;color:white;border:none;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Escalate</button>
-                <button onclick="lawyerSendMessage('${caseRef}')" class="btn btn-sm" style="background:#1a237e;color:white;border:none;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Message</button>`;
+                <button onclick="viewCase(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>
+                <button onclick="resolveCase(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#1a237e;color:white;border:none;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Resolve</button>
+                <button onclick="showForwardRouterForm(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#af7100;color:white;border:none;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Escalate</button>
+                <button onclick="lawyerSendMessage(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#1a237e;color:white;border:none;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Message</button>`;
         } else if (isUnclaimed) {
             activeCases++;
-            statusBadge = `<span class="badge badge-info">${c.status || 'Pending'}</span>`;
+            statusBadge = `<span class="badge badge-info">${escapeHtml(c.status || 'Pending')}</span>`;
             actionsHtml = `
-                <button onclick="viewCase('${caseRef}')" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>
-                <button onclick="acceptLcCase('${caseRef}')" class="btn btn-sm btn-success" style="padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Accept</button>`;
+                <button onclick="viewCase(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>
+                <button onclick="acceptLcCase(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm btn-success" style="padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">Accept</button>`;
         } else {
             activeCases++;
-            statusBadge = `<span class="badge badge-info">${c.status || 'Assigned'}</span>`;
-            actionsHtml = `<button onclick="viewCase('${caseRef}')" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>`;
+            statusBadge = `<span class="badge badge-info">${escapeHtml(c.status || 'Assigned')}</span>`;
+            actionsHtml = `<button onclick="viewCase(${escapeHtml(JSON.stringify(caseRef))})" class="btn btn-sm" style="background:#fff;color:#1a237e;border:1px solid #1a237e;padding:2px 6px;font-size:11px;border-radius:3px;margin:1px;">View</button>`;
         }
 
         _rowsHtml += `
             <tr>
-                <td><strong>${caseRef}</strong></td>
-                <td>${c.case_type || 'N/A'}</td>
-                <td>${c.citizen_name || c.citizen_id || 'Unknown'}</td>
+                <td><strong>${escapeHtml(caseRef)}</strong></td>
+                <td>${escapeHtml(c.case_type || 'N/A')}</td>
+                <td>${escapeHtml(c.citizen_name || c.citizen_id || 'Unknown')}</td>
                 <td>${locBadge}</td>
                 <td>${statusBadge}</td>
                 <td>${actionsHtml}</td>
@@ -154,30 +154,30 @@ async function updateLcDashboardCases() {
             };
             let _mActs;
             if (isResolved) {
-                _mActs = _lmPill('View', '#16305c', "viewCase('" + caseRef + "')", false);
+                _mActs = _lmPill('View', '#16305c', "viewCase(" + escapeHtml(JSON.stringify(caseRef)) + ")", false);
             } else if (isMine) {
-                _mActs = _lmPill('View', '#16305c', "viewCase('" + caseRef + "')", false) +
-                    _lmPill('Message', '#2c5fa3', "lawyerSendMessage('" + caseRef + "')", false) +
-                    _lmPill('Resolve', '#3a6bc7', "resolveCase('" + caseRef + "')", false) +
-                    _lmPill('Escalate', '#af7100', "showForwardRouterForm('" + caseRef + "')", false);
+                _mActs = _lmPill('View', '#16305c', "viewCase(" + escapeHtml(JSON.stringify(caseRef)) + ")", false) +
+                    _lmPill('Message', '#2c5fa3', "lawyerSendMessage(" + escapeHtml(JSON.stringify(caseRef)) + ")", false) +
+                    _lmPill('Resolve', '#3a6bc7', "resolveCase(" + escapeHtml(JSON.stringify(caseRef)) + ")", false) +
+                    _lmPill('Escalate', '#af7100', "showForwardRouterForm(" + escapeHtml(JSON.stringify(caseRef)) + ")", false);
             } else if (isUnclaimed) {
-                _mActs = _lmPill('View', '#16305c', "viewCase('" + caseRef + "')", false) +
-                    _lmPill('Accept', '#28a745', "acceptLcCase('" + caseRef + "')", true);
+                _mActs = _lmPill('View', '#16305c', "viewCase(" + escapeHtml(JSON.stringify(caseRef)) + ")", false) +
+                    _lmPill('Accept', '#28a745', "acceptLcCase(" + escapeHtml(JSON.stringify(caseRef)) + ")", true);
             } else {
-                _mActs = _lmPill('View', '#16305c', "viewCase('" + caseRef + "')", false);
+                _mActs = _lmPill('View', '#16305c', "viewCase(" + escapeHtml(JSON.stringify(caseRef)) + ")", false);
             }
             _cardsHtml += '<article class="lm-case" style="background:#fff;border:none;border-radius:12px;' +
                 'box-shadow:0 1px 6px rgba(0,0,0,.08);padding:14px 16px;margin-top:12px;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
                     '<div>' +
-                        '<strong style="font-size:14px;color:#1a237e;">' + caseRef + '</strong>' +
-                        '<div style="font-size:12px;color:#555;margin-top:2px;">' + (c.case_type || 'N/A') + '</div>' +
+                        '<strong style="font-size:14px;color:#1a237e;">' + escapeHtml(caseRef) + '</strong>' +
+                        '<div style="font-size:12px;color:#555;margin-top:2px;">' + escapeHtml(c.case_type || 'N/A') + '</div>' +
                     '</div>' +
                     '<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;' +
-                          'background:' + _mBadgeColor + ';color:#fff;white-space:nowrap;">' + (c.status || 'Pending') + '</span>' +
+                          'background:' + _mBadgeColor + ';color:#fff;white-space:nowrap;">' + escapeHtml(c.status || 'Pending') + '</span>' +
                 '</div>' +
                 '<div style="font-size:12px;color:#555;margin-top:10px;">' +
-                    '<strong style="color:#142047;">' + (c.citizen_name || c.citizen_id || 'Unknown') + '</strong> &middot; ' + locBadge +
+                    '<strong style="color:#142047;">' + escapeHtml(c.citizen_name || c.citizen_id || 'Unknown') + '</strong> &middot; ' + locBadge +
                 '</div>' +
                 '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">' + _mActs + '</div>' +
             '</article>';
@@ -247,9 +247,9 @@ async function loadLcNotifications() {
         const clickable = !!caseId;
         html += `
             <div style="padding:12px 4px;border-bottom:1px solid #e5e7eb;${clickable ? 'cursor:pointer;' : ''}"
-                 ${clickable ? `onclick="viewCase('${caseId}')"` : ''}>
-                <div style="font-size:14px;color:#222;">${n.message || ''}</div>
-                <div style="font-size:12px;color:#888;margin-top:3px;">${when}${caseId ? ' &middot; Case: ' + caseId : ''}</div>
+                 ${clickable ? `onclick="viewCase(${escapeHtml(JSON.stringify(caseId))})"` : ''}>
+                <div style="font-size:14px;color:#222;">${escapeHtml(n.message || '')}</div>
+                <div style="font-size:12px;color:#888;margin-top:3px;">${escapeHtml(when)}${caseId ? ' &middot; Case: ' + escapeHtml(caseId) : ''}</div>
             </div>`;
     });
     html += '</div>';

@@ -1,6 +1,6 @@
 
 function showStatistics() {
-    console.log(' showStatistics called');
+    console.log('showStatistics called');
     hideAllDashboardViews();
     document.getElementById('adminDashboard').style.display = 'block';
     setAdminActiveMenu('statistics');
@@ -12,11 +12,11 @@ function showStatistics() {
         container.style.padding = '20px';
         container.style.background = 'white';
         container.style.minHeight = '80vh';
-        console.log(' statisticsContainer displayed');
+        console.log('statisticsContainer displayed');
         
         const token = getAuthToken();
         if (!token) {
-            console.warn(' No authentication token found');
+            console.warn('No authentication token found');
             container.innerHTML = `
                 <div style="position:relative; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="color:#1a4080; margin:0;"> Statistics Dashboard</h2>
@@ -89,10 +89,10 @@ function showStatistics() {
             </div>
         `;
         
-        console.log(' Container HTML rebuilt, calling buildStatisticsDashboard...');
+        console.log('Container HTML rebuilt, calling buildStatisticsDashboard...');
         buildStatisticsDashboard();
     } else {
-        console.error(' statisticsContainer not found');
+        console.error('statisticsContainer not found');
     }
 }
 
@@ -100,7 +100,7 @@ function showStatistics() {
 function exportChartAsImage(chartId, chartName) {
     const canvas = document.getElementById(chartId);
     if (!canvas) {
-        showToast(' Chart not found.');
+        showToast('Chart not found.');
         return;
     }
     
@@ -109,10 +109,10 @@ function exportChartAsImage(chartId, chartName) {
         link.download = `LCDJP_Chart_${chartName || chartId}_${new Date().toISOString().slice(0,10)}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        showToast(' Chart exported successfully!');
+        showToast('Chart exported successfully!');
     } catch (error) {
         console.error('Error exporting chart:', error);
-        showToast(' Error exporting chart.');
+        showToast('Error exporting chart.');
     }
 }
 function closeStatistics() {
@@ -122,14 +122,14 @@ function closeStatistics() {
 
 async function buildStatisticsDashboard() {
     try {
-        console.log(' buildStatisticsDashboard started');
+        console.log('buildStatisticsDashboard started');
         
         const container = document.getElementById('statisticsContainer');
         if (!container) {
-            console.error(' statisticsContainer not found in DOM');
+            console.error('statisticsContainer not found in DOM');
             return;
         }
-        console.log(' statisticsContainer found');
+        console.log('statisticsContainer found');
 
         const token = getAuthToken();
         if (!token) {
@@ -147,9 +147,9 @@ async function buildStatisticsDashboard() {
             `;
             return;
         }
-        console.log(' Token found');
+        console.log('Token found');
 
-        console.log(' Fetching case analytics...');
+        console.log('Fetching case analytics...');
         const analyticsResponse = await fetch(API_ENDPOINTS.caseAnalytics, {
             headers: getAuthHeaders()
         });
@@ -162,9 +162,9 @@ async function buildStatisticsDashboard() {
         }
 
         const analyticsData = await analyticsResponse.json();
-        console.log(` Fetched analytics for ${analyticsData.totalCases ?? 0} cases`);
+        console.log(`Fetched analytics for ${analyticsData.totalCases ?? 0} cases`);
 
-        console.log(' Fetching users...');
+        console.log('Fetching users...');
         const usersResponse = await fetch(API_ENDPOINTS.users, {
             headers: getAuthHeaders()
         });
@@ -183,7 +183,7 @@ async function buildStatisticsDashboard() {
         } else if (usersData.users && Array.isArray(usersData.users)) {
             allUsers = usersData.users;
         }
-        console.log(` Fetched ${allUsers.length} users`);
+        console.log(`Fetched ${allUsers.length} users`);
 
         const allLawyers = allUsers.filter(u => u.role === 'Lawyer');
 
@@ -216,8 +216,8 @@ async function buildStatisticsDashboard() {
 
         const cardsHtml = quickStats.map(stat => `
             <div class="stat-card" style="background:white; padding:15px; border-radius:10px; text-align:center; border:1px solid #e2e5ec; box-shadow:none;">
-                <h3 style="margin:0 0 4px; font-size:26px; font-weight:700;">${stat.value}</h3>
-                <p style="margin:0; color:#666; font-size:13px;">${stat.label}</p>
+                <h3 style="margin:0 0 4px; font-size:26px; font-weight:700;">${escapeHtml(stat.value)}</h3>
+                <p style="margin:0; color:#666; font-size:13px;">${escapeHtml(stat.label)}</p>
             </div>
         `).join('');
 
@@ -225,7 +225,7 @@ async function buildStatisticsDashboard() {
         if (statsQuickCards) {
             statsQuickCards.innerHTML = cardsHtml;
         } else {
-            console.warn(' statsQuickCards element not found');
+            console.warn('statsQuickCards element not found');
         }
 
         Object.keys(statsCharts).forEach(key => {
@@ -504,7 +504,7 @@ async function buildStatisticsDashboard() {
             buildDetailedStats(analyticsData, allUsers, allLawyers);
         }
         
-        console.log(' Statistics dashboard built successfully');
+        console.log('Statistics dashboard built successfully');
 
     } catch (error) {
         console.error('Error building statistics dashboard:', error);
@@ -515,7 +515,7 @@ async function buildStatisticsDashboard() {
                     <button onclick="showAdminHome()" aria-label="Close" style="position:absolute;top:0;right:0;background:none; border:none; font-size:26px; line-height:1; color:#666; cursor:pointer; padding:0 6px;">&times;</button>
                     <div style="font-size:32px;margin-bottom:10px;"></div>
                     <p style="font-weight:bold;">Statistics Unavailable</p>
-                    <p style="color:#666;font-size:14px;">${error.message}</p>
+                    <p style="color:#666;font-size:14px;">${escapeHtml(error.message)}</p>
                     <button onclick="buildStatisticsDashboard()" style="margin-top:15px;padding:10px 30px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">
                          Retry
                     </button>
@@ -758,7 +758,7 @@ function buildDetailedStats(analytics, users, lawyers) {
                 </tr>
                 <tr style="border-bottom:1px solid #ddd; background:#f9f9f9;">
                     <td><strong>Total Users</strong></td>
-                    <td style="text-align:right;">${users.length}</td>
+                    <td style="text-align:right;">${escapeHtml(users.length)}</td>
                     <td style="text-align:right;">100%</td>
                 </tr>
                 <tr style="border-bottom:1px solid #ddd;">
@@ -768,7 +768,7 @@ function buildDetailedStats(analytics, users, lawyers) {
                 </tr>
                 <tr style="border-bottom:1px solid #ddd; background:#f9f9f9;">
                     <td>├─ Lawyers</td>
-                    <td style="text-align:right;">${lawyers.length}</td>
+                    <td style="text-align:right;">${escapeHtml(lawyers.length)}</td>
                     <td style="text-align:right;">${users.length > 0 ? Math.round(lawyers.length / users.length * 100) : 0}%</td>
                 </tr>
                 <tr style="border-bottom:1px solid #ddd;">
@@ -778,12 +778,12 @@ function buildDetailedStats(analytics, users, lawyers) {
                 </tr>
                 <tr style="border-bottom:1px solid #ddd; background:#f9f9f9;">
                     <td><strong>Case Types</strong></td>
-                    <td style="text-align:right;">${analytics.distinctCaseTypes || 0}</td>
+                    <td style="text-align:right;">${escapeHtml(analytics.distinctCaseTypes || 0)}</td>
                     <td style="text-align:right;">-</td>
                 </tr>
                 <tr style="border-bottom:1px solid #ddd;">
                     <td><strong>Active Locations</strong></td>
-                    <td style="text-align:right;">${analytics.distinctLocations || 0}</td>
+                    <td style="text-align:right;">${escapeHtml(analytics.distinctLocations || 0)}</td>
                     <td style="text-align:right;">-</td>
                 </tr>
             </tbody>
@@ -807,7 +807,7 @@ async function getLawyerSubscription(username) {
 }
 
 async function saveLawyerSubscription(username, subscriptionData) {
-    console.log(' Subscription save disabled:', username);
+    console.log('Subscription save disabled:', username);
     return { success: true, message: 'Subscription feature is disabled' };
 }
 
@@ -972,7 +972,7 @@ async function acceptCaseDirectly(caseId) {
 
 
 function updateLawyerSubscriptionStatus() {
-    console.log(' Subscription feature is disabled');
+    console.log('Subscription feature is disabled');
     return true;
 }
 
@@ -1036,7 +1036,7 @@ function buildLawyerManagementContent() {
     })
     .catch(function(error) {
         console.error('Error loading lawyers:', error);
-        container.innerHTML = '<div style="text-align:center; padding:40px; color:#dc3545;">Error loading lawyers: ' + error.message + '</div>';
+        container.innerHTML = '<div style="text-align:center; padding:40px; color:#dc3545;">Error loading lawyers: ' + escapeHtml(error.message) + '</div>';
     });
 }
 
@@ -1059,8 +1059,8 @@ function displayLawyerManagementContent(lawyers) {
                 <div>
                     <h2 style="color:#1a4080; margin:0;">Lawyer Management</h2>
                     <p style="color:#666; font-size:13px; margin:5px 0 0 0;">
-                        Total Lawyers: ${lawyers.length} 
-                        (Approved: ${approvedLawyers.length} | Pending: ${pendingLawyers.length})
+                        Total Lawyers: ${escapeHtml(lawyers.length)} 
+                        (Approved: ${escapeHtml(approvedLawyers.length)} | Pending: ${escapeHtml(pendingLawyers.length)})
                     </p>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -1112,25 +1112,25 @@ function displayLawyerManagementContent(lawyers) {
             
             html += `
                 <tr style="border-bottom:1px solid #eee;">
-                    <td style="padding:10px 12px; font-weight:500;">${firstName} ${lastName}</td>
-                    <td style="padding:10px 12px; font-family:monospace;">${username}</td>
-                    <td style="padding:10px 12px;">${specialization}</td>
-                    <td style="padding:10px 12px;">${lawFirm}</td>
-                    <td style="padding:10px 12px;">${phone}</td>
+                    <td style="padding:10px 12px; font-weight:500;">${escapeHtml(firstName)} ${escapeHtml(lastName)}</td>
+                    <td style="padding:10px 12px; font-family:monospace;">${escapeHtml(username)}</td>
+                    <td style="padding:10px 12px;">${escapeHtml(specialization)}</td>
+                    <td style="padding:10px 12px;">${escapeHtml(lawFirm)}</td>
+                    <td style="padding:10px 12px;">${escapeHtml(phone)}</td>
                     <td style="padding:10px 12px;">
                         <span style="background:${statusColor}; color:white; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600;">
                             ${statusText}
                         </span>
                     </td>
                     <td style="padding:10px 12px;">
-                        <button onclick="viewUserDetails('${username}')" style="padding:4px 12px; background:#1a4080; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px;">
+                        <button onclick="viewUserDetails(${escapeHtml(JSON.stringify(username))})" style="padding:4px 12px; background:#1a4080; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px;">
                             View
                         </button>
                         ${statusText === 'Pending' ? `
-                            <button onclick="approveVerification('${username}')" style="padding:4px 12px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px;">
+                            <button onclick="approveVerification(${escapeHtml(JSON.stringify(username))})" style="padding:4px 12px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px;">
                                 Approve
                             </button>
-                            <button onclick="openVerifyModal('${username}')" style="padding:4px 12px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">
+                            <button onclick="openVerifyModal(${escapeHtml(JSON.stringify(username))})" style="padding:4px 12px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">
                                 Review & Reject
                             </button>
                         ` : ''}
@@ -1280,7 +1280,7 @@ function showLawyerPerformance() {
                 <p style="margin:5px 0 0 0; font-size:13px;">Active Lawyers</p>
             </div>
             <div style="background:white; color:#1a4080; padding:15px; border-radius:10px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
-                <h3 style="font-size:28px; margin:0;">${subscribedLawyers}/${lawyers.length}</h3>
+                <h3 style="font-size:28px; margin:0;">${subscribedLawyers}/${escapeHtml(lawyers.length)}</h3>
                 <p style="margin:5px 0 0 0; font-size:13px;">Subscribed</p>
             </div>
         </div>
@@ -1329,17 +1329,17 @@ function showLawyerPerformance() {
         html += `
             <tr class="performance-row" style="border-bottom:1px solid #eee; ${index % 2 === 0 ? 'background:#f9f9f9;' : ''}">
                 <td style="padding:12px 15px;">
-                    <strong>${p.firstName} ${p.lastName}</strong>
-                    <br><small style="color:#777;">@${p.username}</small>
+                    <strong>${escapeHtml(p.firstName)} ${escapeHtml(p.lastName)}</strong>
+                    <br><small style="color:#777;">@${escapeHtml(p.username)}</small>
                 </td>
-                <td style="padding:12px 15px; text-align:center; font-size:13px;">${p.lawyerSpecialization || 'N/A'}</td>
-                <td style="padding:12px 15px; text-align:center; font-weight:bold; font-size:18px;">${p.totalCases}</td>
-                <td style="padding:12px 15px; text-align:center; color:#17a2b8;">${p.acceptedCount}</td>
-                <td style="padding:12px 15px; text-align:center; color:#28a745; font-weight:bold;">${p.resolvedCount}</td>
-                <td style="padding:12px 15px; text-align:center; color:#ff9800;">${p.pendingCount}</td>
+                <td style="padding:12px 15px; text-align:center; font-size:13px;">${escapeHtml(p.lawyerSpecialization || 'N/A')}</td>
+                <td style="padding:12px 15px; text-align:center; font-weight:bold; font-size:18px;">${escapeHtml(p.totalCases)}</td>
+                <td style="padding:12px 15px; text-align:center; color:#17a2b8;">${escapeHtml(p.acceptedCount)}</td>
+                <td style="padding:12px 15px; text-align:center; color:#28a745; font-weight:bold;">${escapeHtml(p.resolvedCount)}</td>
+                <td style="padding:12px 15px; text-align:center; color:#ff9800;">${escapeHtml(p.pendingCount)}</td>
                 <td style="padding:12px 15px; text-align:center;">
                     <span style="background:${rateColor}; color:white; padding:3px 10px; border-radius:20px; font-weight:bold; font-size:14px;">
-                        ${p.resolutionRate}%
+                        ${escapeHtml(p.resolutionRate)}%
                     </span>
                 </td>
                 <td style="padding:12px 15px; text-align:center; font-size:14px;">
@@ -1349,7 +1349,7 @@ function showLawyerPerformance() {
                     <span style="color:${statusColor}; font-weight:bold; font-size:13px;">${statusText}</span>
                 </td>
                 <td style="padding:12px 15px; text-align:center;">
-                    <button onclick="viewLawyerPerformanceDetails('${p.username}')" 
+                    <button onclick="viewLawyerPerformanceDetails(${escapeHtml(JSON.stringify(p.username))})" 
                             style="padding:6px 12px; background:#1a4080; color:white; border:none; border-radius:5px; cursor:pointer; font-size:12px;">
                         View Details
                     </button>
@@ -1428,7 +1428,7 @@ function viewLawyerPerformanceDetails(username) {
     let html = `
         <div class="form-card" style="max-width:900px; margin:0 auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <h2 style="color:#1a4080; margin:0;"> ${user.firstName} ${user.lastName}</h2>
+                <h2 style="color:#1a4080; margin:0;"> ${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</h2>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="background:${isSubscribed ? '#28a745' : '#ff9800'}; color:white; padding:5px 15px; border-radius:20px; font-weight:bold;">
                         ${isSubscribed ? ` Subscribed (${daysRemaining}d remaining)` : ' Not Subscribed'}
@@ -1439,19 +1439,19 @@ function viewLawyerPerformanceDetails(username) {
             
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin:20px 0;">
                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; text-align:center;">
-                    <h3 style="font-size:32px; margin:0; color:#1a4080;">${lawyerCases.length}</h3>
+                    <h3 style="font-size:32px; margin:0; color:#1a4080;">${escapeHtml(lawyerCases.length)}</h3>
                     <p style="margin:5px 0 0 0; color:#666;">Total Cases</p>
                 </div>
                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; text-align:center;">
-                    <h3 style="font-size:32px; margin:0; color:#17a2b8;">${acceptedCases.length}</h3>
+                    <h3 style="font-size:32px; margin:0; color:#17a2b8;">${escapeHtml(acceptedCases.length)}</h3>
                     <p style="margin:5px 0 0 0; color:#666;">In Progress</p>
                 </div>
                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; text-align:center;">
-                    <h3 style="font-size:32px; margin:0; color:#28a745;">${resolvedCases.length}</h3>
+                    <h3 style="font-size:32px; margin:0; color:#28a745;">${escapeHtml(resolvedCases.length)}</h3>
                     <p style="margin:5px 0 0 0; color:#666;">Resolved</p>
                 </div>
                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; text-align:center;">
-                    <h3 style="font-size:32px; margin:0; color:#ff9800;">${pendingCases.length}</h3>
+                    <h3 style="font-size:32px; margin:0; color:#ff9800;">${escapeHtml(pendingCases.length)}</h3>
                     <p style="margin:5px 0 0 0; color:#666;">Pending</p>
                 </div>
             </div>
@@ -1460,9 +1460,9 @@ function viewLawyerPerformanceDetails(username) {
             <div style="background:#f0f5ff; padding:15px; border-radius:8px; margin-bottom:20px; border-left:4px solid #1a4080;">
                 <h4 style="color:#1a4080; margin:0 0 10px 0;">Subscription Details</h4>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">
-                    <div><strong>Payment Method:</strong> ${subscription.paymentMethod || 'N/A'}</div>
-                    <div><strong>Phone:</strong> ${subscription.phoneNumber || 'N/A'}</div>
-                    <div><strong>Transaction Ref:</strong> ${subscription.transactionRef || 'N/A'}</div>
+                    <div><strong>Payment Method:</strong> ${escapeHtml(subscription.paymentMethod || 'N/A')}</div>
+                    <div><strong>Phone:</strong> ${escapeHtml(subscription.phoneNumber || 'N/A')}</div>
+                    <div><strong>Transaction Ref:</strong> ${escapeHtml(subscription.transactionRef || 'N/A')}</div>
                     <div><strong>Payment Date:</strong> ${new Date(subscription.paymentDate).toLocaleDateString()}</div>
                 </div>
             </div>` : ''}
@@ -1487,9 +1487,9 @@ function viewLawyerPerformanceDetails(username) {
                     <tbody>
                         ${lawyerCases.map((c, index) => `
                             <tr style="${index % 2 === 0 ? 'background:#f9f9f9;' : ''}">
-                                <td style="padding:10px; font-weight:bold;">${c.caseId || 'N/A'}</td>
-                                <td style="padding:10px;">${c.caseType || 'N/A'}</td>
-                                <td style="padding:10px;">${c.citizen || 'N/A'}</td>
+                                <td style="padding:10px; font-weight:bold;">${escapeHtml(c.caseId || 'N/A')}</td>
+                                <td style="padding:10px;">${escapeHtml(c.caseType || 'N/A')}</td>
+                                <td style="padding:10px;">${escapeHtml(c.citizen || 'N/A')}</td>
                                 <td style="padding:10px;">
                                     ${c.status === 'Resolved' ? 
                                         '<span class="badge badge-resolved">Resolved</span>' : 
@@ -1497,9 +1497,9 @@ function viewLawyerPerformanceDetails(username) {
                                         '<span class="badge badge-lawyer">In Progress</span>' : 
                                         '<span class="badge badge-pending">Pending</span>')}
                                 </td>
-                                <td style="padding:10px; font-size:13px; color:#666;">${c.acceptedDate || 'N/A'}</td>
+                                <td style="padding:10px; font-size:13px; color:#666;">${escapeHtml(c.acceptedDate || 'N/A')}</td>
                                 <td style="padding:10px; text-align:center;">
-                                    <button onclick="viewCase('${c.caseId}')" style="padding:5px 12px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:4px; cursor:pointer;">View</button>
+                                    <button onclick="viewCase(${escapeHtml(JSON.stringify(String(c.caseId)))})" style="padding:5px 12px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:4px; cursor:pointer;">View</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1525,12 +1525,12 @@ async function createLegalAlert() {
     const audience = document.getElementById('alertAudience').value;
     
     if (!title) {
-        showToast(' Please enter an alert title.');
+        showToast('Please enter an alert title.');
         document.getElementById('alertTitle').focus();
         return;
     }
     if (!summary) {
-        showToast(' Please enter a summary.');
+        showToast('Please enter a summary.');
         document.getElementById('alertSummary').focus();
         return;
     }
@@ -1546,7 +1546,7 @@ async function createLegalAlert() {
         });
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok || data.success === false) {
-            showToast(' Failed to publish alert: ' + (data.error || resp.statusText));
+            showToast('Failed to publish alert: ' + (data.error || resp.statusText));
             return;
         }
 
@@ -1560,9 +1560,9 @@ async function createLegalAlert() {
             listContainer.innerHTML = renderAlertsList();
         }
 
-        showToast(' Alert published successfully!');
+        showToast('Alert published successfully!');
     } catch (e) {
-        showToast(' Failed to publish alert. Please try again.');
+        showToast('Failed to publish alert. Please try again.');
     }
 }
 
@@ -1649,7 +1649,7 @@ function showLegalAlertsManager() {
             
             
             <div>
-                <h3 style="color:#1a4080; margin-bottom:15px;"> Existing Alerts (${legalAlerts.length})</h3>
+                <h3 style="color:#1a4080; margin-bottom:15px;"> Existing Alerts (${escapeHtml(legalAlerts.length)})</h3>
                 <div id="alertsListContainer">
                     ${renderAlertsList()}
                 </div>
@@ -1735,16 +1735,16 @@ async function deleteLegalAlert(alertId) {
         });
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok || data.success === false) {
-            showToast(' Failed to delete alert: ' + (data.error || resp.statusText));
+            showToast('Failed to delete alert: ' + (data.error || resp.statusText));
             return;
         }
 
         await _lcdjpRefreshLegalAlerts();
         const listContainer = document.getElementById('alertsListContainer');
         if (listContainer) listContainer.innerHTML = renderAlertsList();
-        showToast(' Alert deleted successfully.');
+        showToast('Alert deleted successfully.');
     } catch (e) {
-        showToast(' Failed to delete alert. Please try again.');
+        showToast('Failed to delete alert. Please try again.');
     }
 }
 
@@ -1785,7 +1785,7 @@ function sendAlertNotifications(alert) {
         );
     });
     renderNavbarNotifBadge();
-    console.log(` Alert sent to ${targetUsers.length} users`);
+    console.log(`Alert sent to ${targetUsers.length} users`);
 }
 
 
@@ -1877,7 +1877,7 @@ function _lcdjpAppInit() {
         }
         else {
             
-            var _lsToken2 = localStorage.getItem("jwtToken");
+            var _lsToken2 = (typeof getAuthToken === 'function' ? getAuthToken() : null);
             if (_lsToken2) {
                 checkAuthStatus();
             } else {
@@ -1886,7 +1886,7 @@ function _lcdjpAppInit() {
         }
     } else {
         
-        var _lsToken = localStorage.getItem("jwtToken");
+        var _lsToken = (typeof getAuthToken === 'function' ? getAuthToken() : null);
         var _lsUsername = localStorage.getItem("username");
         if (_lsToken && _lsUsername) {
             checkAuthStatus();
@@ -1903,9 +1903,9 @@ function _lcdjpAppInit() {
     
     const syncQueue = []; 
     if (syncQueue.length > 0) {
-        console.log(` ${syncQueue.length} items pending sync`);
+        console.log(`${syncQueue.length} items pending sync`);
         setTimeout(function() {
-            updateSyncQueueBadge();
+            if (typeof updateSyncQueueBadge === 'function') updateSyncQueueBadge();
         }, 1000);
     }
     
@@ -1932,6 +1932,7 @@ if (document.readyState === 'loading') {
     _lcdjpAppInit();
 }
 
+var searchTimeout = null;
 function handleUniversalSearch(event) {
     if (searchTimeout) {
         clearTimeout(searchTimeout);
@@ -1995,8 +1996,8 @@ function showSearchSuggestions(query) {
     if (results.length > 5) {
         html += `
             <div style="padding:10px 15px; text-align:center; color:#1a4080; font-weight:bold; cursor:pointer; border-top:1px solid #eee;"
-                 onclick="performSearchAndShowAll('${query}')">
-                View all ${results.length} results →
+                 onclick="performSearchAndShowAll(${escapeHtml(JSON.stringify(query))})">
+                View all ${escapeHtml(results.length)} results →
             </div>
         `;
     }
@@ -2165,7 +2166,7 @@ function showSearchResults(query, results) {
             <div style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
                 <div style="font-size:64px; margin-bottom:15px;"></div>
                 <h3 style="color:#1a4080;">No Results Found</h3>
-                <p style="color:#666;">No records found matching "<strong>${query}</strong>"</p>
+                <p style="color:#666;">No records found matching "<strong>${escapeHtml(query)}</strong>"</p>
                 <p style="color:#999; font-size:13px;">Try searching by Case ID, User ID, Phone, Name, National ID, or Transaction Reference</p>
             </div>
         `;
@@ -2184,24 +2185,24 @@ function showSearchResults(query, results) {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
                 <div>
                     <h3 style="color:#1a4080; margin:0;"> Search Results</h3>
-                    <p style="color:#666; margin:5px 0 0 0; font-size:13px;">Found ${results.length} result(s) for "<strong>${query}</strong>"</p>
+                    <p style="color:#666; margin:5px 0 0 0; font-size:13px;">Found ${escapeHtml(results.length)} result(s) for "<strong>${escapeHtml(query)}</strong>"</p>
                 </div>
             </div>
             
             ${grouped.cases.length > 0 ? `
                 <div style="margin-bottom:20px;">
-                    <h4 style="color:#1a4080; border-bottom:2px solid #1a4080; padding-bottom:8px;"> Cases (${grouped.cases.length})</h4>
+                    <h4 style="color:#1a4080; border-bottom:2px solid #1a4080; padding-bottom:8px;"> Cases (${escapeHtml(grouped.cases.length)})</h4>
                     ${grouped.cases.map(c => `
                         <div style="background:#f0f5ff; padding:12px 15px; border-radius:6px; margin-bottom:8px; border-left:4px solid #1a4080; cursor:pointer;" 
-                             onclick="viewSearchResult('${c.id}')">
+                             onclick="viewSearchResult(${escapeHtml(JSON.stringify(String(c.id)))})">
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
                                 <div>
-                                    <strong>${c.id}</strong> - ${c.data.caseType}
-                                    <div style="font-size:13px; color:#666;">${c.data.citizen} | ${c.data.citizenPhone || 'No phone'}</div>
+                                    <strong>${escapeHtml(c.id)}</strong> - ${escapeHtml(c.data.caseType)}
+                                    <div style="font-size:13px; color:#666;">${escapeHtml(c.data.citizen)} | ${escapeHtml(c.data.citizenPhone || 'No phone')}</div>
                                 </div>
                                 <div>
                                     <span style="background:${c.data.status === 'Resolved' ? '#d4edda' : '#ffeacc'}; padding:3px 12px; border-radius:12px; font-size:12px;">
-                                        ${c.data.status}
+                                        ${escapeHtml(c.data.status)}
                                     </span>
                                 </div>
                             </div>
@@ -2212,18 +2213,18 @@ function showSearchResults(query, results) {
             
             ${grouped.users.length > 0 ? `
                 <div style="margin-bottom:20px;">
-                    <h4 style="color:#17a2b8; border-bottom:2px solid #17a2b8; padding-bottom:8px;"> Users (${grouped.users.length})</h4>
+                    <h4 style="color:#17a2b8; border-bottom:2px solid #17a2b8; padding-bottom:8px;"> Users (${escapeHtml(grouped.users.length)})</h4>
                     ${grouped.users.map(u => `
                         <div style="background:#f0f8ff; padding:12px 15px; border-radius:6px; margin-bottom:8px; border-left:4px solid #17a2b8; cursor:pointer;" 
-                             onclick="viewSearchResult('${u.id}')">
+                             onclick="viewSearchResult(${escapeHtml(JSON.stringify(String(u.id)))})">
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
                                 <div>
-                                    <strong>${u.data.firstName} ${u.data.lastName}</strong>
-                                    <div style="font-size:13px; color:#666;">${u.data.userType} | ${u.data.phoneNumber || 'No phone'} | ${u.data.userId || 'No ID'}</div>
+                                    <strong>${escapeHtml(u.data.firstName)} ${escapeHtml(u.data.lastName)}</strong>
+                                    <div style="font-size:13px; color:#666;">${escapeHtml(u.data.userType)} | ${escapeHtml(u.data.phoneNumber || 'No phone')} | ${escapeHtml(u.data.userId || 'No ID')}</div>
                                 </div>
                                 <div>
                                     <span style="background:${u.data.approvalStatus === 'Approved' ? '#d4edda' : '#ffeacc'}; padding:3px 12px; border-radius:12px; font-size:12px;">
-                                        ${u.data.approvalStatus}
+                                        ${escapeHtml(u.data.approvalStatus)}
                                     </span>
                                 </div>
                             </div>
@@ -2234,18 +2235,18 @@ function showSearchResults(query, results) {
             
             ${grouped.subscriptions.length > 0 ? `
                 <div style="margin-bottom:20px;">
-                    <h4 style="color:#28a745; border-bottom:2px solid #28a745; padding-bottom:8px;"> Subscriptions (${grouped.subscriptions.length})</h4>
+                    <h4 style="color:#28a745; border-bottom:2px solid #28a745; padding-bottom:8px;"> Subscriptions (${escapeHtml(grouped.subscriptions.length)})</h4>
                     ${grouped.subscriptions.map(s => `
                         <div style="background:#e8f5e9; padding:12px 15px; border-radius:6px; margin-bottom:8px; border-left:4px solid #28a745; cursor:pointer;" 
-                             onclick="viewSearchResult('${s.id}')">
+                             onclick="viewSearchResult(${escapeHtml(JSON.stringify(String(s.id)))})">
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
                                 <div>
-                                    <strong>${s.data.username}</strong>
-                                    <div style="font-size:13px; color:#666;">${s.data.subscription.subscriptionId || 'No ID'} | ${s.data.subscription.paymentMethod || 'N/A'}</div>
+                                    <strong>${escapeHtml(s.data.username)}</strong>
+                                    <div style="font-size:13px; color:#666;">${escapeHtml(s.data.subscription.subscriptionId || 'No ID')} | ${escapeHtml(s.data.subscription.paymentMethod || 'N/A')}</div>
                                 </div>
                                 <div>
                                     <span style="background:${s.data.subscription.status === 'active' ? '#d4edda' : '#ffeacc'}; padding:3px 12px; border-radius:12px; font-size:12px;">
-                                        ${s.data.subscription.status}
+                                        ${escapeHtml(s.data.subscription.status)}
                                     </span>
                                 </div>
                             </div>
@@ -2256,12 +2257,12 @@ function showSearchResults(query, results) {
             
             ${grouped.notifications.length > 0 ? `
                 <div style="margin-bottom:20px;">
-                    <h4 style="color:#ff9800; border-bottom:2px solid #ff9800; padding-bottom:8px;"> Notifications (${grouped.notifications.length})</h4>
+                    <h4 style="color:#ff9800; border-bottom:2px solid #ff9800; padding-bottom:8px;"> Notifications (${escapeHtml(grouped.notifications.length)})</h4>
                     ${grouped.notifications.map(n => `
                         <div style="background:#fff8e1; padding:12px 15px; border-radius:6px; margin-bottom:8px; border-left:4px solid #ff9800; cursor:pointer;"
-                             onclick="viewSearchResult('${n.id}')">
-                            <div style="font-size:13px;">${n.data.message}</div>
-                            <div style="font-size:12px; color:#888;">To: ${n.data.username} | ${new Date(n.data.timestamp).toLocaleString()}</div>
+                             onclick="viewSearchResult(${escapeHtml(JSON.stringify(String(n.id)))})">
+                            <div style="font-size:13px;">${escapeHtml(n.data.message)}</div>
+                            <div style="font-size:12px; color:#888;">To: ${escapeHtml(n.data.username)} | ${new Date(n.data.timestamp).toLocaleString()}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -2326,13 +2327,13 @@ function viewSubscriptionDetails(username) {
                 <button onclick="clearSearch()" aria-label="Close" style="background:none; border:none; font-size:26px; line-height:1; color:#666; cursor:pointer; padding:0 6px;">&times;</button>
             </div>
             <div class="lcdjp-grid-2col" style="gap:15px; margin-top:20px;">
-                <div><strong>Lawyer:</strong> ${username}</div>
-                <div><strong>Subscription ID:</strong> ${subscription.subscriptionId || 'N/A'}</div>
-                <div><strong>Transaction Ref:</strong> ${subscription.transactionRef || 'N/A'}</div>
-                <div><strong>Status:</strong> <span style="color:${subscription.status === 'active' ? '#28a745' : '#dc3545'};">${subscription.status}</span></div>
-                <div><strong>Payment Method:</strong> ${subscription.paymentMethod || 'N/A'}</div>
-                <div><strong>Phone:</strong> ${subscription.phoneNumber || 'N/A'}</div>
-                <div><strong>Amount:</strong> UGX ${subscription.amount || '50,000'}</div>
+                <div><strong>Lawyer:</strong> ${escapeHtml(username)}</div>
+                <div><strong>Subscription ID:</strong> ${escapeHtml(subscription.subscriptionId || 'N/A')}</div>
+                <div><strong>Transaction Ref:</strong> ${escapeHtml(subscription.transactionRef || 'N/A')}</div>
+                <div><strong>Status:</strong> <span style="color:${subscription.status === 'active' ? '#28a745' : '#dc3545'};">${escapeHtml(subscription.status)}</span></div>
+                <div><strong>Payment Method:</strong> ${escapeHtml(subscription.paymentMethod || 'N/A')}</div>
+                <div><strong>Phone:</strong> ${escapeHtml(subscription.phoneNumber || 'N/A')}</div>
+                <div><strong>Amount:</strong> UGX ${escapeHtml(subscription.amount || '50,000')}</div>
                 <div><strong>Start Date:</strong> ${new Date(subscription.startDate).toLocaleString()}</div>
                 <div><strong>Payment Date:</strong> ${new Date(subscription.paymentDate).toLocaleString()}</div>
                 <div><strong>Days Remaining:</strong> ${getSubscriptionDaysRemaining(username)} days</div>

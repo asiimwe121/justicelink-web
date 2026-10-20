@@ -95,9 +95,19 @@ function _daBuildLCFormModal(opts) {
                 '<input id="lcNewLastName" placeholder="Last Name" style="padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
                 '<input id="lcNewEmail" placeholder="Email" style="padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
                 '<input id="lcNewPhone" placeholder="Phone" style="padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
-                '<input id="lcNewDistrict" value="' + district.replace(/"/g, '&quot;') + '" ' + (lockDistrict ? 'readonly' : '') +
+                '<input id="lcNewDistrict" value="' + escapeHtml(district) + '" ' + (lockDistrict ? 'readonly' : '') +
                     ' placeholder="District" style="padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;' + (lockDistrict ? 'background:#f0f0f0;color:#666;' : '') + '">' +
-                '<input id="lcNewVillage" placeholder="Village / Parish / Sub-county (which LC this account represents)" style="padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
+                '<select id="lcNewLevel" style="padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
+                    '<option value="">Select LC level\u2026</option>' +
+                    '<option value="LC1">LC1 \u2013 Village</option>' +
+                    '<option value="LC2">LC2 \u2013 Parish</option>' +
+                    '<option value="LC3">LC3 \u2013 Sub-county / Town council</option>' +
+                    '<option value="LC4">LC4 \u2013 County / Municipality</option>' +
+                    '<option value="LC5">LC5 \u2013 District</option>' +
+                '</select>' +
+                '<input id="lcNewVillage" placeholder="Village" style="display:none;padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
+                '<input id="lcNewParish" placeholder="Parish" style="display:none;padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
+                '<input id="lcNewSubCounty" placeholder="Sub-county / Town council" style="display:none;padding:9px 12px;border:1px solid #cfd8ea;border-radius:7px;font-size:13px;">' +
             '</div>' +
             (typeof lcdjpContactVerifyWidgetHtml === 'function' ? lcdjpContactVerifyWidgetHtml('lcNewContactVerify') : '') +
             '<div id="lcNewFormMsg" style="display:none;margin-top:10px;padding:9px 12px;border-radius:7px;font-size:12.5px;"></div>' +
@@ -111,6 +121,25 @@ function _daBuildLCFormModal(opts) {
     if (typeof lcdjpContactVerifyReset === 'function') lcdjpContactVerifyReset('lcNewContactVerify');
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
     modal.querySelector('[data-lc-cancel]').onclick = function () { modal.remove(); };
+
+    // Which area boxes apply to each level: LC1 needs village + parish + sub-county, LC2 parish + sub-county, LC3 sub-county.
+    var LC_AREAS_BY_LEVEL = {
+        LC1: ['lcNewVillage', 'lcNewParish', 'lcNewSubCounty'],
+        LC2: ['lcNewParish', 'lcNewSubCounty'],
+        LC3: ['lcNewSubCounty'],
+        LC4: [],
+        LC5: []
+    };
+    var ALL_AREA_IDS = ['lcNewVillage', 'lcNewParish', 'lcNewSubCounty'];
+    var levelSelect = document.getElementById('lcNewLevel');
+    levelSelect.onchange = function () {
+        var shown = LC_AREAS_BY_LEVEL[levelSelect.value] || [];
+        ALL_AREA_IDS.forEach(function (id) {
+            var el = document.getElementById(id);
+            el.style.display = shown.indexOf(id) !== -1 ? 'block' : 'none';
+            if (shown.indexOf(id) === -1) el.value = '';
+        });
+    };
     modal.querySelector('[data-lc-submit]').onclick = function () {
         var fields = {
             username:  document.getElementById('lcNewUsername').value.trim(),
@@ -120,7 +149,10 @@ function _daBuildLCFormModal(opts) {
             email:     document.getElementById('lcNewEmail').value.trim(),
             phone:     document.getElementById('lcNewPhone').value.trim(),
             district:  document.getElementById('lcNewDistrict').value.trim(),
+            lcLevel:   document.getElementById('lcNewLevel').value,
             village:   document.getElementById('lcNewVillage').value.trim(),
+            parish:    document.getElementById('lcNewParish').value.trim(),
+            subCounty: document.getElementById('lcNewSubCounty').value.trim(),
             role:      'LC'
         };
         var msgEl = document.getElementById('lcNewFormMsg');
@@ -131,9 +163,18 @@ function _daBuildLCFormModal(opts) {
             msgEl.style.color = type === 'success' ? '#2e7d32' : '#c62828';
             msgEl.textContent = text;
         }
+        if (!fields.lcLevel) { showMsg('error', 'Please select the LC level (LC1 to LC5) this account is for.'); return; }
+        var areaLabels = { village: 'village', parish: 'parish', subCounty: 'sub-county' };
+        var requiredAreas = { LC1: ['village', 'parish', 'subCounty'], LC2: ['parish', 'subCounty'], LC3: ['subCounty'], LC4: [], LC5: [] }[fields.lcLevel] || [];
         for (var key in fields) {
-            if ((key === 'village') && !fields[key]) continue; 
+            if (key === 'village' || key === 'parish' || key === 'subCounty') continue; // checked per level below
             if (!fields[key]) { showMsg('error', 'All fields are required.'); return; }
+        }
+        for (var i = 0; i < requiredAreas.length; i++) {
+            if (!fields[requiredAreas[i]]) {
+                showMsg('error', fields.lcLevel + ' accounts need the ' + areaLabels[requiredAreas[i]] + '.');
+                return;
+            }
         }
         if (fields.password.length < 8) { showMsg('error', 'Password must be at least 8 characters.'); return; }
         if (!lcdjpContactVerifyIsDone('lcNewContactVerify', fields.email, fields.phone)) {
@@ -155,7 +196,7 @@ async function showCreateLCForm() {
         district: district,
         lockDistrict: true,
         noticeHtml: '<p style="font-size:12.5px;color:#666;margin:0;">' +
-            'This LC account will be created for <strong>' + district + '</strong>. ' +
+            'This LC account will be created for <strong>' + escapeHtml(district) + '</strong>. ' +
             'Only District Admins (or, if none is available, a System Admin) may create LC accounts.' +
             '</p>',
         onSubmit: async function (fields, showMsg, modal) {
@@ -167,7 +208,7 @@ async function showCreateLCForm() {
                 });
                 var data = await resp.json();
                 if (resp.ok && data.success !== false) {
-                    showMsg('success', 'LC account "' + fields.username + '" created successfully.');
+                    showMsg('success', fields.lcLevel + ' account "' + fields.username + '" created successfully.');
                     setTimeout(function () { modal.remove(); daLoadUsers(); }, 900);
                 } else {
                     showMsg('error', data.error || data.message || 'Failed to create LC account.');
@@ -218,7 +259,7 @@ function showDistrictAdminDashboard() {
 
 function showDAUsers()         { _daShowOnly('daUsersContainer'); _daSetActiveMenu('daMenu_users'); if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadUsers(); }
 function showDAVerifications() { _daShowOnly('daVerifContainer'); _daSetActiveMenu('daMenu_verif'); if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadVerifications(); }
-function showDACases()         { _daShowOnly('daCasesContainer'); _daSetActiveMenu('daMenu_cases'); if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadCaseFilterOptions(); daLoadCases(); }
+function showDACases()         { _daShowOnly('daCasesContainer'); _daSetActiveMenu('daMenu_cases'); if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadCaseFilterOptions(); daLoadCases(); if (window.PendingCases) window.PendingCases.mount('daPendingCasesHost', {}); }
 function showDAStatistics()    { _daShowOnly('daStatsContainer'); _daSetActiveMenu('daMenu_stats'); if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadStatistics(); }
 function showDANotifications() { _daShowOnly('daNotifContainer'); _daSetActiveMenu('daMenu_notifs'); if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadNotifications(); }
 function showDAMessages()      { _daShowOnly('daMsgsContainer');  _daSetActiveMenu('daMenu_msgs');  if (typeof _setDANavActive === 'function') _setDANavActive(true); daLoadMessages(); }
@@ -304,7 +345,7 @@ async function daLoadMessages() {
             var last = c.messages[c.messages.length - 1];
             var tsLabel = last.ts ? new Date(last.ts).toLocaleString() : '';
             var preview = last.text.length > 90 ? last.text.slice(0, 90) + '…' : last.text;
-            html += '<div onclick="daOpenConversationThread(\'' + String(c.key).replace(/'/g, "\\'") + '\')" ' +
+            html += '<div onclick="daOpenConversationThread(' + escapeHtml(JSON.stringify(String(c.key))) + ')" ' +
                 'style="background:#f5f8ff; border-radius:10px; padding:14px 16px; border-left:4px solid #1a4080; cursor:pointer;">'
                   +   '<div style="font-weight:600; color:#1a2e55; font-size:14px; margin-bottom:4px;">' + _cmEsc(c.name) + (c.role ? ' <span style="font-weight:400;color:#888;">(' + _cmEsc(c.role) + ')</span>' : '') + (tsLabel ? '<span style="float:right;font-size:11px;color:#888;font-weight:400;">' + _cmEsc(tsLabel) + '</span>' : '') + '</div>'
                   +   '<div style="font-size:13px; color:#444;">' + _cmEsc(preview) + '</div>'
@@ -345,12 +386,12 @@ function daOpenConversationThread(key) {
     
     
     
-    var escKey = String(key).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    var escKey = escapeHtml(JSON.stringify(String(key)));
     var replyBar = '<div style="display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid #eee;">' +
         '<input type="text" id="daReplyInput" placeholder="Type a reply…" ' +
             'style="flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:20px;font-size:13px;outline:none;" ' +
-            'onkeypress="if(event.key===\'Enter\'){event.preventDefault();daSendReply(\'' + escKey + '\');}">' +
-        '<button id="daReplySendBtn" onclick="daSendReply(\'' + escKey + '\')" ' +
+            'onkeypress="if(event.key===\'Enter\'){event.preventDefault();daSendReply(' + escKey + ');}">' +
+        '<button id="daReplySendBtn" onclick="daSendReply(' + escKey + ')" ' +
             'style="padding:10px 20px;background:#1a4080;color:white;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;">Send</button>' +
     '</div>';
 
@@ -484,13 +525,13 @@ async function daLoadDashboardStats() {
                     var reviewRole = _daVerificationRole(u);
                     uHtml += '<div style="background:white;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-left:4px solid #f59e0b;">'
                         + '<div>'
-                        +   '<div style="font-weight:600;color:#1a2e55;font-size:14px;">' + name
-                        +     ' <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;">' + reviewRole + ', Pending</span></div>'
-                        +   '<div style="font-size:12px;color:#607080;margin-top:2px;">@' + u.username + ' &bull; ' + (u.district || district || 'N/A') + '</div>'
+                        +   '<div style="font-weight:600;color:#1a2e55;font-size:14px;">' + escapeHtml(name)
+                        +     ' <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;">' + escapeHtml(reviewRole) + ', Pending</span></div>'
+                        +   '<div style="font-size:12px;color:#607080;margin-top:2px;">@' + escapeHtml(u.username) + ' &bull; ' + escapeHtml(u.district || district || 'N/A') + '</div>'
                         + '</div>'
                         + '<div style="display:flex;gap:6px;">'
-                        +   '<button onclick="approveVerification(\'' + u.username + '\').then(function(){ daRefreshAll(); })" style="padding:6px 14px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Approve</button>'
-                        +   '<button onclick="openVerifyModal(\'' + u.username + '\')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reject</button>'
+                        +   '<button onclick="approveVerification(' + escapeHtml(JSON.stringify(u.username)) + ').then(function(){ daRefreshAll(); })" style="padding:6px 14px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Approve</button>'
+                        +   '<button onclick="openVerifyModal(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:6px 12px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reject</button>'
                         + '</div></div>';
                 });
                 uHtml += '</div>';
@@ -506,7 +547,7 @@ async function daLoadDashboardStats() {
         }
     } catch(err) {
         if (homeContent) {
-            homeContent.innerHTML = '<p style="color:#dc3545;text-align:center;padding:20px;">Could not load district data: ' + err.message + '</p>';
+            homeContent.innerHTML = '<p style="color:#dc3545;text-align:center;padding:20px;">Could not load district data: ' + escapeHtml(err.message) + '</p>';
             homeContent.style.display = 'block';
             if (typeof syncDAMapHeight === 'function') syncDAMapHeight();
         }
@@ -539,11 +580,12 @@ async function daLoadUsers() {
             : [];
 
         var toolbarHtml = '<div style="display:flex;justify-content:flex-end;margin-bottom:14px;">' +
+            (typeof lcdjpInviteButtonHtml === 'function' ? lcdjpInviteButtonHtml() : '') +
             '<button onclick="showCreateLCForm()" style="padding:9px 18px;background:#1a4080;color:white;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;">+ Create LC Account</button>' +
             '</div>';
 
         if (users.length === 0) {
-            container.innerHTML = toolbarHtml + '<p style="color:#999;text-align:center;padding:30px;">No users found in ' + (district || 'your district') + '.</p>';
+            container.innerHTML = toolbarHtml + '<p style="color:#999;text-align:center;padding:30px;">No users found in ' + escapeHtml(district || 'your district') + '.</p>';
             return;
         }
         
@@ -564,21 +606,21 @@ async function daLoadUsers() {
                 ? '<span style="background:#fdecea;color:#b71c1c;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;">&#9940; Disabled</span>' : '';
             var accentLeft = vStatus === 'PENDING' ? '#2a52be' : vStatus === 'REJECTED' ? '#4b6cb7' : '#1a4080';
             html += '<div style="background:#f5f8ff;border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-left:4px solid ' + accentLeft + ';">'
-                  + '<div><div style="font-weight:600;color:#333;">' + ((u.firstName||u.first_name||'')+' '+(u.lastName||u.last_name||'')).trim() + ' ' + badge + ' ' + disabledBadge + '</div>'
-                  + '<div style="font-size:12px;color:#888;margin-top:3px;">@' + u.username + ' &bull; ' + _daVerificationRole(u) + ' &bull; ' + _daVerificationDistrict(u)
-                  + (u.phone_number || u.phoneNumber || u.phone ? ' &bull; ' + (u.phone_number || u.phoneNumber || u.phone) : '') + '</div></div>'
+                  + '<div><div style="font-weight:600;color:#333;">' + escapeHtml(((u.firstName||u.first_name||'')+' '+(u.lastName||u.last_name||'')).trim()) + ' ' + badge + ' ' + disabledBadge + '</div>'
+                  + '<div style="font-size:12px;color:#888;margin-top:3px;">@' + escapeHtml(u.username) + ' &bull; ' + escapeHtml(_daVerificationRole(u)) + ' &bull; ' + escapeHtml(_daVerificationDistrict(u))
+                  + (u.phone_number || u.phoneNumber || u.phone ? ' &bull; ' + escapeHtml(u.phone_number || u.phoneNumber || u.phone) : '') + '</div></div>'
                   + '<div style="display:flex;gap:6px;flex-wrap:wrap;">'
-                  + (vStatus === 'PENDING' ? '<button onclick="approveVerification(\'' + u.username + '\')" style="padding:7px 14px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Approve</button>'
-                      + '<button onclick="openVerifyModal(\'' + u.username + '\')" style="padding:7px 14px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reject</button>' : '')
-                  + '<button onclick="viewUserDetails(\'' + u.username + '\')" style="padding:7px 14px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">View Details</button>'
-                  + (String(acctStatus).toLowerCase() === 'disabled' ? '<button onclick="enableUserAccount(\'' + u.username + '\')" style="padding:7px 14px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reactivate</button>' : '<button onclick="disableUserAccount(\'' + u.username + '\')" style="padding:7px 14px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Deactivate</button>')
+                  + (vStatus === 'PENDING' ? '<button onclick="approveVerification(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 14px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Approve</button>'
+                      + '<button onclick="openVerifyModal(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 14px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reject</button>' : '')
+                  + '<button onclick="viewUserDetails(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 14px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">View Details</button>'
+                  + (String(acctStatus).toLowerCase() === 'disabled' ? '<button onclick="enableUserAccount(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 14px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reactivate</button>' : '<button onclick="disableUserAccount(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 14px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Deactivate</button>')
                   + '</div>'
                   + '</div>';
         });
         html += '</div>';
         container.innerHTML = html;
     } catch(err) {
-        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + err.message + '</p>';
+        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + escapeHtml(err.message) + '</p>';
     }
 }
 
@@ -602,27 +644,27 @@ async function daLoadVerifications() {
         });
 
         if (pending.length === 0) {
-            container.innerHTML = '<p style="color:#999;text-align:center;padding:30px;">No pending verifications in ' + (district || 'your district') + '.</p>';
+            container.innerHTML = '<p style="color:#999;text-align:center;padding:30px;">No pending verifications in ' + escapeHtml(district || 'your district') + '.</p>';
             return;
         }
         var html = '<div style="display:grid;gap:12px;">';
         pending.forEach(function(u) {
             var name = ((u.firstName||u.first_name||'')+' '+(u.lastName||u.last_name||'')).trim() || u.username;
             html += '<div style="background:#f5f8ff;border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-left:4px solid #2a52be;">'
-                  + '<div><div style="font-weight:600;color:#1a2e55;">' + name
+                  + '<div><div style="font-weight:600;color:#1a2e55;">' + escapeHtml(name)
                   + ' <span style="background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;">Pending</span></div>'
-                  + '<div style="font-size:12px;color:#888;margin-top:3px;">@' + u.username + ' &bull; Wants: ' + _daVerificationRole(u) + ' &bull; District: ' + _daVerificationDistrict(u) + '</div>'
+                  + '<div style="font-size:12px;color:#888;margin-top:3px;">@' + escapeHtml(u.username) + ' &bull; Wants: ' + escapeHtml(_daVerificationRole(u)) + ' &bull; District: ' + escapeHtml(_daVerificationDistrict(u)) + '</div>'
                   + '<div style="font-size:11px;color:#607080;margin-top:4px;">Also sent to System Admin &bull; You may review this district request</div></div>'
                   + '<div style="display:flex;gap:6px;">'
-                  + '<button onclick="approveVerification(\'' + u.username + '\').then(function(){ daLoadVerifications(); })" style="padding:7px 14px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Approve</button>'
-                  + '<button onclick="openVerifyModal(\'' + u.username + '\')" style="padding:7px 14px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reject</button>'
-                  + '<button onclick="viewUserDetails(\'' + u.username + '\')" style="padding:7px 12px;background:#fff;color:#1a4080;border:1px solid #1a4080;border-radius:6px;cursor:pointer;font-size:12px;">View</button>'
+                  + '<button onclick="approveVerification(' + escapeHtml(JSON.stringify(u.username)) + ').then(function(){ daLoadVerifications(); })" style="padding:7px 14px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Approve</button>'
+                  + '<button onclick="openVerifyModal(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 14px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reject</button>'
+                  + '<button onclick="viewUserDetails(' + escapeHtml(JSON.stringify(u.username)) + ')" style="padding:7px 12px;background:#fff;color:#1a4080;border:1px solid #1a4080;border-radius:6px;cursor:pointer;font-size:12px;">View</button>'
                   + '</div></div>';
         });
         html += '</div>';
         container.innerHTML = html;
     } catch(err) {
-        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + err.message + '</p>';
+        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + escapeHtml(err.message) + '</p>';
     }
 }
 
@@ -737,9 +779,52 @@ async function daLoadStatistics() {
             + '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8edf8;"><span style="color:#555;font-size:13px;">Verified</span><strong style="color:#1a4080;">' + verifApproved + '</strong></div>'
             + '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8edf8;"><span style="color:#555;font-size:13px;">Pending</span><strong style="color:#2a52be;">' + verifPending + '</strong></div>'
             + '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#555;font-size:13px;">Rejected</span><strong style="color:#4b6cb7;">' + verifRejected + '</strong></div>'
-            + '</div></div>';
+            + '</div></div>'
+            + '<div id="daResponseMetrics" style="margin-top:16px;"></div>';
+        daLoadResponseMetrics();
     } catch(err) {
-        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + err.message + '</p>';
+        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + escapeHtml(err.message) + '</p>';
+    }
+}
+
+// Response-time metrics for the district (time to first response, time to resolution, stale cases).
+function _daFmtHours(h) {
+    if (h === null || h === undefined) return '\u2014';
+    if (h < 1) return Math.round(h * 60) + ' min';
+    if (h < 48) return h.toFixed(1) + ' h';
+    return (h / 24).toFixed(1) + ' days';
+}
+
+async function daLoadResponseMetrics() {
+    var box = document.getElementById('daResponseMetrics');
+    if (!box) return;
+    try {
+        var resp = await authFetch(API_ENDPOINTS.districtMetrics, { method: 'GET' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var data = await resp.json();
+        var rows = (data && data.districts) || [];
+        var district = _daGetDistrict();
+        if (district) {
+            rows = rows.filter(function(r) { return (r.district || '').toLowerCase() === district.toLowerCase(); });
+        }
+        if (!rows.length) {
+            box.innerHTML = '<div style="background:#f5f8ff;border-radius:10px;padding:18px;"><h4 style="color:#1a4080;margin:0 0 8px;">Response times</h4><p style="color:#999;font-size:13px;margin:0;">No cases yet.</p></div>';
+            return;
+        }
+        var r = rows[0];
+        function row(label, value, last) {
+            return '<div style="display:flex;justify-content:space-between;padding:8px 0;' + (last ? '' : 'border-bottom:1px solid #e8edf8;') + '">'
+                + '<span style="color:#555;font-size:13px;">' + label + '</span><strong style="color:#1a4080;">' + value + '</strong></div>';
+        }
+        box.innerHTML = '<div style="background:#f5f8ff;border-radius:10px;padding:18px;"><h4 style="color:#1a4080;margin:0 0 12px;">Response times</h4>'
+            + row('Average time to first response', _daFmtHours(r.avgFirstResponseHours))
+            + row('Average time to resolution', _daFmtHours(r.avgResolutionHours))
+            + row('Open cases', r.openCases)
+            + row('Resolved cases', r.resolvedCases)
+            + row('Open cases flagged for no action', r.escalatedOpen, true)
+            + '</div>';
+    } catch (err) {
+        box.innerHTML = '';
     }
 }
 
@@ -764,15 +849,15 @@ async function daLoadNotifications() {
             
             
             
-            html += '<div style="background:' + (isRead?'#f5f8ff':'#e8f0fe') + ';border-radius:8px;padding:12px 16px;cursor:pointer;" onclick="lcdjpOpenNotification(' + JSON.stringify(n).replace(/"/g, '&quot;') + ')">'
-                  + '<div style="font-size:13px;font-weight:' + (isRead?'400':'600') + ';color:#333;">' + (n.message||n.title||'Notification') + '</div>'
+            html += '<div style="background:' + (isRead?'#f5f8ff':'#e8f0fe') + ';border-radius:8px;padding:12px 16px;cursor:pointer;" onclick="lcdjpOpenNotification(' + escapeHtml(JSON.stringify(n)) + ')">'
+                  + '<div style="font-size:13px;font-weight:' + (isRead?'400':'600') + ';color:#333;">' + escapeHtml(n.message||n.title||'Notification') + '</div>'
                   + '<div style="font-size:11px;color:#888;margin-top:4px;">' + (n.createdAt ? new Date(n.createdAt).toLocaleString() : '') + '</div>'
                   + '</div>';
         });
         html += '</div>';
         container.innerHTML = html;
     } catch(err) {
-        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + err.message + '</p>';
+        container.innerHTML = '<p style="color:#dc3545;text-align:center;padding:30px;">Error: ' + escapeHtml(err.message) + '</p>';
     }
 }
 
@@ -885,7 +970,7 @@ function _buildDAMapInner(container) {
         }
     }
     container.innerHTML = '';
-    _daGMap = new google.maps.Map(container, {
+    _daGMap = lcdjpCreateMap(container, {
         center: center,
         zoom: district ? 10 : 7,
         mapTypeId: 'hybrid',
@@ -951,7 +1036,7 @@ function _renderDAMapUsers(users, district) {
     summaryDiv.style.cssText = 'background:white;padding:10px 14px;border-radius:8px;'
         + 'box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:13px;border-left:4px solid #1a4080;margin:10px 0 0 10px;'
         + 'max-width:calc(100vw - 40px);box-sizing:border-box;overflow-wrap:break-word;';
-    summaryDiv.innerHTML = '<strong style="color:#1a4080;">\ud83d\udc65 ' + (district || 'District') + ', ' + users.length + ' registered user' + (users.length !== 1 ? 's' : '') + '</strong>'
+    summaryDiv.innerHTML = '<strong style="color:#1a4080;">\ud83d\udc65 ' + escapeHtml(district || 'District') + ', ' + users.length + ' registered user' + (users.length !== 1 ? 's' : '') + '</strong>'
         + '<div class="lcdjp-map-summary-row">'
         + '<span>\ud83d\udfe2 Citizens: ' + citizens + '</span>'
         + '<span>\u2696\ufe0f Lawyers: ' + lawyers + '</span>'
@@ -988,7 +1073,7 @@ function _renderDAMapUsers(users, district) {
         var vs = (user.verificationStatus || user.verification_status || '').toUpperCase();
         var isPending = vs === 'PENDING' || user.approval_status === 'Pending' || user.approval_status === null;
         var cfg = isPending ? pendingConfig : (typeConfig[user.role] || typeConfig['Citizen']);
-        var marker = new google.maps.Marker({
+        var marker = lcdjpCreateMarker({
             position: { lat: lat, lng: lng },
             map: _daGMap,
             icon: {

@@ -1,52 +1,35 @@
 #!/usr/bin/env bash
-# Proves the newest backup can actually be restored. Run it monthly (or after any schema change).
-#
-# Loads the backup into a throw-away MySQL container -- production is never touched --
-# then checks that the key tables exist and that the user count is plausible.
-#
-#   ./restore-test.sh                       # newest backup in BACKUP_DIR
-#   ./restore-test.sh /path/to/backup.sql.gz
-#
-# Settings: BACKUP_DIR (default /var/backups/justicelink), MYSQL_IMAGE (default mysql:8.0),
-#           HEALTHCHECK_PING_URL (optional; pinged on success, /fail on failure)
+# Restores the newest backup into a throwaway database and checks it. Run monthly.
+# Never touches the live database: it creates and drops <DB_NAME>_restore_test.
 set -Eeuo pipefail
 
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/justicelink}"
-IMAGE="${MYSQL_IMAGE:-mysql:8.0}"
-PING="${HEALTHCHECK_PING_URL:-}"
-NAME="lcdjp-restore-test-$$"
-ROOTPW="restore-test-$RANDOM$RANDOM"
+: "${DB_HOST:=127.0.0.1}" "${DB_PORT:=3306}" "${DB_NAME:=lcdjp}"
+: "${DB_USER:?}" "${DB_PASSWORD:?}" "${BACKUP_PASSPHRASE_FILE:?}"
+: "${BACKUP_DIR:=/var/backups/justicelink}"
+: "${MAX_AGE_HOURS:=26}"
+scratch="${DB_NAME}_restore_test"
+mysqlc() { MYSQL_PWD="$DB_PASSWORD" mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$@"; }
 
-ping_url() { [ -n "$PING" ] && curl -fsS -m 10 --retry 3 -o /dev/null "$1" || true; }
-cleanup() { docker rm -f "$NAME" >/dev/null 2>&1 || true; }
-on_error() { echo "[restore-test] FAILED at line $1" >&2; ping_url "${PING%/}/fail"; cleanup; exit 1; }
-trap cleanup EXIT
-trap 'on_error $LINENO' ERR
+latest="$(ls -1t "$BACKUP_DIR"/${DB_NAME}_*.sql.gz.enc 2>/dev/null | head -n1 || true)"
+[[ -n "$latest" ]] || { echo "[restore-test] FAIL: no backups in $BACKUP_DIR" >&2; exit 1; }
 
-BACKUP="${1:-$(ls -1t "$BACKUP_DIR"/lcdjp-*.sql.gz 2>/dev/null | head -1)}"
-[ -n "$BACKUP" ] && [ -f "$BACKUP" ] || { echo "[restore-test] no backup found" >&2; false; }
-echo "[restore-test] using $BACKUP"
-gzip -t "$BACKUP"
+age_h=$(( ( $(date +%s) - $(stat -c %Y "$latest") ) / 3600 ))
+(( age_h <= MAX_AGE_HOURS )) || { echo "[restore-test] FAIL: newest backup is ${age_h}h old" >&2; exit 1; }
+( cd "$BACKUP_DIR" && sha256sum -c "$(basename "$latest").sha256" )
 
-docker run -d --name "$NAME" -e MYSQL_ROOT_PASSWORD="$ROOTPW" -e MYSQL_DATABASE=lcdjp "$IMAGE" >/dev/null
-echo -n "[restore-test] waiting for MySQL"
-for _ in $(seq 1 60); do
-  docker exec "$NAME" mysqladmin ping -uroot -p"$ROOTPW" --silent >/dev/null 2>&1 && break
-  echo -n "."; sleep 2
+mysqlc -e "DROP DATABASE IF EXISTS \`$scratch\`; CREATE DATABASE \`$scratch\` CHARACTER SET utf8mb4;"
+trap 'mysqlc -e "DROP DATABASE IF EXISTS \`$scratch\`;" >/dev/null 2>&1 || true' EXIT
+
+openssl enc -d -aes-256-cbc -pbkdf2 -pass "file:$BACKUP_PASSPHRASE_FILE" -in "$latest" | gunzip | mysqlc "$scratch"
+
+fail=0
+for t in users cases documents audit_logs legal_document_chunks; do
+  restored=$(mysqlc -N -e "SELECT COUNT(*) FROM \`$scratch\`.\`$t\`")
+  live=$(mysqlc -N -e "SELECT COUNT(*) FROM \`$DB_NAME\`.\`$t\`")
+  echo "[restore-test] $t: restored=$restored live=$live"
+  # Live may have grown since the backup, but a restore with FEWER rows than 90% of live is suspect.
+  if (( restored * 10 < live * 9 )); then echo "[restore-test] FAIL: $t looks short" >&2; fail=1; fi
 done
-echo
-docker exec "$NAME" mysqladmin ping -uroot -p"$ROOTPW" --silent >/dev/null
-
-zcat "$BACKUP" | docker exec -i "$NAME" mysql -uroot -p"$ROOTPW" lcdjp
-
-q() { docker exec "$NAME" mysql -uroot -p"$ROOTPW" -N -B lcdjp -e "$1" 2>/dev/null; }
-TABLES=$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='lcdjp'")
-for t in users cases login_lockouts password_reset_links session_revocations; do
-  EXISTS=$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='lcdjp' AND table_name='$t'")
-  if [ "$EXISTS" != "1" ]; then echo "[restore-test] missing table: $t" >&2; false; fi
-done
-USERS=$(q "SELECT COUNT(*) FROM users")
-[ "$USERS" -ge 1 ] || { echo "[restore-test] users table is empty" >&2; false; }
-
-echo "[restore-test] OK: $TABLES tables restored, $USERS users"
-ping_url "$PING"
+(( fail == 0 )) || exit 1
+echo "[restore-test] OK: $(basename "$latest") restored and verified"
+[[ -n "${HEALTHCHECK_URL:-}" ]] && curl -fsS -m 10 "${HEALTHCHECK_URL}" >/dev/null || true

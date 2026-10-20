@@ -86,7 +86,7 @@
     border-radius: 12px;
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }.form-page h2 {
-    color: #1a4080;
+    color: var(--secondary);
     text-align: center;
     margin-bottom: 20px;
 }.form-page label {
@@ -101,7 +101,7 @@
     max-width: 700px;
     margin-bottom: 20px;
 }.form-card h2 {
-    color: #1a4080;
+    color: var(--secondary);
     margin-bottom: 15px;
     font-size: 22px;
 }
@@ -165,7 +165,7 @@
     border-radius: 6px;
     font-size: 16px;
 }.form-card button {
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     border: none;
     padding: 12px 20px;
@@ -203,7 +203,7 @@
     align-items: center;
     animation: fadeIn 0.3s ease;
 }.modal-header {
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     padding: 15px 20px;
     border-radius: 12px 12px 0 0;
@@ -218,7 +218,7 @@
     line-height: 1.6;
     color: #333;
 }.modal-body h4 {
-    color: #1a4080;
+    color: var(--secondary);
     margin-top: 15px;
     margin-bottom: 10px;
 }.modal-body ul, .modal-body ol {
@@ -231,7 +231,7 @@
     border-top: 1px solid #eee;
     text-align: right;
 }.modal-footer button {
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -253,7 +253,7 @@
     align-items: center;
     animation: fadeIn 0.3s ease;
 }.modal-header {
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     padding: 15px 20px;
     border-radius: 12px 12px 0 0;
@@ -268,7 +268,7 @@
     line-height: 1.6;
     color: #333;
 }.modal-body h4 {
-    color: #1a4080;
+    color: var(--secondary);
     margin-top: 15px;
     margin-bottom: 10px;
 }.modal-body ul, .modal-body ol {
@@ -281,7 +281,7 @@
     border-top: 1px solid #eee;
     text-align: right;
 }.modal-footer button {
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -300,7 +300,7 @@ input[type="checkbox"] {
     max-width:  18px !important;
     flex-shrink: 0   !important;
     cursor:     pointer !important;
-    accent-color: #1a4080;
+    accent-color: var(--secondary);
 }.reg-step-panel { display: block; }.reg-step-panel.hidden { display: none !important; }.reg-step-dot {
     display: flex;
     flex-direction: column;
@@ -377,7 +377,7 @@ input[type="checkbox"] {
 }.step-section-head h3 { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }.step-section-head p  { font-size: 13px; color: #4a4a6a; }.otp-resend-row { text-align: center; font-size: 13px; color: #4a4a6a; margin-top: 10px; }.otp-resend-row button {
     color: var(--primary); font-weight: 600; background: none; border: none;
     cursor: pointer; font-size: inherit; font-family: inherit; text-decoration: underline; padding: 0;
-}.otp-resend-row button:disabled { color: #aaa; cursor: default; text-decoration: none; }.idv-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:50000; overflow-y:auto; padding:24px 16px; display:flex; align-items:flex-start; justify-content:center; }#forcePasswordChangeOverlay .fpc-modal {
+}.otp-resend-row button:disabled { color: #6b7280; cursor: default; text-decoration: none; }.idv-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:50000; overflow-y:auto; padding:24px 16px; display:flex; align-items:flex-start; justify-content:center; }#forcePasswordChangeOverlay .fpc-modal {
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 24px 64px rgba(0,0,0,0.45);
@@ -385,7 +385,7 @@ input[type="checkbox"] {
     max-width: 440px;
     overflow: hidden;
 }#forcePasswordChangeOverlay .fpc-header {
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     padding: 28px;
     text-align: center;
@@ -416,7 +416,7 @@ input[type="checkbox"] {
     transition: border-color 0.2s;
     box-sizing: border-box;
 }#forcePasswordChangeOverlay .fpc-field input:focus {
-    border-color: #1a4080;
+    border-color: var(--secondary);
     outline: none;
     box-shadow: 0 0 0 3px rgba(26,64,128,0.12);
 }#forcePasswordChangeOverlay .fpc-error {
@@ -440,7 +440,7 @@ input[type="checkbox"] {
 }#forcePasswordChangeOverlay .fpc-btn {
     width: 100%;
     padding: 12px;
-    background: #1a4080;
+    background: var(--secondary);
     color: white;
     border: none;
     border-radius: 8px;
@@ -484,7 +484,7 @@ input[type="checkbox"] {
         justify-content: center;
         flex: 0 0 38%;
         max-width: 460px;
-        background: linear-gradient(180deg, var(--primary, #1a237e) 0%, var(--primary-dark, #0d1442) 100%);
+        background: linear-gradient(180deg, var(--primary, var(--primary)) 0%, var(--primary-dark, #0d1442) 100%);
         color: #fff;
         padding: 56px 36px;
         text-align: center;
@@ -645,7 +645,7 @@ input[type="checkbox"] {
     width: 22px;
     height: 22px;
     flex: 0 0 auto;
-    color: var(--primary, #1a237e);
+    color: var(--primary, var(--primary));
 }
 .lg-sub {
     margin: 6px 0 0;
@@ -680,7 +680,7 @@ input[type="checkbox"] {
 }
 .lg-forgot:hover,
 .lg-forgot:focus-visible {
-    color: var(--primary, #1a237e);
+    color: var(--primary, var(--primary));
     text-decoration: underline;
 }
 .lg-input {
@@ -703,7 +703,7 @@ input[type="checkbox"] {
 .lg-input:focus {
     outline: none;
     background: #ffffff;
-    border-color: var(--primary, #1a237e);
+    border-color: var(--primary, var(--primary));
     box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.14);
 }
 .lg-pw {
@@ -737,7 +737,7 @@ input[type="checkbox"] {
     transition: color 0.15s, background-color 0.15s;
 }
 .lg-pw:focus-within .lg-pw-toggle {
-    border-color: var(--primary, #1a237e);
+    border-color: var(--primary, var(--primary));
 }
 .lg-pw-toggle svg {
     width: 20px;
@@ -746,11 +746,11 @@ input[type="checkbox"] {
     pointer-events: none;
 }
 .lg-pw-toggle:hover {
-    color: var(--primary, #1a237e);
+    color: var(--primary, var(--primary));
     background: #f3f5fc;
 }
 .lg-pw-toggle:focus-visible {
-    outline: 2px solid var(--primary, #1a237e);
+    outline: 2px solid var(--primary, var(--primary));
     outline-offset: -2px;
 }
 .lg-remember {
@@ -768,16 +768,24 @@ input[type="checkbox"] {
     width: 16px;
     height: 16px;
     margin: 0;
-    accent-color: var(--primary, #1a237e);
+    accent-color: var(--primary, var(--primary));
     cursor: pointer;
 }
 .lg-recaptcha {
-    margin-top: 16px;
+    /* Reserve the widget's full height (78px) so the Login button below can never sit under it, and give it
+       its own stacking layer so nothing it draws can cover the button. */
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    height: 78px;
+    margin: 16px 0 20px;
 }
 .lg-recaptcha > div {
     transform-origin: left top;
 }
 .lg-card .lg-submit {
+    position: relative;
+    z-index: 2;
     margin-top: 22px;
     padding: 14px;
     font-size: 17px;
@@ -804,9 +812,9 @@ input[type="checkbox"] {
     margin-top: 0;
     padding: 13px;
     font-size: 16px;
-    color: var(--primary, #1a237e);
+    color: var(--primary, var(--primary));
     background: transparent;
-    border: 1.5px solid var(--primary, #1a237e);
+    border: 1.5px solid var(--primary, var(--primary));
     border-radius: 6px;
 }
 .lg-card .lg-secondary:hover {
@@ -852,6 +860,9 @@ input[type="checkbox"] {
     .lg-brand img {
         height: 44px;
     }
+    .lg-recaptcha {
+        height: 72px;              /* 78px widget at 0.92 scale */
+    }
     .lg-recaptcha > div {
         transform: scale(0.92);
     }
@@ -860,6 +871,15 @@ input[type="checkbox"] {
     }
     .lg-sub {
         font-size: 15px;
+    }
+}
+
+@media (max-width: 340px) {
+    .lg-recaptcha {
+        height: 64px;              /* 78px widget at 0.82 scale, so it fits inside a very narrow card */
+    }
+    .lg-recaptcha > div {
+        transform: scale(0.82);
     }
 }
 
@@ -952,7 +972,7 @@ html[data-theme="dark"] .lg-card .lg-secondary:hover {
     padding: 0;
     font: inherit;
     font-size: 14px;
-    color: var(--primary, #1a237e);
+    color: var(--primary, var(--primary));
     background: none;
     border: 0;
     cursor: pointer;
@@ -967,4 +987,175 @@ html[data-theme="dark"] .lg-error {
     color: #ffb4ab;
     background: rgba(180, 35, 24, 0.18);
     border-color: rgba(245, 194, 192, 0.35);
+}
+
+
+/* ---- Login page: compact footer + tighter top (mobile/tablet) ---- */
+.lg-footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+.lg-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 18px;
+}
+.lg-footer a {
+    color: #7a8bab;
+    text-decoration: none;
+}
+.lg-footer-copy {
+    color: #a6b2c9;
+    font-size: 12px;
+}
+@media (display-mode: standalone) {
+    .lg-footer-app { display: none; }
+}
+
+@media (max-width: 1023px) {
+    #loginPage,
+    #loginOtpPage {
+        padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 0;
+        justify-content: flex-start;
+    }
+    .lg-brand {
+        margin: 0 0 8px 2px;
+    }
+    .lg-brand img {
+        height: 40px;
+    }
+    .lg-card {
+        padding: 20px 20px 20px;
+    }
+    .lg-title {
+        font-size: 19px;
+    }
+    .lg-sub {
+        margin-top: 4px;
+        font-size: 14px;
+    }
+    .lg-rule {
+        margin: 12px 0 14px;
+    }
+    .lg-or {
+        margin: 16px 0 12px;
+    }
+    #loginPage > .lg-footer,
+    #loginOtpPage > .lg-footer {
+        margin-top: 10px !important;
+        padding-bottom: 14px;
+    }
+}
+
+
+/* ---- iOS / installed-app fix: keep page headers out from under the status bar ----
+   index.html uses viewport-fit=cover + black-translucent status bar, so content
+   starts underneath the clock/notch unless the page pads for the safe area. */
+#registerPage,
+#forgotPage,
+#verifySuccessPage {
+    padding-top: env(safe-area-inset-top, 0px);
+    box-sizing: border-box;
+}
+#registerPage .form-page,
+#forgotPage .form-page {
+    margin-top: 12px;
+}
+
+/* iOS Safari gives <input type="date"> an intrinsic width that pushes it past the card edge */
+#reg_dob,
+.form-page input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    line-height: 1.2;
+    text-align: left;
+}
+#reg_dob::-webkit-date-and-time-value,
+.form-page input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.2em;
+}
+
+
+/* Desktop login: fit short windows / zoomed browsers without clipping the seal or the form */
+@media (min-width: 1024px) {
+    .login-side-panel {
+        justify-content: center;
+        justify-content: safe center; /* overflow scrolls instead of being cut off at the top */
+        padding: clamp(20px, 5vh, 56px) 36px;
+    }
+    .login-seal-img {
+        width: clamp(110px, 26vh, 210px);
+        height: clamp(110px, 26vh, 210px);
+        flex: 0 0 auto;
+        margin-bottom: clamp(14px, 3.5vh, 36px);
+    }
+    .login-side-footer {
+        margin-top: auto;
+        padding-top: clamp(16px, 3.5vh, 36px);
+    }
+}
+@media (min-width: 1024px) and (max-height: 720px) {
+    .lg-brand { margin-bottom: 10px; }
+    .lg-brand img { height: 44px; }
+    .lg-card { padding: 20px 22px 20px; }
+    .lg-rule { margin: 12px 0 14px; }
+    .lg-label-row { margin-top: 12px; }
+    .lg-input { min-height: 42px; }
+}
+
+
+/* Desktop login v2: lock the page to the visible window and balance the left panel */
+@media (min-width: 1024px) {
+    #loginPage,
+    #loginOtpPage {
+        position: fixed;     /* page never scrolls; only the panels inside can */
+        inset: 0;
+        height: auto;
+        min-height: 0;
+    }
+    .login-side-panel,
+    .lg-side {
+        overscroll-behavior: contain;
+    }
+    /* seal + support text sit in the middle of the free space, links/copyright stay at the bottom */
+    .login-side-panel {
+        justify-content: flex-start;
+    }
+    .login-seal-img {
+        margin-top: auto;
+    }
+    .login-side-contact {
+        margin-bottom: auto;
+    }
+    .login-side-footer {
+        margin-top: 0;
+        padding-top: clamp(12px, 3vh, 28px);
+    }
+}
+
+
+/* Desktop login: let the seal grow to fill the left panel's free height */
+@media (min-width: 1024px) {
+    .login-seal-img {
+        /* 300px reserves room for the support text, links, copyright and padding */
+        width: clamp(110px, calc(100dvh - 300px), 440px);
+        height: auto;
+        aspect-ratio: 1 / 1;
+        max-width: 100%;
+        margin-bottom: clamp(14px, 3vh, 28px);
+    }
 }

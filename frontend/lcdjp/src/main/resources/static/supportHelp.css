@@ -1,0 +1,48 @@
+/* Support bot shown inside the Contact Support window before a person is handed to customer care (see supportHelp.js). */
+#chatWindow .sh-overlay {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; background: #f8f9fa; display: flex; flex-direction: column;
+  font-family: inherit; color: #16213e; min-height: 0;
+}
+.sh-msgs { flex: 1; overflow-y: auto; padding: 12px 12px 6px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
+.sh-msg { max-width: 88%; padding: 9px 12px; border-radius: 14px; font-size: 14px; line-height: 1.45; word-wrap: break-word; }
+.sh-msg.bot { align-self: flex-start; background: #fff; border: 1px solid #e3e7f0; border-bottom-left-radius: 4px; }
+.sh-msg.user { align-self: flex-end; background: #1a4080; color: #fff; border-bottom-right-radius: 4px; }
+.sh-msg.bot a { color: #1a4080; font-weight: 600; }
+.sh-msg p { margin: 0 0 6px; }
+.sh-msg p:last-child { margin-bottom: 0; }
+.sh-msg ol { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: sh; }
+.sh-msg li { position: relative; margin: 0 0 8px; padding-left: 26px; counter-increment: sh; }
+.sh-msg li:last-child { margin-bottom: 0; }
+.sh-msg li::before {
+  content: counter(sh); position: absolute; left: 0; top: 1px; width: 19px; height: 19px; border-radius: 50%;
+  background: #1a4080; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.sh-msg.urgent { background: #fff4f2; border-color: #f3c9c2; color: #7a1f12; }
+.sh-typing { display: inline-flex; gap: 4px; align-items: center; padding: 12px 14px; }
+.sh-typing i { width: 6px; height: 6px; border-radius: 50%; background: #9aa3b8; animation: sh-bounce 1s infinite ease-in-out; }
+.sh-typing i:nth-child(2) { animation-delay: .15s; }
+.sh-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes sh-bounce { 0%, 80%, 100% { transform: translateY(0); opacity: .5; } 40% { transform: translateY(-4px); opacity: 1; } }
+.sh-chips { display: flex; flex-wrap: wrap; gap: 6px; align-self: stretch; margin: 0 0 2px; }
+.sh-chip {
+  padding: 8px 12px; border-radius: 18px; border: 1px solid #1a4080; background: #fff; color: #1a4080; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 600; text-align: left; line-height: 1.25;
+}
+.sh-chip:hover { background: #eef3fb; }
+.sh-chip.primary { background: #1a4080; color: #fff; }
+.sh-chip.primary:hover { filter: brightness(1.08); }
+.sh-chip.soft { border-color: #cfd6e4; color: #3b4258; }
+.sh-inputrow { flex: none; display: flex; gap: 6px; align-items: center; padding: 8px 10px; background: #fff; border-top: 1px solid #edf0f6; }
+.sh-input {
+  flex: 1; min-width: 0; height: 38px; box-sizing: border-box; padding: 4px 12px; border: 1px solid #e0e4ee; border-radius: 19px;
+  font: inherit; font-size: 16px; background: #f5f6fa; color: #16213e;
+}
+.sh-input:focus { outline: 2px solid #1a4080; outline-offset: 1px; background: #fff; }
+.sh-send { flex: none; height: 38px; padding: 0 14px; border: 0; border-radius: 19px; background: #1a4080; color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.sh-send[disabled] { opacity: .5; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .sh-typing i { animation: none; } }
+html[data-theme="dark"] #chatWindow .sh-overlay { background: #151a2b; color: #e8eaf2; }
+html[data-theme="dark"] .sh-msg.bot, html[data-theme="dark"] .sh-chip, html[data-theme="dark"] .sh-inputrow { background: #1b2033; border-color: #2e3550; color: #e8eaf2; }
+html[data-theme="dark"] .sh-input { background: #262d47; border-color: #2e3550; color: #e8eaf2; }
+html[data-theme="dark"] .sh-chip:not(.primary), html[data-theme="dark"] .sh-msg.bot a { color: #9db8ec; border-color: #9db8ec; }
+html[data-theme="dark"] .sh-msg.urgent { background: #3a1d1a; border-color: #6b2f28; color: #ffd2cc; }

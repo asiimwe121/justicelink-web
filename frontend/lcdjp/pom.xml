@@ -254,6 +254,19 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Real MySQL for tests that exercise raw SQL and Flyway migrations. Versions come from the Spring Boot BOM.
+		     Tests using it skip themselves when Docker is not available. -->
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>mysql</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- JUnit 5 -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -357,17 +370,10 @@
 						</goals>
 					</execution>
 					<!-- Coverage floor, checked in the verify phase (mvn verify).
-					     Was 0.10, set back when this codebase had ~2 test classes
-					     across 115 source files. The suite has since grown to 26+
-					     test classes (~250+ test methods, including the new
-					     AdminUserControllerTest), so the floor has been raised to
-					     match measured coverage plus headroom rather than left at
-					     the original placeholder. Still well below a typical
-					     60-80% target — CaseController, DocumentController,
-					     ProfileController, AuthService and EmailService remain
-					     untested or under-tested. Ratchet this number up as real
-					     coverage grows; treat any PR that would lower it as a
-					     regression, not a reason to lower the floor instead. -->
+					     The suite now has ~900 test methods across ~100 test classes, so 0.20 is far below what is really
+					     covered. It is only a safety net until the first CI run tells us the real figure: CI prints it
+					     (scripts/jacoco-summary.py) together with a suggested floor (measured minus 3 points). Put that number
+					     here, then only ever raise it. A change that lowers it is a regression, not a reason to edit this line. -->
 					<execution>
 						<id>coverage-check</id>
 						<phase>verify</phase>

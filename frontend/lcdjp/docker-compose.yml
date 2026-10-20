@@ -1,50 +1,88 @@
 services:
   mysql:
-    image: mysql:8
+    image: ${MYSQL_IMAGE:-mysql:8.4}
     container_name: lcdjp-mysql
     restart: always
-    command: --mysql-native-password=ON --bind-address=0.0.0.0
+    # Hard ceiling so a runaway query cannot take the whole host down with it.
+    mem_limit: ${MYSQL_MEM_LIMIT:-1g}
+    command: --mysql-native-password=ON --bind-address=0.0.0.0 --binlog-expire-logs-seconds=259200
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: lcdjp
       MYSQL_USER: lcdjp_user
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "mysql -h 127.0.0.1 -P 3306 -u root -p${MYSQL_ROOT_PASSWORD} lcdjp -e 'SELECT 1'"]
+      # MYSQL_PWD comes from the container env, so the password is not written into the compose file / docker inspect.
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_ROOT_PASSWORD\" mysql -h 127.0.0.1 -P 3306 -u root lcdjp -e 'SELECT 1'"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 60s
     networks:
       - lcdjp-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
-    image: redis:7-alpine
+    image: ${REDIS_IMAGE:-redis:7.4-alpine}
     container_name: lcdjp-redis
     restart: always
-    command: --save "" --appendonly no
+    mem_limit: ${REDIS_MEM_LIMIT:-384m}
+    environment:
+      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-256mb}
+      # redis-cli reads REDISCLI_AUTH, so the healthcheck needs no password on its command line.
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+    # maxmemory + volatile-lru: every key this app writes (sessions, cache, rate limits, locks, blacklist) has a TTL, so when Redis
+    # is full it evicts the least recently used expiring keys instead of refusing writes or growing until the host runs out of memory.
+    # sh -c so the password comes from the container env, not from a literal in the compose file / docker inspect args.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --appendfsync everysec --save 60 1 --maxmemory \"$$REDIS_MAXMEMORY\" --maxmemory-policy volatile-lru --requirepass \"$$REDIS_PASSWORD\""]
+    volumes:
+      - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 10s
     networks:
       - lcdjp-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   lcdjp-app:
-    build: .
-    user: "100:1001"
+    build:
+      context: .
+      args:
+        MAVEN_IMAGE: ${MAVEN_IMAGE:-maven:3.9.6-eclipse-temurin-17}
+        JRE_IMAGE: ${JRE_IMAGE:-eclipse-temurin:17-jre-jammy}
+    # One tag per deploy (scripts/deploy.sh sets APP_TAG to the git SHA) so a rollback is just
+    # "start the previous tag" with no rebuild.
+    image: lcdjp-backend:${APP_TAG:-latest}
     container_name: lcdjp-backend
     restart: always
-    stop_grace_period: 30s
+    mem_limit: ${APP_MEM_LIMIT:-1g}
+    stop_grace_period: 40s
+    # The JVM needs no extra privileges: it listens on 8080 and writes only to /app/logs, so drop all capabilities and block escalation.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     ports:
-      - "8080:8080"
+      # With app.trust-proxy-headers=true the app believes X-Forwarded-For / CF-Connecting-IP, so it must only be
+      # reachable through your proxy. Set APP_BIND_ADDRESS=127.0.0.1 in .env when the proxy runs on this host.
+      - "${APP_BIND_ADDRESS:-0.0.0.0}:8080:8080"
     dns:
       - 8.8.8.8
       - 1.1.1.1
@@ -55,29 +93,114 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      # Size the heap from the container limit and let the restart policy replace a JVM that ran out of memory,
+      # instead of leaving it half-alive.
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError}
       DB_URL: jdbc:mysql://lcdjp-mysql:3306/lcdjp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000&socketTimeout=30000
       DB_USERNAME: lcdjp_user
       DB_PASSWORD: ${DB_PASSWORD}
       REDIS_HOST: lcdjp-redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
       SHOW_SQL: false
+      DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-20}
+      TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-100}
+      SYSTEM_ADMIN_INITIAL_PASSWORD: ${SYSTEM_ADMIN_INITIAL_PASSWORD:-}
+      # Security knobs (defaults match the previous hard-coded behaviour; see CHANGES.md)
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-0}
+      PASSWORD_MIN_LENGTH: ${PASSWORD_MIN_LENGTH:-8}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      JWT_REMEMBER_ME_EXPIRATION_MS: ${JWT_REMEMBER_ME_EXPIRATION_MS:-2592000000}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       GOOGLE_MAPS_PUBLIC_KEY: ${GOOGLE_MAPS_PUBLIC_KEY:-${GOOGLE_MAPS_API_KEY}}
       BREVO_API_KEY: ${BREVO_API_KEY}
       BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL}
       JWT_SECRET: ${JWT_SECRET}
+      # AI chat runs on Groq (OpenAI-compatible). Required: without it every chat reply is the fallback message.
+      GROQ_API_KEY: ${GROQ_API_KEY:?set GROQ_API_KEY in .env}
+      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      # Backup chat provider (optional). Used only when the provider before it in AI_PROVIDERS fails.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_REASONING_EFFORT: ${GEMINI_REASONING_EFFORT:-}
+      # Order providers are tried in, comma separated: groq, gemini
+      AI_PROVIDERS: ${AI_PROVIDERS:-groq,gemini}
+      # Hugging Face is now used only for embeddings (RAG / legal knowledge); Groq has no embeddings endpoint.
       HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY}
       SUNBIRD_API_TOKEN: ${SUNBIRD_API_TOKEN:-}
       RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY:-}
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
       LEGAL_KNOWLEDGE_DIR: /app/legal-knowledge
+      # Object storage for uploaded files (Cloudflare R2 or any S3-compatible bucket). Leave STORAGE_ENDPOINT empty
+      # to keep files in MySQL. STORAGE_BACKFILL_ENABLED=true moves existing files out of MySQL once at startup.
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:-}
+      STORAGE_REGION: ${STORAGE_REGION:-auto}
+      STORAGE_BACKFILL_ENABLED: ${STORAGE_BACKFILL_ENABLED:-false}
     volumes:
+      # Host ./logs must be writable by uid 1001 (appuser): mkdir -p logs && sudo chown 1001:1001 logs
       - ./logs:/app/logs
-      # Host-side location of the legal document library. Must be set in
-      # your own .env as LEGAL_KNOWLEDGE_DIR_HOST — no default is provided
-      # here since the correct path is machine-specific (e.g. a Windows
-      # dev box vs. a Linux server). See .env.example.
-      - ${LEGAL_KNOWLEDGE_DIR_HOST:?LEGAL_KNOWLEDGE_DIR_HOST must be set in .env}:/app/legal-knowledge
+      # Host-side location of the legal document library. Optional on Oracle —
+      # if LEGAL_KNOWLEDGE_DIR_HOST is not set, uses a local folder that may
+      # be empty. Ingestion will skip and use existing DB chunks instead.
+      - ${LEGAL_KNOWLEDGE_DIR_HOST:-./legal-knowledge}:/app/legal-knowledge
+    networks:
+      - lcdjp-network
+    healthcheck:
+      # Uses bash's /dev/tcp so the slim JRE image needs no curl/wget.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nightly logical backup of the database into ./backups (gzip, newest BACKUP_KEEP kept). Copy ./backups off this host
+  # as well (object storage, another machine): a backup on the same disk does not survive losing the disk.
+  # Restore: scripts/restore-db.sh backups/<file>.sql.gz
+  mysql-backup:
+    image: ${MYSQL_IMAGE:-mysql:8.4}
+    container_name: lcdjp-mysql-backup
+    restart: always
+    mem_limit: 256m
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_PWD: ${DB_PASSWORD}
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+    entrypoint:
+      - sh
+      - -c
+      - |
+        while true; do
+          f="/backups/lcdjp-$$(date +%Y%m%d-%H%M%S).sql.gz"
+          # Dump to a plain file first so a failed mysqldump is detected (a pipe would only report gzip's exit code).
+          if mysqldump -h lcdjp-mysql -u lcdjp_user --single-transaction --routines --no-tablespaces lcdjp > "$$f.sql" \
+             && gzip -c "$$f.sql" > "$$f.part" && [ -s "$$f.sql" ]; then
+            rm -f "$$f.sql"
+            mv "$$f.part" "$$f"
+            echo "backup written: $$f"
+            i=0
+            for old in $$(ls -1t /backups/lcdjp-*.sql.gz 2>/dev/null); do
+              i=$$((i+1))
+              if [ "$$i" -gt "$$BACKUP_KEEP" ]; then rm -f "$$old"; fi
+            done
+          else
+            rm -f "$$f.part" "$$f.sql"
+            echo "BACKUP FAILED at $$(date)" >&2
+          fi
+          sleep $$((BACKUP_INTERVAL_HOURS * 3600))
+        done
+    volumes:
+      - ./backups:/backups
     networks:
       - lcdjp-network
     logging:
@@ -88,6 +211,7 @@ services:
 
 volumes:
   mysql-data:
+  redis-data:
 
 networks:
   lcdjp-network:

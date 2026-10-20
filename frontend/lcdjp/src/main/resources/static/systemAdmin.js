@@ -183,7 +183,7 @@ async function showCreateLCFallbackForm() {
             district: district,
             lockDistrict: true,
             noticeHtml: '<p style="font-size:12.5px;color:#996a00;background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:8px 12px;margin:0;">' +
-                'No District Admin is currently assigned to <strong>' + district + '</strong>. ' +
+                'No District Admin is currently assigned to <strong>' + escapeHtml(district) + '</strong>. ' +
                 'This account will be created as a System Admin fallback and flagged for follow-up.' +
                 '</p>',
             onSubmit: async function (fields, showFormMsg, modal) {
@@ -320,8 +320,8 @@ function showHome() {
         const adminMsgBtn = document.getElementById('adminMessagesBtn');
         if (adminMsgBtn) adminMsgBtn.style.display = 'block';
         
-        updateAdminMessageBadge();
-        startAdminPolling();
+        if (typeof updateAdminMessageBadge === 'function') updateAdminMessageBadge();
+        if (typeof startAdminPolling === 'function') startAdminPolling();
         
         console.log("Showing Admin Dashboard");
         showAdminHome();
@@ -475,7 +475,7 @@ function showAdminApprovals() {
 
 
 function showAdminNotificationsPage() {
-    console.log(" showAdminNotificationsPage called");
+    console.log("showAdminNotificationsPage called");
     
     hideAllDashboardViews();
     
@@ -511,9 +511,9 @@ function showAdminNotificationsPage() {
         page.style.opacity = '1';
         renderAdminNotificationPage();
         renderNavbarNotifBadge();
-        console.log(" Admin Notifications page shown");
+        console.log("Admin Notifications page shown");
     } else {
-        console.error(" Failed to create adminNotificationsPage");
+        console.error("Failed to create adminNotificationsPage");
         alert("Error loading notifications. Please refresh the page.");
     }
 }
@@ -561,7 +561,7 @@ function createAdminNotificationsPage() {
         adminDashboard.insertAdjacentElement('afterbegin', page);
     }
     
-    console.log(" Admin Notifications page created");
+    console.log("Admin Notifications page created");
 }
 
 
@@ -740,11 +740,11 @@ function _lcdjpOpenAdminNotifDropdown() {
 }
 
 async function renderAdminNotificationPage() {
-    console.log(" renderAdminNotificationPage called");
+    console.log("renderAdminNotificationPage called");
     
     const listContainer = document.getElementById('adminNotificationsPageList');
     if (!listContainer) {
-        console.error(" adminNotificationsPageList not found!");
+        console.error("adminNotificationsPageList not found!");
         return;
     }
     
@@ -754,7 +754,7 @@ async function renderAdminNotificationPage() {
     const urgentArr   = await getUrgentNotifications('admin');
     const urgentCount = Array.isArray(urgentArr) ? urgentArr.length : 0;
     
-    console.log(" Found", notifications.length, "notifications,", unreadCount, "unread");
+    console.log("Found", notifications.length, "notifications,", unreadCount, "unread");
     
     const totalEl = document.getElementById('adminNotifTotalCount');
     const unreadEl = document.getElementById('adminNotifUnreadCount');
@@ -812,7 +812,7 @@ async function renderAdminNotificationPage() {
             else typeLabel = ' System';
             
             html += `
-                <div id="notifRow_${notif.id}" onclick="lcdjpOpenNotification(${JSON.stringify(notif).replace(/"/g, '&quot;')})" 
+                <div id="notifRow_${escapeHtml(notif.id)}" onclick="lcdjpOpenNotification(${escapeHtml(JSON.stringify(notif))})" 
                      style="background:${bgColor}; 
                             padding:15px; 
                             margin-bottom:10px; 
@@ -827,11 +827,11 @@ async function renderAdminNotificationPage() {
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
                                 <div style="font-weight:${notif.read ? 'normal' : 'bold'}; color:${notif.read ? '#555' : '#333'};">
-                                    ${notif.message}
+                                    ${escapeHtml(notif.message)}
                                 </div>
                                 <span style="font-size:11px; background:#e9ecef; padding:2px 10px; border-radius:10px; color:#666;">${typeLabel}</span>
                             </div>
-                            ${notif.caseId ? `<div style="font-size:12px; color:#1a4080; font-weight:bold; margin-top:4px;"> Case: ${notif.caseId}</div>` : ''}
+                            ${notif.caseId ? `<div style="font-size:12px; color:#1a4080; font-weight:bold; margin-top:4px;"> Case: ${escapeHtml(notif.caseId)}</div>` : ''}
                             <div style="font-size:11px; color:#999; margin-top:4px;">
                                  ${new Date(notif.timestamp || notif.date).toLocaleString()}
                                 ${!notif.read ? ' • <span style="color:#dc3545; font-weight:bold;"> New</span>' : ''}
@@ -846,7 +846,7 @@ async function renderAdminNotificationPage() {
     }
     
     listContainer.innerHTML = html;
-    console.log(" Admin notifications rendered");
+    console.log("Admin notifications rendered");
 }
 async function refreshAdminNotificationPage() {
     await renderAdminNotificationPage();
@@ -902,7 +902,8 @@ function showUserManagement() {
             var toolbar = document.createElement('div');
             toolbar.id = 'saCreateLCToolbar';
             toolbar.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:12px;';
-            toolbar.innerHTML = '<button onclick="showCreateLCFallbackForm()" style="padding:9px 18px;background:white;color:#1a4080;border:1px solid #1a4080;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;">+ Create LC Account (no District Admin only)</button>';
+            toolbar.innerHTML = (typeof lcdjpInviteButtonHtml === 'function' ? lcdjpInviteButtonHtml() : '') +
+                '<button onclick="showCreateLCFallbackForm()" style="padding:9px 18px;background:white;color:#1a4080;border:1px solid #1a4080;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;">+ Create LC Account (no District Admin only)</button>';
             var listContainer = document.getElementById('userListContainer');
             if (listContainer && listContainer.parentElement) {
                 listContainer.parentElement.insertBefore(toolbar, listContainer);
@@ -997,7 +998,7 @@ async function loadAllUsers() {
         container.innerHTML = `
             <div style="text-align:center; padding:40px; color:#dc3545;">
                 <div style="font-size:32px; margin-bottom:10px;"></div>
-                <p>Error loading users: ${error.message}</p>
+                <p>Error loading users: ${escapeHtml(error.message)}</p>
                 <button onclick="loadAllUsers()" style="margin-top:15px; padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">
                      Retry
                 </button>
@@ -1048,24 +1049,24 @@ function renderUserList(users) {
                         border:1px solid #e5e7eb;">
                 <div style="display:flex; gap:15px; align-items:flex-start; flex-wrap:wrap;">
                     <div style="flex-shrink:0;">
-                        <img src="${profilePic}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:3px solid ${statusColor};">
+                        <img src="${escapeHtml(profilePic)}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:3px solid ${statusColor};">
                     </div>
                     
                     <div style="flex:1; min-width:200px;">
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <span style="font-size:20px;">${roleEmoji}</span>
-                            <span style="font-weight:bold; font-size:17px; color:#333;">${user.firstName || user.first_name || ''} ${user.lastName || user.last_name || ''}</span>
+                            <span style="font-weight:bold; font-size:17px; color:#333;">${escapeHtml(user.firstName || user.first_name || '')} ${escapeHtml(user.lastName || user.last_name || '')}</span>
                             <span style="background:${statusColor}; color:white; padding:2px 12px; border-radius:12px; font-size:11px; font-weight:bold;">
                                 ${status}
                             </span>
                         </div>
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:5px; margin-top:8px; font-size:13px; color:#666;">
-                            <div><strong>Username:</strong> @${user.username}</div>
-                            <div><strong>User ID:</strong> ${user.user_id || user.id || 'N/A'}</div>
-                            <div><strong>Phone:</strong> ${user.phone || 'N/A'}</div>
-                            <div><strong>Email:</strong> ${user.email || 'N/A'}</div>
-                            <div><strong>Role:</strong> ${user.role || 'N/A'}</div>
-                            <div><strong>District:</strong> ${user.district || 'N/A'}</div>
+                            <div><strong>Username:</strong> @${escapeHtml(user.username)}</div>
+                            <div><strong>User ID:</strong> ${escapeHtml(user.user_id || user.id || 'N/A')}</div>
+                            <div><strong>Phone:</strong> ${escapeHtml(user.phone || 'N/A')}</div>
+                            <div><strong>Email:</strong> ${escapeHtml(user.email || 'N/A')}</div>
+                            <div><strong>Role:</strong> ${escapeHtml(user.role || 'N/A')}</div>
+                            <div><strong>District:</strong> ${escapeHtml(user.district || 'N/A')}</div>
                             <div><strong>Registered:</strong> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</div>
                         </div>
                     </div>
@@ -1078,12 +1079,12 @@ function renderUserList(users) {
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px;">
                         ${(user.verificationStatus||user.verification_status||'').toUpperCase()==='PENDING' ? `
-                            <button onclick="openVerifyModal('${user.username}')" 
+                            <button onclick="openVerifyModal(${escapeHtml(JSON.stringify(user.username))})" 
                                     style="padding:8px 16px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">
                                 &#10004; Verify
                             </button>
                         ` : ''}
-                        <button onclick="viewUserDetails('${user.username}')" 
+                        <button onclick="viewUserDetails(${escapeHtml(JSON.stringify(user.username))})" 
                                 style="padding:8px 16px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-size:13px;">
                              View Details
                         </button>
@@ -1093,12 +1094,12 @@ function renderUserList(users) {
                             </span>
                         ` : `
                             ${String(user.approvalStatus || user.approval_status || '').toLowerCase() === 'disabled' ? `
-                            <button onclick="enableUserAccount('${user.username}')" 
+                            <button onclick="enableUserAccount(${escapeHtml(JSON.stringify(user.username))})" 
                                     style="padding:8px 16px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-size:13px;">
                                  Reactivate
                             </button>
                             ` : `
-                            <button onclick="disableUserAccount('${user.username}')" 
+                            <button onclick="disableUserAccount(${escapeHtml(JSON.stringify(user.username))})" 
                                     style="padding:8px 16px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-size:13px;">
                                  Deactivate
                             </button>
@@ -1246,8 +1247,8 @@ async function viewUserDetails(username) {
             ...(token ? { 'Authorization': 'Bearer ' + token } : {})
         };
         
-        console.log(' Fetching user:', username);
-        console.log(' API URL:', API_ENDPOINTS.user(username));
+        console.log('Fetching user:', username);
+        console.log('API URL:', API_ENDPOINTS.user(username));
         
         const response = await fetch(API_ENDPOINTS.user(username), {
             method: 'GET',
@@ -1309,14 +1310,14 @@ async function viewUserDetails(username) {
         content.innerHTML = `
             <div style="text-align:center; padding:40px; color:#dc3545;">
                 <div style="font-size:32px; margin-bottom:10px;"></div>
-                <p><strong>Error:</strong> ${error.message}</p>
+                <p><strong>Error:</strong> ${escapeHtml(error.message)}</p>
                 <p style="font-size:12px; color:#666; margin-top:10px;">
                     Session: ${sessionStorage.getItem('lcdjp_username') ? ' Active' : ' Not logged in'}
                 </p>
                 <p style="font-size:12px; color:#666;">
                     API URL: ${API_ENDPOINTS.user(username)}
                 </p>
-                <button onclick="viewUserDetails('${username}')" style="margin-top:15px; padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">
+                <button onclick="viewUserDetails(${escapeHtml(JSON.stringify(String(username)))})" style="margin-top:15px; padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">
                      Retry
                 </button>
             </div>
@@ -1354,21 +1355,21 @@ function displayUserDetails(user, nameEl, roleEl, content) {
                 </div>
             </div>
             <div style="flex:1; min-width:280px;">
-                <h3 style="color:#1a4080; margin:0 0 4px 0;">${firstName} ${lastName}</h3>
-                <p style="color:#666; margin:0 0 12px 0;">@${user.username} &bull; ${user.role || 'User'}</p>
+                <h3 style="color:#1a4080; margin:0 0 4px 0;">${escapeHtml(firstName)} ${escapeHtml(lastName)}</h3>
+                <p style="color:#666; margin:0 0 12px 0;">@${escapeHtml(user.username)} &bull; ${escapeHtml(user.role || 'User')}</p>
 
                 <div class="lcdjp-grid-2col" style="gap:8px; font-size:13px;">
-                    <div><strong>Phone:</strong> ${user.phone || 'N/A'}</div>
-                    <div><strong>Email:</strong> ${user.email || 'N/A'}</div>
-                    <div><strong>National ID:</strong> ${user.nationalId || user.national_id || 'N/A'}</div>
-                    <div><strong>Gender:</strong> ${user.gender || 'N/A'}</div>
-                    <div><strong>Date of Birth:</strong> ${user.dateOfBirth || user.date_of_birth || 'N/A'}</div>
+                    <div><strong>Phone:</strong> ${escapeHtml(user.phone || 'N/A')}</div>
+                    <div><strong>Email:</strong> ${escapeHtml(user.email || 'N/A')}</div>
+                    <div><strong>National ID:</strong> ${escapeHtml(user.nationalId || user.national_id || 'N/A')}</div>
+                    <div><strong>Gender:</strong> ${escapeHtml(user.gender || 'N/A')}</div>
+                    <div><strong>Date of Birth:</strong> ${escapeHtml(user.dateOfBirth || user.date_of_birth || 'N/A')}</div>
                     <div><strong>Registered:</strong> ${(user.createdAt||user.created_at) ? new Date(user.createdAt||user.created_at).toLocaleDateString() : 'N/A'}</div>
                 </div>
 
                 <div style="margin-top:10px; padding:10px; background:#f0f5ff; border-radius:8px; font-size:13px;">
                     <strong> Location:</strong>
-                    ${[user.village, user.parish, user.subCounty||user.sub_county, user.county, user.district].filter(Boolean).join(' › ') || 'N/A'}
+                    ${escapeHtml([user.village, user.parish, user.subCounty||user.sub_county, user.county, user.district].filter(Boolean).join(' › ') || 'N/A')}
                 </div>
             </div>
         </div>
@@ -1377,39 +1378,39 @@ function displayUserDetails(user, nameEl, roleEl, content) {
         <div style="margin-top:15px; padding:15px; background:#f0f8ff; border-radius:8px; border-left:4px solid #17a2b8;">
             <h4 style="color:#17a2b8; margin:0 0 10px 0;"> Lawyer Details</h4>
             <div class="lcdjp-grid-2col" style="gap:8px; font-size:13px;">
-                <div><strong>Specialization:</strong> ${user.lawyerSpecialization || user.lawyer_specialization || 'N/A'}</div>
-                <div><strong>Bar Number:</strong> ${user.barNumber || user.bar_number || 'N/A'}</div>
+                <div><strong>Specialization:</strong> ${escapeHtml(user.lawyerSpecialization || user.lawyer_specialization || 'N/A')}</div>
+                <div><strong>Bar Number:</strong> ${escapeHtml(user.barNumber || user.bar_number || 'N/A')}</div>
             </div>
         </div>
         ` : ''}
 
-        <div id="loginLockNotice_${user.username}" style="margin-top:16px;"></div>
+        <div id="loginLockNotice_${escapeHtml(user.username)}" style="margin-top:16px;"></div>
 
         <div style="margin-top:20px; padding-top:15px; border-top:2px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="sendResetLinkBtn_${user.username}" onclick="sendResetPasswordLink('${user.username}')" style="padding:10px 22px; background:#1a237e; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Send reset password link</button>
+            <button id="sendResetLinkBtn_${escapeHtml(user.username)}" onclick="sendResetPasswordLink(${escapeHtml(JSON.stringify(user.username))})" style="padding:10px 22px; background:#1a237e; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Send reset password link</button>
             ${status === 'Pending' ? (districtAdminOnlyVerification ? `
                 <span style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#795548;border:1px solid #ffe082;border-radius:6px;padding:10px 16px;font-size:12px;font-weight:600;">
                     &#128274; District Admin must approve
                 </span>
             ` : `
-                <button onclick="approveVerification('${user.username}')" style="padding:10px 22px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:bold;"> Approve</button>
-                <button onclick="openVerifyModal('${user.username}')"  style="padding:10px 22px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:bold;"> Review & Reject</button>
+                <button onclick="approveVerification(${escapeHtml(JSON.stringify(user.username))})" style="padding:10px 22px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:bold;"> Approve</button>
+                <button onclick="openVerifyModal(${escapeHtml(JSON.stringify(user.username))})"  style="padding:10px 22px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:bold;"> Review & Reject</button>
             `) : status === 'Disabled' ?
-                (_systemAdminIsLockedByDistrictAdmin(user) ? '' : `<button onclick="enableUserAccount('${user.username}')"  style="padding:10px 22px; background:#28a745; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;"> Reactivate</button>`) :
-                (_systemAdminIsLockedByDistrictAdmin(user) ? '' : `<button onclick="disableUserAccount('${user.username}')" style="padding:10px 22px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;"> Deactivate</button>`)
+                (_systemAdminIsLockedByDistrictAdmin(user) ? '' : `<button onclick="enableUserAccount(${escapeHtml(JSON.stringify(user.username))})"  style="padding:10px 22px; background:#28a745; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;"> Reactivate</button>`) :
+                (_systemAdminIsLockedByDistrictAdmin(user) ? '' : `<button onclick="disableUserAccount(${escapeHtml(JSON.stringify(user.username))})" style="padding:10px 22px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;"> Deactivate</button>`)
             }
             ${_systemAdminIsLockedByDistrictAdmin(user) ? `
                 <span title="This account's district has an assigned District Admin, who has exclusive authority to edit or deactivate it." style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#795548;border:1px solid #ffe082;border-radius:6px;padding:10px 16px;font-size:12px;font-weight:600;">
                     &#128274; District Admin has exclusive control of this account
                 </span>
             ` : `
-                <button onclick="adminEditUser('${user.username}')" style="padding:10px 22px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:bold;"> Edit Details</button>
+                <button onclick="adminEditUser(${escapeHtml(JSON.stringify(user.username))})" style="padding:10px 22px; background:white; color:#333; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:bold;"> Edit Details</button>
             `}
         </div>
         
-        <div style="margin-top:25px; padding-top:20px; border-top:2px solid #eee;" id="docSection_${user.username}">
+        <div style="margin-top:25px; padding-top:20px; border-top:2px solid #eee;" id="docSection_${escapeHtml(user.username)}">
             <h4 style="color:#1a4080; margin:0 0 15px 0;"> Submitted Documents</h4>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px;" id="docGrid_${user.username}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px;" id="docGrid_${escapeHtml(user.username)}">
             </div>
         </div>
     `;
@@ -1501,7 +1502,7 @@ function displayUserDetails(user, nameEl, roleEl, content) {
                 icon.style.cssText = 'font-size:28px;margin:6px 0;';
                 icon.textContent = '';
                 const msg = document.createElement('span');
-                msg.style.cssText = 'font-size:11px;color:#aaa;';
+                msg.style.cssText = 'font-size:11px;color:#6b7280;';
                 msg.textContent = 'Not uploaded';
                 cell.appendChild(icon);
                 cell.appendChild(msg);
@@ -1540,23 +1541,23 @@ function adminEditUser(username) {
 
     overlay.innerHTML = `
     <div style="background:white;border-radius:14px;padding:30px;max-width:600px;width:95%;margin:20px auto;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
-        <h3 style="margin:0 0 20px;color:#1a4080;border-bottom:2px solid #1a4080;padding-bottom:10px;"> Edit Details, @${username}</h3>
+        <h3 style="margin:0 0 20px;color:#1a4080;border-bottom:2px solid #1a4080;padding-bottom:10px;"> Edit Details, @${escapeHtml(username)}</h3>
         <div class="lcdjp-grid-2col" style="gap:14px;">
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">First Name</label>
-                <input id="ae_firstName" value="${user.firstName||user.first_name||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_firstName" value="${escapeHtml(user.firstName||user.first_name||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Last Name</label>
-                <input id="ae_lastName" value="${user.lastName||user.last_name||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_lastName" value="${escapeHtml(user.lastName||user.last_name||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Email</label>
-                <input id="ae_email" value="${user.email||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_email" value="${escapeHtml(user.email||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Phone</label>
-                <input id="ae_phone" value="${user.phone||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_phone" value="${escapeHtml(user.phone||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Gender</label>
@@ -1566,24 +1567,24 @@ function adminEditUser(username) {
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Date of Birth</label>
-                <input id="ae_dob" type="date" value="${user.dateOfBirth||user.date_of_birth||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_dob" type="date" data-datepicker value="${escapeHtml(user.dateOfBirth||user.date_of_birth||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">National ID</label>
-                <input id="ae_nationalId" value="${user.nationalId||user.national_id||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_nationalId" value="${escapeHtml(user.nationalId||user.national_id||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             ${role === 'Lawyer' ? `
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Specialization</label>
-                <input id="ae_spec" value="${user.lawyerSpecialization||user.lawyer_specialization||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_spec" value="${escapeHtml(user.lawyerSpecialization||user.lawyer_specialization||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Law Firm</label>
-                <input id="ae_firm" value="${user.lawFirmName||user.law_firm_name||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_firm" value="${escapeHtml(user.lawFirmName||user.law_firm_name||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>
             <div>
                 <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Bar Number</label>
-                <input id="ae_bar" value="${user.barNumber||user.bar_number||''}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                <input id="ae_bar" value="${escapeHtml(user.barNumber||user.bar_number||'')}" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;" />
             </div>` : ''}
         </div>
 
@@ -1612,7 +1613,7 @@ function adminEditUser(username) {
 
         <div style="margin-top:22px;display:flex;gap:10px;justify-content:flex-end;">
             <button onclick="document.getElementById('adminEditOverlay').style.display='none'" style="padding:10px 22px;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">Cancel</button>
-            <button onclick="adminSaveUser('${username}')" id="ae_saveBtn" style="padding:10px 28px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;"> Save Changes</button>
+            <button onclick="adminSaveUser(${escapeHtml(JSON.stringify(String(username)))})" id="ae_saveBtn" style="padding:10px 28px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;"> Save Changes</button>
         </div>
     </div>`;
     overlay.style.display = 'flex';
@@ -1881,14 +1882,14 @@ async function enableUserAccount(username) {
             'system'
         );
 
-        alert(` Account for @${username} has been REACTIVATED.`);
+        alert(`Account for @${username} has been REACTIVATED.`);
         
         closeUserDetailModal();
         loadAllUsers();
         if (typeof daLoadUsers === 'function' && _verificationReviewerContext().approverRole === 'DISTRICT_ADMIN') daLoadUsers();
     } catch (error) {
         console.error('Error enabling user:', error);
-        alert(` Failed to reactivate ${username}: ${error.message}`);
+        alert(`Failed to reactivate ${username}: ${error.message}`);
     }
 }
 
@@ -1921,14 +1922,14 @@ async function disableUserAccount(username) {
             'system'
         );
 
-        alert(` Account for @${username} has been DEACTIVATED.`);
+        alert(`Account for @${username} has been DEACTIVATED.`);
 
         closeUserDetailModal();
         loadAllUsers();
         if (typeof daLoadUsers === 'function' && _verificationReviewerContext().approverRole === 'DISTRICT_ADMIN') daLoadUsers();
     } catch (error) {
         console.error('Error disabling user:', error);
-        alert(` Failed to deactivate ${username}: ${error.message}`);
+        alert(`Failed to deactivate ${username}: ${error.message}`);
     }
 }
 
@@ -2061,17 +2062,17 @@ async function loadPendingApprovals() {
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:22px;">
                 <div style="background:white;color:#1a4080;padding:18px 20px;border-radius:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);cursor:pointer;"
                      onclick="_approvalsFilter='pending';loadPendingApprovals()">
-                    <div style="font-size:32px;font-weight:700;">${pending.length}</div>
+                    <div style="font-size:32px;font-weight:700;">${escapeHtml(pending.length)}</div>
                     <div style="font-size:13px;font-weight:500;opacity:0.9;"> Pending</div>
                 </div>
                 <div style="background:white;color:#1a4080;padding:18px 20px;border-radius:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);cursor:pointer;"
                      onclick="_approvalsFilter='approved';loadPendingApprovals()">
-                    <div style="font-size:32px;font-weight:700;">${approved.length}</div>
+                    <div style="font-size:32px;font-weight:700;">${escapeHtml(approved.length)}</div>
                     <div style="font-size:13px;font-weight:500;opacity:0.9;"> Approved</div>
                 </div>
                 <div style="background:white;color:#1a4080;padding:18px 20px;border-radius:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);cursor:pointer;"
                      onclick="_approvalsFilter='rejected';loadPendingApprovals()">
-                    <div style="font-size:32px;font-weight:700;">${rejected.length}</div>
+                    <div style="font-size:32px;font-weight:700;">${escapeHtml(rejected.length)}</div>
                     <div style="font-size:13px;font-weight:500;opacity:0.9;"> Rejected</div>
                 </div>
                 <div style="background:white;color:#1a4080;padding:18px 20px;border-radius:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);cursor:pointer;"
@@ -2086,9 +2087,9 @@ async function loadPendingApprovals() {
         const inactiveTab = 'padding:9px 22px;border:1px solid #ccc;border-radius:20px;cursor:pointer;font-weight:500;font-size:13px;background:white;color:#555;';
         const tabsHtml = `
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
-                <button style="${_approvalsFilter==='pending'  ? activeTab : inactiveTab}" onclick="_approvalsFilter='pending';loadPendingApprovals()"> Pending (${pending.length})</button>
-                <button style="${_approvalsFilter==='approved' ? activeTab : inactiveTab}" onclick="_approvalsFilter='approved';loadPendingApprovals()"> Approved (${approved.length})</button>
-                <button style="${_approvalsFilter==='rejected' ? activeTab : inactiveTab}" onclick="_approvalsFilter='rejected';loadPendingApprovals()"> Rejected (${rejected.length})</button>
+                <button style="${_approvalsFilter==='pending'  ? activeTab : inactiveTab}" onclick="_approvalsFilter='pending';loadPendingApprovals()"> Pending (${escapeHtml(pending.length)})</button>
+                <button style="${_approvalsFilter==='approved' ? activeTab : inactiveTab}" onclick="_approvalsFilter='approved';loadPendingApprovals()"> Approved (${escapeHtml(approved.length)})</button>
+                <button style="${_approvalsFilter==='rejected' ? activeTab : inactiveTab}" onclick="_approvalsFilter='rejected';loadPendingApprovals()"> Rejected (${escapeHtml(rejected.length)})</button>
                 <button style="${_approvalsFilter==='all'      ? activeTab : inactiveTab}" onclick="_approvalsFilter='all';loadPendingApprovals()"> All (${pending.length + approved.length + rejected.length})</button>
                 <button style="padding:9px 16px;border:1px solid #ccc;border-radius:20px;cursor:pointer;font-size:13px;background:white;color:#333;"
                         onclick="loadPendingApprovals()">↻ Refresh</button>
@@ -2134,24 +2135,24 @@ async function loadPendingApprovals() {
                         ? `<span style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#795548;border:1px solid #ffe082;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;">
                                &#128274; District Admin must approve
                            </span>`
-                        : `<button onclick="approveVerification('${user.username}')" style="padding:8px 20px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;"> Approve</button>
-                           <button onclick="openVerifyModal('${user.username}')"    style="padding:8px 20px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;">✖ Review &amp; Reject</button>`)
+                        : `<button onclick="approveVerification(${escapeHtml(JSON.stringify(user.username))})" style="padding:8px 20px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;"> Approve</button>
+                           <button onclick="openVerifyModal(${escapeHtml(JSON.stringify(user.username))})"    style="padding:8px 20px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;">✖ Review &amp; Reject</button>`)
                     : '';
                 return `
-                    <div id="verif-row-${user.username}" style="background:#f8f9fa;border-radius:10px;padding:15px 20px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-left:4px solid ${borderFor(user)};transition:all 0.2s ease;"
+                    <div id="verif-row-${escapeHtml(user.username)}" style="background:#f8f9fa;border-radius:10px;padding:15px 20px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-left:4px solid ${borderFor(user)};transition:all 0.2s ease;"
                          onmouseover="this.style.background='#e5eeff';" onmouseout="this.style.background='#f8f9fa';">
                         <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
                             <img src="${avatar}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #2a5298;">
                             <div>
-                                <div style="font-weight:600;color:#333;font-size:15px;">${fullName} ${badgeFor(user)}</div>
-                                <div style="font-size:13px;color:#888;">@${user.username} &bull; ${roleName} &bull; ${user.phone||user.phoneNumber||'N/A'}</div>
-                                ${user.district ? '<div style="font-size:12px;color:#888;">'+user.district+'</div>' : ''}
-                                ${(user.submittedAt||user.submitted_at) ? '<div style="font-size:11px;color:#aaa;">Submitted: '+new Date(user.submittedAt||user.submitted_at).toLocaleString()+'</div>' : ''}
+                                <div style="font-weight:600;color:#333;font-size:15px;">${escapeHtml(fullName)} ${badgeFor(user)}</div>
+                                <div style="font-size:13px;color:#888;">@${escapeHtml(user.username)} &bull; ${roleName} &bull; ${escapeHtml(user.phone||user.phoneNumber||'N/A')}</div>
+                                ${user.district ? '<div style="font-size:12px;color:#888;">'+escapeHtml(user.district)+'</div>' : ''}
+                                ${(user.submittedAt||user.submitted_at) ? '<div style="font-size:11px;color:#6b7280;">Submitted: '+new Date(user.submittedAt||user.submitted_at).toLocaleString()+'</div>' : ''}
                             </div>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
                             ${actionBtns}
-                            <button onclick="viewUserDetails('${user.username}')" style="padding:8px 15px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:13px;"> View</button>
+                            <button onclick="viewUserDetails(${escapeHtml(JSON.stringify(user.username))})" style="padding:8px 15px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-size:13px;"> View</button>
                         </div>
                     </div>`;
             }).join('');
@@ -2159,7 +2160,7 @@ async function loadPendingApprovals() {
             listHtml = `
                 <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
                     <div style="font-size:14px;font-weight:600;color:#1a4080;padding-bottom:12px;border-bottom:2px solid #cfe0ff;margin-bottom:15px;">
-                        Showing ${subset.length} ${_approvalsFilter === 'all' ? 'total' : _approvalsFilter} verification${subset.length !== 1 ? 's' : ''}
+                        Showing ${escapeHtml(subset.length)} ${_approvalsFilter === 'all' ? 'total' : _approvalsFilter} verification${subset.length !== 1 ? 's' : ''}
                     </div>
                     ${rows}
                 </div>`;
@@ -2178,7 +2179,7 @@ async function loadPendingApprovals() {
             <div style="text-align:center;padding:40px;color:#dc3545;">
                 <div style="font-size:32px;margin-bottom:10px;"></div>
                 <p style="font-weight:600;">Error loading verification requests</p>
-                <p style="font-size:13px;color:#666;margin:5px 0 15px;">${error.message}</p>
+                <p style="font-size:13px;color:#666;margin:5px 0 15px;">${escapeHtml(error.message)}</p>
                 <button onclick="loadPendingApprovals()" style="margin-top:10px;padding:8px 20px;background:white;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;">↻ Retry</button>
             </div>`;
     }
@@ -2256,7 +2257,7 @@ function openDocumentViewer(dataUrl, fileName) {
             link.click();
             document.body.removeChild(link);
             if (typeof showToast === 'function') {
-                showToast(' Download started: ' + d.name);
+                showToast('Download started: ' + d.name);
             }
         }
     };
@@ -2274,10 +2275,10 @@ function openDocumentViewer(dataUrl, fileName) {
 
 
 function viewUserDocument(username, documentType, documentLabel) {
-    console.log(' viewUserDocument called');
-    console.log('  - Username:', username);
-    console.log('  - Document type:', documentType);
-    console.log('  - Document label:', documentLabel);
+    console.log('viewUserDocument called');
+    console.log('- Username:', username);
+    console.log('- Document type:', documentType);
+    console.log('- Document label:', documentLabel);
     
     sessionStorage.setItem('lastViewedUser', username);
     
@@ -2314,7 +2315,7 @@ function viewUserDocument(username, documentType, documentLabel) {
     const documentData = user[docInfo.key];
     const documentName = docInfo.label + ' - ' + (user.first_name || user.firstName || '') + ' ' + (user.last_name || user.lastName || '');
     
-    console.log(' Document data found:', {
+    console.log('Document data found:', {
         hasData: !!documentData,
         dataType: typeof documentData,
         dataLength: documentData ? documentData.length : 0,
@@ -2345,36 +2346,36 @@ document.addEventListener('click', function(e) {
 });
 
 function checkAndRepairChatData() {
-    console.log(' Checking chat data...');
+    console.log('Checking chat data...');
     
     let conversations = sessionStorage.getItem('lcdjp_chat_conversations');
     let messages = sessionStorage.getItem('lcdjp_chat_messages');
     
     if (!conversations) {
-        console.log(' No conversations found, creating empty object');
+        console.log('No conversations found, creating empty object');
         sessionStorage.setItem('lcdjp_chat_conversations', JSON.stringify({}));
         chatConversations = {};
     } else {
         try {
             chatConversations = JSON.parse(conversations);
-            console.log(' Loaded conversations:', Object.keys(chatConversations).length);
+            console.log('Loaded conversations:', Object.keys(chatConversations).length);
         } catch (e) {
-            console.error(' Failed to parse conversations, resetting');
+            console.error('Failed to parse conversations, resetting');
             sessionStorage.setItem('lcdjp_chat_conversations', JSON.stringify({}));
             chatConversations = {};
         }
     }
     
     if (!messages) {
-        console.log(' No messages found, creating empty array');
+        console.log('No messages found, creating empty array');
         sessionStorage.setItem('lcdjp_chat_messages', JSON.stringify([]));
         chatMessages = [];
     } else {
         try {
             chatMessages = JSON.parse(messages);
-            console.log(' Loaded messages:', chatMessages.length);
+            console.log('Loaded messages:', chatMessages.length);
         } catch (e) {
-            console.error(' Failed to parse messages, resetting');
+            console.error('Failed to parse messages, resetting');
             sessionStorage.setItem('lcdjp_chat_messages', JSON.stringify([]));
             chatMessages = [];
         }
@@ -2386,10 +2387,10 @@ function checkAndRepairChatData() {
             try {
                 const backupData = JSON.parse(backup);
                 if (Object.keys(backupData).length > 0) {
-                    console.log(' Restoring from backup...');
+                    console.log('Restoring from backup...');
                     chatConversations = backupData;
                     sessionStorage.setItem('lcdjp_chat_conversations', JSON.stringify(backupData));
-                    console.log(' Restored conversations from backup');
+                    console.log('Restored conversations from backup');
                 }
             } catch (e) {
                 console.warn('Failed to restore from backup');
@@ -2399,9 +2400,9 @@ function checkAndRepairChatData() {
     
     sessionStorage.setItem('lcdjp_chat_backup', JSON.stringify(chatConversations));
     
-    console.log(' Current chat state:');
-    console.log('  - Conversations:', Object.keys(chatConversations).length);
-    console.log('  - Messages:', chatMessages.length);
+    console.log('Current chat state:');
+    console.log('- Conversations:', Object.keys(chatConversations).length);
+    console.log('- Messages:', chatMessages.length);
     
     return { conversations: chatConversations, messages: chatMessages };
 }
@@ -2480,7 +2481,7 @@ async function openVerifyModal(username) {
                     preview = '<div style="font-size:28px;margin:6px 0;">&#128196;</div><button onclick="viewDocFile(\''+slot.key+'\')" style="padding:6px 14px;background:#fff;color:#17a2b8;border:1px solid #17a2b8;border-radius:5px;cursor:pointer;font-size:12px;">View Document</button>';
                 }
             } else {
-                preview = '<div style="font-size:28px;color:#ccc;margin:8px 0;">&#10006;</div><span style="font-size:11px;color:#aaa;">Not uploaded</span>';
+                preview = '<div style="font-size:28px;color:#6b7280;margin:8px 0;">&#10006;</div><span style="font-size:11px;color:#6b7280;">Not uploaded</span>';
             }
             docHtml += '<div style="background:#f8f9fa;border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;">'
                       +'<div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">'+slot.label+'</div>'
@@ -2490,7 +2491,7 @@ async function openVerifyModal(username) {
             '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">'
            +'  <div style="flex:1;min-width:260px;">'
            +'    <table style="width:100%;font-size:14px;border-collapse:collapse;">'
-           +'      <tr><td style="padding:5px 8px;color:#555;white-space:nowrap;"><strong>Username</strong></td><td style="padding:5px 8px;">@'+user.username+'</td></tr>'
+           +'      <tr><td style="padding:5px 8px;color:#555;white-space:nowrap;"><strong>Username</strong></td><td style="padding:5px 8px;">@'+escapeHtml(user.username)+'</td></tr>'
            +'      <tr><td style="padding:5px 8px;color:#555;"><strong>Full Name</strong></td><td style="padding:5px 8px;">'+fn.trim()+'</td></tr>'
            +'      <tr><td style="padding:5px 8px;color:#555;"><strong>Email</strong></td><td style="padding:5px 8px;">'+( user.email||'N/A')+'</td></tr>'
            +'      <tr><td style="padding:5px 8px;color:#555;"><strong>Phone</strong></td><td style="padding:5px 8px;">'+( user.phone||'N/A')+'</td></tr>'
@@ -2504,7 +2505,7 @@ async function openVerifyModal(username) {
                             : 'District Admin')
                         : 'System Admin fallback, no District Admin assigned')
                     : 'System Admin + District Admin'
-            )+' ('+reviewDistrict+')</td></tr>'
+            )+' ('+escapeHtml(reviewDistrict)+')</td></tr>'
            +'      <tr><td style="padding:5px 8px;color:#555;"><strong>Verif. Status</strong></td><td style="padding:5px 8px;"><span style="background:'+vsBg+';color:'+vsCol+';padding:3px 10px;border-radius:8px;font-weight:700;">'+vs+'</span></td></tr>'
            +'    </table>'
            +'  </div>'
@@ -2518,13 +2519,13 @@ async function openVerifyModal(username) {
             +'<div style="display:flex;gap:10px;flex-wrap:wrap;border-top:2px solid #eee;padding-top:16px;">'
             +(districtAdminOnlyForModal
                 ? '  <span style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#795548;border:1px solid #ffe082;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;">&#128274; District Admin must approve</span>'
-                : '  <button onclick="approveVerification(\''+ username +'\')" style="padding:10px 26px;background:white;color:#333;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">&#10004; Approve</button>'
+                : '  <button onclick="approveVerification(' + escapeHtml(JSON.stringify(username)) + ')" style="padding:10px 26px;background:white;color:#333;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">&#10004; Approve</button>'
                 +'  <button id="verifRejectToggleBtn" onclick="toggleVerifRejectSection()" style="padding:10px 26px;background:white;color:#333;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">&#10006; Reject</button>'
-                +'  <button id="verifRejectSubmitBtn" onclick="rejectVerification(\''+ username +'\')" style="display:none;padding:10px 26px;background:white;color:#333;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">&#10006; Confirm Rejection</button>'
+                +'  <button id="verifRejectSubmitBtn" onclick="rejectVerification(' + escapeHtml(JSON.stringify(username)) + ')" style="display:none;padding:10px 26px;background:white;color:#333;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">&#10006; Confirm Rejection</button>'
             )
            +'</div>';
     } catch(err) {
-        body.innerHTML = '<div style="text-align:center;padding:40px;color:#0d2547;"><p>Error loading user: '+err.message+'</p></div>';
+        body.innerHTML = '<div style="text-align:center;padding:40px;color:#0d2547;"><p>Error loading user: '+escapeHtml(err.message)+'</p></div>';
     }
 }
 
@@ -2701,7 +2702,7 @@ async function viewLawyerCV(username) {
     win.document.write(`
         <html>
         <head>
-            <title>CV - ${user.firstName} ${user.lastName}</title>
+            <title>CV - ${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</title>
             <style>
                 body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
                 h1 { color: #1a4080; border-bottom: 3px solid #1a4080; padding-bottom: 10px; }
@@ -2714,24 +2715,24 @@ async function viewLawyerCV(username) {
         <body>
             <h1> Curriculum Vitae</h1>
             <div class="info">
-                <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
-                <p><strong>Specialization:</strong> ${user.lawyerSpecialization || 'N/A'}</p>
-                <p><strong>Law School:</strong> ${user.lawSchool || 'Not specified'}</p>
-                <p><strong>Years Experience:</strong> ${user.yearsExperience || 'Not specified'}</p>
-                <p><strong>Law Firm:</strong> ${user.lawFirmName || 'N/A'}</p>
-                <p><strong>Phone:</strong> ${user.phoneNumber || 'N/A'}</p>
-                <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
+                <p><strong>Name:</strong> ${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</p>
+                <p><strong>Specialization:</strong> ${escapeHtml(user.lawyerSpecialization || 'N/A')}</p>
+                <p><strong>Law School:</strong> ${escapeHtml(user.lawSchool || 'Not specified')}</p>
+                <p><strong>Years Experience:</strong> ${escapeHtml(user.yearsExperience || 'Not specified')}</p>
+                <p><strong>Law Firm:</strong> ${escapeHtml(user.lawFirmName || 'N/A')}</p>
+                <p><strong>Phone:</strong> ${escapeHtml(user.phoneNumber || 'N/A')}</p>
+                <p><strong>Email:</strong> ${escapeHtml(user.email || 'N/A')}</p>
             </div>
             <div class="cv-container">
                 <h3> CV Document</h3>
                 ${user.cvFileType && user.cvFileType.startsWith('image/') ? 
-                    `<img src="${user.cvData}" style="max-width:100%; border:1px solid #ddd; border-radius:4px;">` :
+                    `<img src="${escapeHtml(user.cvData)}" style="max-width:100%; border:1px solid #ddd; border-radius:4px;">` :
                     user.cvFileType === 'application/pdf' ?
-                    `<iframe src="${user.cvData}" class="embed-container"></iframe>` :
+                    `<iframe src="${escapeHtml(user.cvData)}" class="embed-container"></iframe>` :
                     `<div style="text-align:center; padding:40px;">
                         <div style="font-size:48px;"></div>
-                        <p>CV uploaded: ${user.cvFileName || 'Document'}</p>
-                        <a href="${user.cvData}" download="${user.cvFileName || 'cv'}" style="color:#1a4080; text-decoration:underline;">Download CV</a>
+                        <p>CV uploaded: ${escapeHtml(user.cvFileName || 'Document')}</p>
+                        <a href="${escapeHtml(user.cvData)}" download="${escapeHtml(user.cvFileName || 'cv')}" style="color:#1a4080; text-decoration:underline;">Download CV</a>
                     </div>`
                 }
             </div>
@@ -2839,32 +2840,32 @@ async function showLegalOrgsAdmin() {
     
     try {
         const token = getAuthToken();
-        console.log(' Token:', token);
+        console.log('Token:', token);
         
         const resp = await fetch(API_ENDPOINTS.legalOrgsAll, {
             
             headers: { 'Content-Type': 'application/json' }
         });
         
-        console.log(' Response status:', resp.status);
+        console.log('Response status:', resp.status);
         
         if (!resp.ok) {
             throw new Error('Failed to load organizations: ' + resp.status);
         }
         
         const orgs = await resp.json();
-        console.log(' Organizations received:', orgs);
-        console.log(' Count:', orgs.length);
+        console.log('Organizations received:', orgs);
+        console.log('Count:', orgs.length);
         
         let orgList = Array.isArray(orgs) ? orgs : (orgs.data || orgs.organizations || []);
-        console.log(' Org list:', orgList);
+        console.log('Org list:', orgList);
         
         let orgRows = orgList.map(o => `
             <tr>
-                <td style="padding:10px;">${o.orgName || o.name || 'N/A'}</td>
-                <td style="padding:10px;">${o.orgType || '-'}</td>
-                <td style="padding:10px;">${o.district || '-'}</td>
-                <td style="padding:10px;">${o.phone || '-'}</td>
+                <td style="padding:10px;">${escapeHtml(o.orgName || o.name || 'N/A')}</td>
+                <td style="padding:10px;">${escapeHtml(o.orgType || '-')}</td>
+                <td style="padding:10px;">${escapeHtml(o.district || '-')}</td>
+                <td style="padding:10px;">${escapeHtml(o.phone || '-')}</td>
                 <td style="padding:10px;">
                     <button onclick="deleteLegalOrg(${o.id}, this)"
                         style="padding:4px 12px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer; font-size:12px;">
@@ -2949,7 +2950,7 @@ async function showLegalOrgsAdmin() {
                 
                 <div style="background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.08); overflow:hidden;">
                     <div style="padding:16px 20px; border-bottom:1px solid #f0e8f8; display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0; color:#1a4080;">Registered Organizations (${orgList.length})</h3>
+                        <h3 style="margin:0; color:#1a4080;">Registered Organizations (${escapeHtml(orgList.length)})</h3>
                     </div>
                     ${orgList.length === 0 ? 
                         '<div style="padding:40px; text-align:center; color:#999;"><div style="font-size:48px; margin-bottom:12px;"></div><p>No organizations registered yet.</p></div>' :
@@ -2968,8 +2969,8 @@ async function showLegalOrgsAdmin() {
             </div>`;
             
     } catch (err) {
-        console.error(' Error:', err);
-        container.innerHTML = '<div style="padding:20px; color:#dc3545;"> Failed to load organizations: ' + err.message + '</div>';
+        console.error('Error:', err);
+        container.innerHTML = '<div style="padding:20px; color:#dc3545;"> Failed to load organizations: ' + escapeHtml(err.message) + '</div>';
     }
 }
 
@@ -3069,6 +3070,7 @@ function showAdminCases() {
 
     adminLoadCaseFilterOptions();
     adminLoadCases();
+    if (window.PendingCases) window.PendingCases.mount('adminPendingCasesHost', { allowDistrictFilter: true });
 }
 
 async function adminLoadCaseFilterOptions() {

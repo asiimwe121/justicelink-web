@@ -273,3 +273,20 @@ a:focus-visible, button:focus-visible {
 
 .legal-notice { background: var(--navy-pale); border: 1px solid var(--border); border-left: 4px solid var(--navy); border-radius: var(--radius); padding: 16px 18px; margin: 0 0 32px; font-size: 14px; color: var(--ink); }
 .legal-notice strong { color: var(--navy-deep); }
+
+
+/* No-gold pages (About, Careers, Contact): navy/blue palette only */
+body.no-gold {
+  --gold: var(--navy);
+  --gold-light: #ffffff;
+  --gold-pale: #cfe0fa;
+}
+body.no-gold .mkt-hero::after {
+  background: radial-gradient(circle at 85% 20%, rgba(255,255,255,0.10), transparent 55%);
+}
+body.no-gold .mkt-eyebrow::before { color: var(--gold-pale); }
+body.no-gold .btn-gold {
+  background: #fff; color: var(--navy-deep);
+}
+body.no-gold .btn-gold:hover { background: var(--navy-pale); filter: none; }
+body.no-gold .mkt-section .mkt-card .tag { color: var(--navy); }

@@ -269,9 +269,9 @@ async function exportCasesToCSV() {
         
         if (casesToExport.length === 0) {
             if (typeof showToast === 'function') {
-                showToast(' No cases to export.');
+                showToast('No cases to export.');
             } else {
-                alert(' No cases to export.');
+                alert('No cases to export.');
             }
             return;
         }
@@ -331,9 +331,9 @@ async function exportCasesToCSV() {
         URL.revokeObjectURL(link.href);
         
         if (typeof showToast === 'function') {
-            showToast(` ${casesToExport.length} cases exported successfully!`);
+            showToast(`${casesToExport.length} cases exported successfully!`);
         } else {
-            alert(` ${casesToExport.length} cases exported successfully!`);
+            alert(`${casesToExport.length} cases exported successfully!`);
         }
 
     } catch (error) {
@@ -407,34 +407,13 @@ function updateReportFilters() {
         counties = [...new Set(counties)];
     }
     
-    let subCounties = [];
-    if (typeof ugandaSubCounties !== 'undefined') {
-        Object.values(ugandaSubCounties).forEach(subCountyList => {
-            if (Array.isArray(subCountyList)) {
-                subCounties = subCounties.concat(subCountyList);
-            }
-        });
-        subCounties = [...new Set(subCounties)];
-    }
-    
-    let parishes = [];
-    if (typeof ugandaParishes !== 'undefined') {
-        Object.values(ugandaParishes).forEach(parishList => {
-            if (Array.isArray(parishList)) {
-                parishes = parishes.concat(parishList);
-            }
-        });
-        parishes = [...new Set(parishes)];
-    }
-    
-    let villages = [];
-    if (typeof ugandaVillages !== 'undefined') {
-        Object.values(ugandaVillages).forEach(villageList => {
-            if (Array.isArray(villageList)) {
-                villages = villages.concat(villageList);
-            }
-        });
-        villages = [...new Set(villages)];
+    // Unique names only (a report filter matches on the name, wherever it sits).
+    let subCounties = [], parishes = [], villages = [];
+    if (typeof ugandaGeo !== 'undefined') {
+        const allGeoNames = ugandaGeo.allNames();
+        subCounties = allGeoNames.subCounties;
+        parishes = allGeoNames.parishes;
+        villages = allGeoNames.villages;
     }
     
     switch(reportType) {
@@ -443,7 +422,7 @@ function updateReportFilters() {
                 <label style="font-weight:600; display:block; margin-bottom:5px;">Select Lawyer</label>
                 <select id="reportLawyerFilter" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; font-size:16px; background:white;">
                     <option value="">-- All Lawyers --</option>
-                    ${getAllLawyers().map(l => `<option value="${l.username}">${l.firstName} ${l.lastName} (${l.lawyerSpecialization || 'N/A'})</option>`).join('')}
+                    ${getAllLawyers().map(l => `<option value="${escapeHtml(l.username)}">${escapeHtml(l.firstName)} ${escapeHtml(l.lastName)} (${escapeHtml(l.lawyerSpecialization || 'N/A')})</option>`).join('')}
                 </select>
             `;
             break;
@@ -567,7 +546,7 @@ function updateReportFilters() {
                 <label style="font-weight:600; display:block; margin-bottom:5px;">Select Lawyer</label>
                 <select id="reportLawyerPerfFilter" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; font-size:16px; background:white;">
                     <option value="">-- All Lawyers --</option>
-                    ${getAllLawyers().map(l => `<option value="${l.username}">${l.firstName} ${l.lastName}</option>`).join('')}
+                    ${getAllLawyers().map(l => `<option value="${escapeHtml(l.username)}">${escapeHtml(l.firstName)} ${escapeHtml(l.lastName)}</option>`).join('')}
                 </select>
                 <div style="margin-top:10px; display:flex; gap:15px; flex-wrap:wrap;">
                     <label><input type="checkbox" id="includeResolutionTime" checked> Include Resolution Time</label>
@@ -1001,7 +980,7 @@ async function renderLawyerNotificationPage() {
             const icon = getNotificationIcon(notif.type);
             
             html += `
-                <div onclick="lcdjpOpenNotification(${JSON.stringify(notif).replace(/"/g, '&quot;')})" 
+                <div onclick="lcdjpOpenNotification(${escapeHtml(JSON.stringify(notif))})" 
                      style="background:${bgColor}; 
                             padding:15px; 
                             margin-bottom:10px; 
@@ -1015,9 +994,9 @@ async function renderLawyerNotificationPage() {
                         <div style="font-size:24px;">${icon}</div>
                         <div style="flex:1;">
                             <div style="font-weight:${notif.read ? 'normal' : 'bold'}; color:${notif.read ? '#555' : '#333'};">
-                                ${notif.message}
+                                ${escapeHtml(notif.message)}
                             </div>
-                            ${notif.caseId ? `<div style="font-size:12px; color:#1a4080; font-weight:bold;">Case: ${notif.caseId}</div>` : ''}
+                            ${notif.caseId ? `<div style="font-size:12px; color:#1a4080; font-weight:bold;">Case: ${escapeHtml(notif.caseId)}</div>` : ''}
                             <div style="font-size:11px; color:#999; margin-top:4px;">
                                 ${new Date(notif.timestamp || notif.date).toLocaleString()}
                                 ${!notif.read ? ' • <span style="color:#dc3545; font-weight:bold;">New</span>' : ''}
@@ -1556,8 +1535,8 @@ async function exportUsersToCSV() {
         }
 
         if (users.length === 0) {
-            if (typeof showToast === 'function') showToast(' No users to export.');
-            else alert(' No users to export.');
+            if (typeof showToast === 'function') showToast('No users to export.');
+            else alert('No users to export.');
             return;
         }
 
@@ -1588,8 +1567,8 @@ async function exportUsersToCSV() {
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
 
-        if (typeof showToast === 'function') showToast(` ${users.length} users exported successfully!`);
-        else alert(` ${users.length} users exported successfully!`);
+        if (typeof showToast === 'function') showToast(`${users.length} users exported successfully!`);
+        else alert(`${users.length} users exported successfully!`);
 
     } catch (error) {
         console.error('Error exporting users:', error);
@@ -1618,8 +1597,8 @@ function showReportPreview(reportData) {
     
     let html = `
         <div style="font-size:14px;">
-            <h3 style="color:#1a4080;">${reportData.title}</h3>
-            <p style="color:#666; font-size:12px;">Generated: ${reportData.generatedAt}</p>
+            <h3 style="color:#1a4080;">${escapeHtml(reportData.title)}</h3>
+            <p style="color:#666; font-size:12px;">Generated: ${escapeHtml(reportData.generatedAt)}</p>
             
             ${Object.keys(reportData.summary).length > 0 ? `
             <div style="background:#f0f5ff; padding:10px; border-radius:6px; margin:10px 0;">
@@ -1645,7 +1624,7 @@ function showReportPreview(reportData) {
                 </table>
             </div>
             <div style="margin-top:10px; font-size:12px; color:#666;">
-                Total Records: ${reportData.rows.length}
+                Total Records: ${escapeHtml(reportData.rows.length)}
             </div>
         </div>
     `;
@@ -1660,7 +1639,7 @@ function generatePDF(reportData) {
     <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>JusticeLink Report - ${reportData.title}</title>
+        <title>JusticeLink Report - ${escapeHtml(reportData.title)}</title>
         <style>
             * { box-sizing: border-box; }
             body { font-family: Arial, sans-serif; margin: 40px; }
@@ -1695,9 +1674,9 @@ function generatePDF(reportData) {
     <\/head>
     <body>
         <h1> JusticeLink Report</h1>
-        <p style="text-align:center; color:#666;">Generated on: ${reportData.generatedAt}</p>
+        <p style="text-align:center; color:#666;">Generated on: ${escapeHtml(reportData.generatedAt)}</p>
         
-        <h2>${reportData.title}</h2>
+        <h2>${escapeHtml(reportData.title)}</h2>
         
         ${Object.keys(reportData.summary).length > 0 ? `
         <div class="summary">
@@ -1724,7 +1703,7 @@ function generatePDF(reportData) {
         </div>
         
         <div style="margin-top:20px; font-weight:bold;">
-            Total Records: ${reportData.rows.length}
+            Total Records: ${escapeHtml(reportData.rows.length)}
         </div>
         
         <div class="footer">

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
 
 permissions:
@@ -13,77 +13,61 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Build and test
+  backend:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: maven
-
-      # `verify` runs the unit tests, writes the JaCoCo report and enforces the
-      # coverage floor set in pom.xml.
-      - name: mvn verify
+      # Docker is available on the runner, so the Testcontainers MySQL migration test runs here too.
+      - name: Build, test, coverage gate
         run: mvn -B -ntp verify
-
       - name: Coverage summary
         if: always()
-        run: |
-          if [ -f target/site/jacoco/jacoco.csv ]; then
-            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-          import csv
-          covered = missed = 0
-          with open("target/site/jacoco/jacoco.csv") as f:
-              for row in csv.DictReader(f):
-                  covered += int(row["INSTRUCTION_COVERED"])
-                  missed += int(row["INSTRUCTION_MISSED"])
-          total = covered + missed
-          pct = 100 * covered / total if total else 0
-          print(f"### Test coverage\n\n**{pct:.1f}%** of instructions covered ({covered:,} of {total:,})")
-          PY
-          fi
-
-      - name: Upload test and coverage reports
+        run: python3 scripts/jacoco-summary.py || true
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: test-and-coverage-reports
           path: |
             target/surefire-reports
             target/site/jacoco
-          if-no-files-found: ignore
 
-  frontend-syntax:
-    name: JavaScript syntax check
+  frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: node --check on every script
-        run: |
-          status=0
-          for f in src/main/resources/static/*.js; do
-            node --check "$f" || status=1
-          done
-          exit $status
+          node-version: "20"
+      - name: Syntax-check every script
+        run: node scripts/check-frontend.mjs
 
-  secret-scan:
-    name: Secret scan
+  docker:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    needs: [backend, frontend]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      # Scans the files in the checkout for API keys, passwords and tokens.
-      # (History is cleaned separately, see docs/SECRETS.md.)
-      - name: gitleaks (working tree)
+      - name: Compose file is valid
         run: |
-          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
-            detect --no-git --source /repo --redact --no-banner --exit-code 1
+          cp /dev/null .env
+          REDIS_PASSWORD=x DB_PASSWORD=x MYSQL_ROOT_PASSWORD=x JWT_SECRET=x \
+          GOOGLE_MAPS_API_KEY=x BREVO_API_KEY=x BREVO_SENDER_EMAIL=x HUGGINGFACE_API_KEY=x \
+            docker compose config --quiet
+      - name: Image builds
+        if: hashFiles('Dockerfile') != ''
+        run: docker build -t lcdjp-backend:ci .
+      - name: Scan image for known vulnerabilities (HIGH and CRITICAL with a fix available)
+        if: hashFiles('Dockerfile') != ''
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: lcdjp-backend:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"

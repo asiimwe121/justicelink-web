@@ -19,15 +19,111 @@ function _lcdjpResolveApiBaseUrl() {
 }
 const LCDJP_API_BASE_URL = _lcdjpResolveApiBaseUrl();
 
+/*
+ * Browser session handling.
+ *
+ * The login token lives only in an HttpOnly cookie that page scripts cannot read. What the page keeps is a
+ * non-secret "session descriptor": the token's public claims (user, role, expiry) in a JWT-shaped string whose
+ * signature part is the literal "cookie-session". It cannot authenticate anything. Existing code that asks for
+ * "the token" gets the descriptor, so it can still tell who is signed in and when that ends; the fetch wrapper in
+ * app.js drops descriptor Authorization headers so the cookie does the authenticating (and the server also
+ * ignores them, see CookieAuthFilter).
+ */
+var LcdjpSession = (function () {
+    var KEY = 'lcdjp_session';
+    var SIGNATURE = 'cookie-session';
+
+    function b64urlEncode(text) {
+        return btoa(unescape(encodeURIComponent(text))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function b64urlDecode(part) {
+        var s = String(part).replace(/-/g, '+').replace(/_/g, '/');
+        while (s.length % 4) s += '=';
+        return decodeURIComponent(escape(atob(s)));
+    }
+    function claims(jwtLike) {
+        try {
+            var parts = String(jwtLike || '').split('.');
+            if (parts.length !== 3) return null;
+            return JSON.parse(b64urlDecode(parts[1]));
+        } catch (e) { return null; }
+    }
+    function isDescriptor(value) {
+        return typeof value === 'string' && value.split('.').length === 3 && value.slice(-(SIGNATURE.length + 1)) === '.' + SIGNATURE;
+    }
+    function build(payload) {
+        return b64urlEncode('{"alg":"none","typ":"JWT"}') + '.' + b64urlEncode(JSON.stringify(payload)) + '.' + SIGNATURE;
+    }
+    function expired(payload) {
+        return !!(payload && payload.exp && Number(payload.exp) * 1000 <= Date.now());
+    }
+    function legacyToken() {
+        try {
+            var t = localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken');
+            return (!t || t === 'null' || t === 'undefined') ? null : String(t).trim() || null;
+        } catch (e) { return null; }
+    }
+    function dropLegacy() {
+        try { localStorage.removeItem('jwtToken'); sessionStorage.removeItem('jwtToken'); } catch (e) { /* storage blocked */ }
+    }
+
+    var migrating = false;
+    /** Browsers signed in before the cookie change still hold a real token: trade it for the cookie once. */
+    function migrateLegacy(old) {
+        if (migrating) return;
+        migrating = true;
+        var base = (typeof LCDJP_API_BASE_URL === 'string') ? LCDJP_API_BASE_URL : '';
+        fetch(base + '/api/auth/refresh', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + old, 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'include',
+            suppressAuthRedirect: true
+        }).then(function (r) {
+            if (!r.ok) throw new Error('refresh ' + r.status);
+            return r.json();
+        }).then(function (data) {
+            if (!data || !data.token || !save(data.token)) throw new Error('no token');
+        }).catch(function () {
+            dropLegacy();
+            try { window.dispatchEvent(new CustomEvent('lcdjp:auth-expired')); } catch (e) { /* ignore */ }
+        }).then(function () { migrating = false; });
+    }
+
+    /** Keep only the public claims of a freshly issued token; the token itself is never stored. */
+    function save(realToken) {
+        var payload = claims(realToken);
+        if (!payload || expired(payload)) return null;
+        var descriptor = build(payload);
+        try { localStorage.setItem(KEY, descriptor); } catch (e) { return null; }
+        dropLegacy();
+        return descriptor;
+    }
+    function clear() {
+        try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) { /* storage blocked */ }
+        dropLegacy();
+    }
+    /** The descriptor while the session is current, else (during migration only) the old token, else null. */
+    function token() {
+        try {
+            var d = localStorage.getItem(KEY);
+            if (d && isDescriptor(d) && !expired(claims(d))) return d;
+            if (d) localStorage.removeItem(KEY);
+        } catch (e) { /* storage blocked */ }
+        var old = legacyToken();
+        if (old) {
+            if (expired(claims(old))) { dropLegacy(); return null; }
+            migrateLegacy(old);
+            return old;
+        }
+        return null;
+    }
+    return { save: save, clear: clear, token: token, claims: claims, isDescriptor: isDescriptor, SIGNATURE: SIGNATURE, KEY: KEY };
+})();
+window.LcdjpSession = LcdjpSession;
+
 function getAuthToken() {
     try {
-        
-        
-        var localToken = localStorage.getItem('jwtToken');
-        var sessionToken = sessionStorage.getItem('jwtToken');
-        var token = localToken || sessionToken;
-        if (!token || token === 'null' || token === 'undefined') return null;
-        return token.trim() || null;
+        return LcdjpSession.token();
     } catch (e) {
         return null;
     }
@@ -43,6 +139,32 @@ function getAuthHeaders(additionalHeaders) {
     return headers;
 }
 window.getAuthHeaders = getAuthHeaders;
+
+/**
+ * Chat send helpers. The server takes the sender from the login session and reads `isRead` (not `read`), so
+ * `from`/`read` on a message object are dropped here rather than sent and silently ignored.
+ */
+function toChatServerPayload(msg) {
+    msg = msg || {};
+    var payload = {
+        fromName: msg.fromName,
+        fromRole: msg.fromRole,
+        sentTo: msg.sentTo,
+        message: msg.message,
+        type: msg.type || 'text',
+        timestamp: msg.timestamp,
+        isRead: !!(msg.isRead !== undefined ? msg.isRead : msg.read),
+        delivered: !!msg.delivered
+    };
+    if (msg.audioData) payload.audioData = msg.audioData;
+    if (msg.duration != null) payload.duration = msg.duration;
+    return payload;
+}
+function _chatFetchOpts(extraHeaders, body, method) {
+    return { method: method || 'POST', headers: getAuthHeaders(extraHeaders), body: body, credentials: 'include' };
+}
+window.toChatServerPayload = toChatServerPayload;
+window._chatFetchOpts = _chatFetchOpts;
 
 
 window.LCDJP_FEATURES = window.LCDJP_FEATURES || {
@@ -166,7 +288,8 @@ function _lcdjpRefreshCases() {
     }
     
     
-    var token = localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken') || '';
+    // The real JWT is no longer kept in browser storage (cookie session); use the session descriptor.
+    var token = (typeof getAuthToken === 'function' ? getAuthToken() : '') || '';
     if (!token || token === 'null' || token === 'undefined' || token === '') {
         console.log('[LCDJP] No token - skipping cases refresh');
         return;
@@ -183,6 +306,7 @@ function _lcdjpRefreshCases() {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'
         },
+        credentials: 'include',
         suppressAuthRedirect: true  
     })
     .then(function(r) { 
@@ -306,6 +430,10 @@ async function _lcdjpRefreshUsers() {
 
 
 async function _lcdjpRefreshLegalAlerts() {
+    // The server deliberately refuses Legal Alerts to District Admins (403), so don't ask for them.
+    var _role = String(localStorage.getItem('lcdjp_userlevel') || sessionStorage.getItem('lcdjp_userlevel') ||
+        localStorage.getItem('userRole') || '').trim().toUpperCase().replace(/ /g, '_');
+    if (_role === 'DISTRICT_ADMIN') return;
     try {
         var r = await fetch(API_ENDPOINTS.legalAlertsAPI, {
             headers: { 'Content-Type': 'application/json' },
@@ -1433,6 +1561,9 @@ const API_ENDPOINTS = {
     profile: `${API_BASE_URL}/api/auth/profile`,
     
     createLC: `${API_BASE_URL}/api/lc/create`,
+    lcInviteRequest: `${API_BASE_URL}/api/auth/lc-invite/request`,
+    lcInvites: `${API_BASE_URL}/api/lc/invites`,
+    districtMetrics: `${API_BASE_URL}/api/district-admin/metrics`,
     
     
     cases: `${API_BASE_URL}/api/cases`,
@@ -1472,6 +1603,9 @@ const API_ENDPOINTS = {
     },
     offerCaseToLawyer:   (caseId, username) => `${API_BASE_URL}/api/cases/${caseId}/offer-to/${username}`,
     aiCaseRoute:         (caseId) => `${API_BASE_URL}/api/cases/ai/${caseId}/route`,
+    aiJurisdiction:      `${API_BASE_URL}/api/cases/jurisdiction`,
+    offerCaseToLc:       (caseId, lcUsername) => `${API_BASE_URL}/api/cases/${caseId}/offer-to-lc/${encodeURIComponent(lcUsername)}`,
+    caseCoverageGap:     (caseId) => `${API_BASE_URL}/api/cases/${caseId}/coverage-gap`,
     lawyerCaseOffers:    (username) => `${API_BASE_URL}/api/cases/offers/lawyer/${username}`,
     lawyerOfferAccept:   (caseId) => `${API_BASE_URL}/api/cases/${caseId}/offer/accept`,
     lawyerOfferDecline:  (caseId) => `${API_BASE_URL}/api/cases/${caseId}/offer/decline`,
@@ -1513,10 +1647,10 @@ const API_ENDPOINTS = {
     urgentNotifications: (username) => `${API_BASE_URL}/api/auth/notifications/urgent/${username}`,
     markNotificationRead: (notificationId) => `${API_BASE_URL}/api/auth/notifications/${notificationId}/read`,
     notification: (notificationId) => `${API_BASE_URL}/api/auth/notifications/${notificationId}`,
-    checkAdminChatNotification: (username, message) => 
-        `${API_BASE_URL}/api/auth/notifications/admin/chat?username=${encodeURIComponent(username)}&message=${encodeURIComponent(message)}`,
-    
-    
+    // POST (it creates a notification): send { message } as JSON; the sender is taken from the session.
+    postAdminChatNotification: `${API_BASE_URL}/api/auth/notifications/admin/chat`,
+
+
     chatMessages: `${API_BASE_URL}/api/auth/chat/messages`,
     chatUserMessages: (username) => `${API_BASE_URL}/api/auth/chat/messages/user/${username}`,
     markChatRead: (messageId) => `${API_BASE_URL}/api/auth/chat/messages/${messageId}/read`,

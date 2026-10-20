@@ -7,7 +7,7 @@
 
 function _getMapsToken() {
     try {
-        var token = localStorage.getItem('jwtToken');
+        var token = (typeof getAuthToken === 'function' ? getAuthToken() : null);
         
         if (!token || token === 'null' || token === 'undefined' || token === '') {
             return null;
@@ -56,178 +56,8 @@ function _isTokenValid() {
 
 
 
-function _lcdjpHideVerifBanner() {
-    var d = document.getElementById('desktopVerifBanner');
-    var m = document.getElementById('mobileVerifBanner');
-    if (d) d.style.display = 'none';
-    if (m) m.style.display = 'none';
-}
-
-function _lcdjpRenderVerifBanner(status) {
-    
-    if (status === 'verified' || status === 'approved' || 
-        status === 'VERIFIED' || status === 'APPROVED') {
-        _lcdjpHideVerifBanner();
-        return;
-    }
-
-    var desktopBanner = document.getElementById('desktopVerifBanner');
-    var mobileBanner = document.getElementById('mobileVerifBanner');
-
-    if (typeof _lcdjpVerificationDisabled === 'function' && _lcdjpVerificationDisabled()) {
-        if (status === 'pending' || status === 'PENDING') {
-            var bannerContent = '<div style="background:#eef3ff;border:1px solid #c9d8f5;border-radius:8px;padding:12px 16px;margin:10px 0;color:#274680;font-size:14px;">'
-                + '&#8505;&#65039; Your earlier verification submission is still on file and pending review.'
-                + '</div>';
-            if (desktopBanner) { desktopBanner.innerHTML = bannerContent; desktopBanner.style.display = 'block'; desktopBanner.style.visibility = 'visible'; }
-            if (mobileBanner)  { mobileBanner.innerHTML = bannerContent; mobileBanner.style.display = 'block'; mobileBanner.style.visibility = 'visible'; }
-        } else {
-            _lcdjpHideVerifBanner();
-        }
-        return;
-    }
-
-    var message = '';
-    var buttonText = 'Verify Now';
-    var showButton = true;
-    
-    if (status === 'pending' || status === 'PENDING') {
-        message = '⏳ Your verification is pending. Please wait for admin approval.';
-        buttonText = 'Pending Verification';
-    } else if (status === 'rejected' || status === 'REJECTED') {
-        var reason = sessionStorage.getItem('lcdjp_verif_reject_reason') || localStorage.getItem('lcdjp_verif_reject_reason') || 'No reason provided';
-        message = '❌ Your verification was rejected. Reason: ' + reason;
-        buttonText = 'Resubmit';
-    } else if (status === 'not-verified' || status === 'NOT_VERIFIED') {
-        message = '⚠️ Please verify your account to access all features.';
-        buttonText = 'Verify Now';
-    } else {
-        message = '⚠️ Please verify your account to access all features.';
-        buttonText = 'Verify Now';
-    }
-    
-    var isPending = (status === 'pending' || status === 'PENDING');
-    var btnStyle = isPending
-        ? 'background:#e9ecef;color:#6c757d;border:1px solid #ced4da;border-radius:6px;padding:6px 16px;font-weight:600;white-space:nowrap;cursor:default;'
-        : 'background:#1a4080;color:white;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-weight:600;white-space:nowrap;';
-
-    var bannerContent = '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">'
-        + '<span style="color:#856404;font-size:14px;">' + message + '</span>'
-        + (showButton ? '<button onclick="' + (isPending ? 'return false;' : '_lcdjpStartVerification()') + '" style="' + btnStyle + '">' + buttonText + '</button>' : '')
-        + '</div>';
-    
-    if (desktopBanner) {
-        desktopBanner.innerHTML = bannerContent;
-        desktopBanner.style.display = 'block';
-        desktopBanner.style.visibility = 'visible';
-    }
-    if (mobileBanner) {
-        mobileBanner.innerHTML = bannerContent;
-        mobileBanner.style.display = 'block';
-        mobileBanner.style.visibility = 'visible';
-    }
-}
-function _lcdjpStartVerification() {
-    
-    if (typeof window.showAccountStatusPage === 'function') {
-        window.showAccountStatusPage();
-        return;
-    }
-    if (typeof window.showIdVerifyPage === 'function') {
-        window.showIdVerifyPage();
-        return;
-    }
-    if (typeof window.showVerificationPage === 'function') {
-        window.showVerificationPage();
-        return;
-    }
-    
-    window.location.href = '/verify-account';
-}
-
-function _lcdjpUpdateVerifBanner() {
-    
-    var token = localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken') || '';
-    
-    
-    if (!token || token === 'null' || token === 'undefined' || token === '') {
-        _lcdjpHideVerifBanner();
-        return;
-    }
-    
-    var role = localStorage.getItem('lcdjp_userlevel') || sessionStorage.getItem('lcdjp_userlevel') || '';
-    var username = localStorage.getItem('lcdjp_username') || sessionStorage.getItem('lcdjp_username') || '';
-    
-    
-    if (!username || username === 'null' || username === 'undefined' || username === '') {
-        _lcdjpHideVerifBanner(); 
-        return;
-    }
-    
-    
-    if (!role || !role.toLowerCase().includes('citizen')) {
-        _lcdjpHideVerifBanner(); 
-        return;
-    }
-
-    
-    var storedStatus = sessionStorage.getItem('lcdjp_verif_status') || localStorage.getItem('lcdjp_verif_status') || 'not-verified';
-    _lcdjpRenderVerifBanner(storedStatus);
-
-    
-    var endpoint = (typeof API_ENDPOINTS !== 'undefined' && API_ENDPOINTS.verificationStatus)
-        ? API_ENDPOINTS.verificationStatus(username)
-        : API_BASE_URL + '/api/auth/users/' + encodeURIComponent(username) + '/verification-status';
-    
-    
-    fetch(endpoint, {
-        headers: { 
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        },
-        suppressAuthRedirect: true  
-    })
-    .then(function(r) { 
-        if (!r.ok) {
-            
-            if (r.status === 401) {
-                console.log('[LCDJP] Verification status skipped - auth required');
-                return null;
-            }
-            console.warn('[LCDJP] Verification status fetch failed:', r.status);
-            return null;
-        }
-        return r.json(); 
-    })
-    .then(function(data) {
-        if (!data) return;
-        var raw = data.verificationStatus || data.verification_status || 'not-verified';
-        var normalized = typeof _lcdjpNormalizeVerifStatus === 'function'
-            ? _lcdjpNormalizeVerifStatus(raw)
-            : (raw ? raw.toLowerCase() : 'not-verified');
-        
-        
-        
-        
-        if (storedStatus === 'pending' && normalized === 'not-verified') {
-            return;
-        }
-        sessionStorage.setItem('lcdjp_verif_status', normalized);
-        localStorage.setItem('lcdjp_verif_status', normalized);
-        var reason = data.rejectionReason || data.rejection_reason || '';
-        if (reason) {
-            sessionStorage.setItem('lcdjp_verif_reject_reason', reason);
-            localStorage.setItem('lcdjp_verif_reject_reason', reason);
-        }
-        _lcdjpRenderVerifBanner(normalized);
-    })
-    .catch(function(err) {
-        
-        console.log('[LCDJP] Verification status check failed:', err.message);
-        
-        _lcdjpRenderVerifBanner(storedStatus);
-    });
-}
+// Verification-banner helpers (_lcdjp*VerifBanner, _lcdjpStartVerification)
+// live in dashboard-verification-and-voice.js.
 
 
 
@@ -257,7 +87,7 @@ function loadGoogleMapsSDK() {
             'Content-Type': 'application/json'
         };
         
-        var token = localStorage.getItem('jwtToken');
+        var token = (typeof getAuthToken === 'function' ? getAuthToken() : null);
         if (token) {
             headers['Authorization'] = 'Bearer ' + token;
         }
@@ -283,6 +113,7 @@ function loadGoogleMapsSDK() {
             if (!key) {
                 throw _lcdjpTaggedError('config_invalid', 'Google Maps API key is not configured');
             }
+            window._lcdjpMapId = (cfg && cfg.mapId) ? String(cfg.mapId) : '';
 
             window._googleMapsReady = function() {
                 if (typeof google !== 'undefined' && google.maps && google.maps.Map) return;
@@ -293,7 +124,7 @@ function loadGoogleMapsSDK() {
                 var script = document.createElement('script');
                 script.src = 'https://maps.googleapis.com/maps/api/js'
                     + '?key=' + encodeURIComponent(key)
-                    + '&libraries=places'
+                    + '&libraries=places,marker'
                     + '&callback=_googleMapsReady'
                     + '&loading=async';
                 script.async = true;
@@ -306,7 +137,9 @@ function loadGoogleMapsSDK() {
                 var started = Date.now();
                 (function waitForMaps() {
                     if (typeof google !== 'undefined' && google.maps && google.maps.Map) {
-                        resolveScript();
+                        // Make sure the marker library is ready before any map code runs
+                        var markerReady = (google.maps.importLibrary) ? google.maps.importLibrary('marker') : null;
+                        Promise.resolve(markerReady).then(resolveScript, resolveScript);
                     } else if (Date.now() - started > 10000) {
                         rejectScript(_lcdjpTaggedError('sdk_ready_timeout', 'Google Maps SDK did not become ready within 10s'));
                     } else {
@@ -325,6 +158,299 @@ function loadGoogleMapsSDK() {
         window._googleMapsSDKPromise.then(resolve, reject);
     });
 }
+
+
+// ---------------------------------------------------------------------------
+// Map ID + AdvancedMarkerElement helpers
+// google.maps.Marker is deprecated. AdvancedMarkerElement needs a cloud Map ID
+// (delivered by /api/map/config). These helpers keep the legacy call shape so
+// existing code keeps working, and fall back to the legacy Marker if the marker
+// library or Map ID is unavailable.
+// ---------------------------------------------------------------------------
+window._lcdjpMapId = window._lcdjpMapId || '';
+
+function lcdjpMapOptions(opts) {
+    var o = Object.assign({}, opts || {});
+    if (window._lcdjpMapId) {
+        o.mapId = window._lcdjpMapId;
+        // Inline `styles` are ignored (and warned about) on Map-ID maps; style the map in Cloud Console.
+        delete o.styles;
+    }
+    return o;
+}
+
+function lcdjpCreateMap(element, opts) {
+    return new google.maps.Map(element, lcdjpMapOptions(opts));
+}
+
+function _lcdjpMarkerContent(o) {
+    var icon = o.icon || {};
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:block;line-height:0;';
+    var w = 0, h = 0, ax, ay;
+    var visual = null;
+
+    if (icon.path !== undefined && window.google && google.maps.SymbolPath && icon.path === google.maps.SymbolPath.CIRCLE) {
+        var r = icon.scale || 8, sw = icon.strokeWeight || 0;
+        w = h = r * 2 + sw;
+        ax = w / 2; ay = h / 2;
+        visual = document.createElement('div');
+        visual.style.cssText = 'box-sizing:border-box;border-radius:50%;width:' + w + 'px;height:' + h + 'px;'
+            + 'background:' + (icon.fillColor || '#1a4080') + ';opacity:' + (icon.fillOpacity == null ? 1 : icon.fillOpacity) + ';'
+            + 'border:' + sw + 'px solid ' + (icon.strokeColor || '#fff') + ';';
+    } else if (icon.url) {
+        w = icon.scaledSize ? icon.scaledSize.width : 24;
+        h = icon.scaledSize ? icon.scaledSize.height : 24;
+        ax = icon.anchor ? icon.anchor.x : w / 2;      // legacy default anchor: bottom centre
+        ay = icon.anchor ? icon.anchor.y : h;
+        visual = document.createElement('img');
+        visual.src = icon.url;
+        visual.alt = '';
+        visual.draggable = false;
+        visual.style.cssText = 'display:block;width:' + w + 'px;height:' + h + 'px;';
+    } else {
+        w = 28; h = 36; ax = 14; ay = 36;
+        var pin = new google.maps.marker.PinElement();
+        visual = pin.element || pin;
+    }
+    wrap.appendChild(visual);
+
+    if (o.label) {
+        var lab = (typeof o.label === 'string') ? { text: o.label } : o.label;
+        var span = document.createElement('span');
+        span.textContent = lab.text || '';
+        span.style.cssText = 'position:absolute;left:' + (w / 2) + 'px;top:' + (h / 2) + 'px;transform:translate(-50%,-50%);'
+            + 'white-space:nowrap;pointer-events:none;line-height:1;'
+            + 'color:' + (lab.color || '#000') + ';font-size:' + (lab.fontSize || '14px') + ';font-weight:' + (lab.fontWeight || '400') + ';';
+        wrap.appendChild(span);
+    }
+
+    // AdvancedMarkerElement anchors at bottom-centre; shift so the legacy anchor point lands on the position.
+    wrap.style.transform = 'translate(' + (w / 2 - ax) + 'px,' + (h - ay) + 'px)';
+    return wrap;
+}
+
+function lcdjpCreateMarker(o) {
+    o = o || {};
+    var AME = window.google && google.maps && google.maps.marker && google.maps.marker.AdvancedMarkerElement;
+    if (!AME || !window._lcdjpMapId) {
+        return new google.maps.Marker(o);   // legacy fallback (still works, just deprecated)
+    }
+    var adv = new AME({
+        position: o.position,
+        map: o.map || null,
+        title: o.title || '',
+        content: _lcdjpMarkerContent(o),
+        zIndex: o.zIndex,
+        gmpDraggable: !!o.draggable,
+        gmpClickable: true
+    });
+    // Legacy-compatible helpers so existing call sites keep working.
+    // AdvancedMarkerElement's own `map` setter calls this.setMap(), and it already has a native
+    // setMap, so only add one when it is missing. Overriding it with `adv.map = m` made the
+    // setter and setMap call each other forever (Maximum call stack size exceeded).
+    if (typeof adv.setMap !== 'function') {
+        adv.setMap = function(m) { adv.map = m || null; };
+    }
+    // AdvancedMarkerElement logs a deprecation warning for addListener('click', ...).
+    // Route 'click' through the native 'gmp-click' DOM event; other events fall back
+    // to the original MVC addListener so existing call sites keep working.
+    var _origAddListener = (typeof adv.addListener === 'function') ? adv.addListener.bind(adv) : null;
+    adv.addListener = function(evt, handler) {
+        if (evt === 'click') {
+            adv.addEventListener('gmp-click', handler);
+            return { remove: function() { adv.removeEventListener('gmp-click', handler); } };
+        }
+        return _origAddListener ? _origAddListener(evt, handler) : { remove: function() {} };
+    };
+    adv.setPosition = function(p) { adv.position = p; };
+    adv.getPosition = function() {
+        var p = adv.position;
+        if (!p) return null;
+        return (typeof p.lat === 'function') ? p : new google.maps.LatLng(p.lat, p.lng);
+    };
+    return adv;
+}
+window.lcdjpMapOptions = lcdjpMapOptions;
+window.lcdjpCreateMap = lcdjpCreateMap;
+window.lcdjpCreateMarker = lcdjpCreateMarker;
+
+// ---- Places helpers --------------------------------------------------------
+// Uses the new Places API (google.maps.places.Place) and falls back to the legacy
+// PlacesService only if the new API is unavailable or the request errors
+// (e.g. "Places API (New)" not enabled for the key).
+function _lcdjpPlacesLib() {
+    if (!window.google || !google.maps) return Promise.resolve(null);
+    if (google.maps.importLibrary) {
+        return google.maps.importLibrary('places').catch(function() { return google.maps.places || null; });
+    }
+    return Promise.resolve(google.maps.places || null);
+}
+
+function _lcdjpLatLngParts(loc) {
+    if (!loc) return null;
+    var lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+    var lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+    return (Number.isFinite(lat) && Number.isFinite(lng)) ? { lat: lat, lng: lng } : null;
+}
+
+// Great-circle distance in metres.
+function _lcdjpDistanceM(aLat, aLng, bLat, bLng) {
+    var R = 6371000, rad = Math.PI / 180;
+    var dLat = (bLat - aLat) * rad, dLng = (bLng - aLng) * rad;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(aLat * rad) * Math.cos(bLat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+// opts: { center:{lat,lng}, radiusM, type, keyword, max }
+// cb(items) where items = [{ name, vicinity, place_id, lat, lng }]  (always called once)
+function lcdjpPlacesNearby(opts, cb) {
+    opts = opts || {};
+    var center = { lat: opts.center.lat, lng: opts.center.lng };
+    var radius = Math.min(opts.radiusM || 5000, 50000);
+    var max = Math.max(1, Math.min(opts.max || 10, 20));
+    var done = false;
+    // Text searches (keyword) only BIAS towards the centre, so with nothing close by Google answers with the best
+    // match anywhere in the world (e.g. US legal-aid offices for a user in Uganda). Drop anything outside the radius.
+    function finish(list) {
+        if (done) return; done = true;
+        cb((list || []).filter(function(it) {
+            return it && Number.isFinite(it.lat) && Number.isFinite(it.lng) &&
+                _lcdjpDistanceM(center.lat, center.lng, it.lat, it.lng) <= radius * 1.1;
+        }));
+    }
+
+    function legacy(lib) {
+        if (!lib || !lib.PlacesService) { finish([]); return; }
+        try {
+            if (!window._lcdjpLegacyPlacesNode) window._lcdjpLegacyPlacesNode = document.createElement('div');
+            if (!window._lcdjpLegacyPlaces) window._lcdjpLegacyPlaces = new lib.PlacesService(window._lcdjpLegacyPlacesNode);
+            var req = { location: center, radius: radius };
+            if (opts.type) req.type = opts.type;
+            if (opts.keyword) req.keyword = opts.keyword;
+            window._lcdjpLegacyPlaces.nearbySearch(req, function(items, status) {
+                if (status !== lib.PlacesServiceStatus.OK || !items) { finish([]); return; }
+                var out = [];
+                items.slice(0, max).forEach(function(r) {
+                    var ll = _lcdjpLatLngParts(r.geometry && r.geometry.location);
+                    if (!ll) return;
+                    out.push({ name: r.name || '', vicinity: r.vicinity || '', place_id: r.place_id || '', lat: ll.lat, lng: ll.lng });
+                });
+                finish(out);
+            });
+        } catch (e) { finish([]); }
+    }
+
+    _lcdjpPlacesLib().then(function(lib) {
+        if (!lib || !lib.Place || typeof lib.Place.searchNearby !== 'function') { legacy(lib); return; }
+        var fields = ['id', 'displayName', 'location', 'formattedAddress'];
+        var p;
+        if (opts.keyword) {
+            var tq = { textQuery: opts.keyword, fields: fields, locationBias: { center: center, radius: radius }, maxResultCount: max };
+            if (opts.type) tq.includedType = opts.type;
+            p = lib.Place.searchByText(tq);
+        } else {
+            var nq = { fields: fields, locationRestriction: { center: center, radius: radius }, maxResultCount: max };
+            if (opts.type) nq.includedTypes = [opts.type];
+            p = lib.Place.searchNearby(nq);
+        }
+        p.then(function(res) {
+            var out = [];
+            ((res && res.places) || []).forEach(function(pl) {
+                var ll = _lcdjpLatLngParts(pl.location);
+                if (!ll) return;
+                out.push({ name: pl.displayName || '', vicinity: pl.formattedAddress || '', place_id: pl.id || '', lat: ll.lat, lng: ll.lng });
+            });
+            finish(out);
+        }).catch(function(err) {
+            console.warn('[LCDJP] Places API (New) request failed, falling back to legacy PlacesService:', err && err.message);
+            legacy(lib);
+        });
+    }).catch(function() { finish([]); });
+}
+
+// Text search anywhere in Uganda (no radius), for administrators looking for providers outside their own area.
+// opts: { query, max }   cb(items) where items = [{ name, vicinity, place_id, lat, lng }]  (always called once)
+// Results outside Uganda are dropped: a text search with nothing matching returns the best match in the world.
+function lcdjpPlacesTextSearch(opts, cb) {
+    opts = opts || {};
+    var max = Math.max(1, Math.min(opts.max || 20, 20));
+    var done = false;
+    function inUganda(it) {
+        return it && Number.isFinite(it.lat) && Number.isFinite(it.lng) &&
+            it.lat >= -1.6 && it.lat <= 4.4 && it.lng >= 29.5 && it.lng <= 35.1;
+    }
+    function finish(list) {
+        if (done) return; done = true;
+        cb((list || []).filter(inUganda));
+    }
+    function legacy(lib) {
+        if (!lib || !lib.PlacesService) { finish([]); return; }
+        try {
+            if (!window._lcdjpLegacyPlacesNode) window._lcdjpLegacyPlacesNode = document.createElement('div');
+            if (!window._lcdjpLegacyPlaces) window._lcdjpLegacyPlaces = new lib.PlacesService(window._lcdjpLegacyPlacesNode);
+            window._lcdjpLegacyPlaces.textSearch({ query: opts.query, region: 'ug' }, function(items, status) {
+                if (status !== lib.PlacesServiceStatus.OK || !items) { finish([]); return; }
+                var out = [];
+                items.slice(0, max).forEach(function(r) {
+                    var ll = _lcdjpLatLngParts(r.geometry && r.geometry.location);
+                    if (!ll) return;
+                    out.push({ name: r.name || '', vicinity: r.formatted_address || r.vicinity || '', place_id: r.place_id || '', lat: ll.lat, lng: ll.lng });
+                });
+                finish(out);
+            });
+        } catch (e) { finish([]); }
+    }
+    _lcdjpPlacesLib().then(function(lib) {
+        if (!lib || !lib.Place || typeof lib.Place.searchByText !== 'function') { legacy(lib); return; }
+        lib.Place.searchByText({
+            textQuery: opts.query,
+            fields: ['id', 'displayName', 'location', 'formattedAddress'],
+            maxResultCount: max,
+            region: 'ug'
+        }).then(function(res) {
+            var out = [];
+            ((res && res.places) || []).forEach(function(pl) {
+                var ll = _lcdjpLatLngParts(pl.location);
+                if (!ll) return;
+                out.push({ name: pl.displayName || '', vicinity: pl.formattedAddress || '', place_id: pl.id || '', lat: ll.lat, lng: ll.lng });
+            });
+            finish(out);
+        }).catch(function(err) {
+            console.warn('[LCDJP] Places text search failed, falling back to legacy PlacesService:', err && err.message);
+            legacy(lib);
+        });
+    }).catch(function() { finish([]); });
+}
+
+// cb(phoneString)  (always called once; '' when none)
+function lcdjpPlacePhone(placeId, cb) {
+    var done = false;
+    function finish(v) { if (done) return; done = true; cb(v || ''); }
+    function legacy(lib) {
+        if (!lib || !lib.PlacesService) { finish(''); return; }
+        try {
+            if (!window._lcdjpLegacyPlacesNode) window._lcdjpLegacyPlacesNode = document.createElement('div');
+            if (!window._lcdjpLegacyPlaces) window._lcdjpLegacyPlaces = new lib.PlacesService(window._lcdjpLegacyPlacesNode);
+            window._lcdjpLegacyPlaces.getDetails(
+                { placeId: placeId, fields: ['formatted_phone_number', 'international_phone_number'] },
+                function(d, status) {
+                    finish((status === lib.PlacesServiceStatus.OK && d) ? (d.formatted_phone_number || d.international_phone_number || '') : '');
+                });
+        } catch (e) { finish(''); }
+    }
+    _lcdjpPlacesLib().then(function(lib) {
+        if (!lib || !lib.Place) { legacy(lib); return; }
+        var place = new lib.Place({ id: placeId });
+        place.fetchFields({ fields: ['nationalPhoneNumber', 'internationalPhoneNumber'] }).then(function() {
+            finish(place.nationalPhoneNumber || place.internationalPhoneNumber || '');
+        }).catch(function() { legacy(lib); });
+    }).catch(function() { finish(''); });
+}
+window.lcdjpPlacesNearby = lcdjpPlacesNearby;
+window.lcdjpPlacesTextSearch = lcdjpPlacesTextSearch;
+window.lcdjpPlacePhone = lcdjpPlacePhone;
 
 function _lcdjpMapsErrorToUserMessage(err) {
     switch (err && err.code) {
@@ -479,7 +605,7 @@ async function initializePickerMap() {
             if (msg) msg.parentNode.removeChild(msg);
             mapElement.style.display = '';
 
-            pickerMap = new google.maps.Map(mapElement, {
+            pickerMap = lcdjpCreateMap(mapElement, {
                 center          : ll,
                 zoom            : 14,
                 mapTypeId       : 'roadmap',
@@ -491,7 +617,7 @@ async function initializePickerMap() {
                 styles          : LCDJP_MAP_STYLES
             });
 
-            new google.maps.Marker({
+            lcdjpCreateMarker({
                 position: ll,
                 map     : pickerMap,
                 icon    : {
@@ -531,7 +657,7 @@ function _addPickerDistrictMarkers() {
     if (typeof ugandaCoordinates === 'undefined' || !ugandaCoordinates.districts) return;
     Object.keys(ugandaCoordinates.districts).forEach(function(distName) {
         var c = ugandaCoordinates.districts[distName];
-        new google.maps.Marker({
+        lcdjpCreateMarker({
             position : { lat: c.lat, lng: c.lng },
             map      : pickerMap,
             label    : { text: distName, color: '#1a4080', fontSize: '10px', fontWeight: '600' },
@@ -595,7 +721,7 @@ function handlePickerMapClick(latlng) {
 
     if (pickerMarker) { pickerMarker.setMap(null); pickerMarker = null; }
 
-    pickerMarker = new google.maps.Marker({
+    pickerMarker = lcdjpCreateMarker({
         position : { lat: latlng.lat, lng: latlng.lng },
         map      : pickerMap,
         draggable: true,
@@ -651,6 +777,9 @@ function removeLocationMarker() {
 
     var _gmap = null, _gmMarkers = {}, _gmUserMarker = null, _gmUserLabel = null, _gmAccuracyCircle = null, _gmInfoWindow = null;
     var _routePolyline = null, _routeDestinationMarker = null, _routeRequestId = 0;
+    var _routeCasing = null, _routeAnimRaf = null, _navWatchId = null, _routePath = null, _routeTotalMeters = 0,
+        _routeTotalSeconds = 0, _routeApproximate = false, _routeDestPoint = null, _navMapPlaceholder = null, _navFollow = true,
+        _navOffCount = 0, _navLastReroute = 0, _navSilent = false, _navRerouteFn = null, _routeDrawIn = false, _navSavedStyle = '', _navHiddenMarkers = [];
     var _initialized = false;
     var _recenterOnNextLocation = true;
     var _lcdjpLiveWatchId = null;
@@ -722,6 +851,76 @@ function removeLocationMarker() {
             + '</svg>'
         );
     }
+
+    // ---- Cluster ("group") marker popup: list the services, let the user pick one ----
+    var GROUP_LABELS = {
+        police: 'Police', hospitals: 'Hospitals', courts: 'Courts',
+        localCouncil: 'Local Council', garages: 'Garages', legalAid: 'Legal Aid'
+    };
+
+    function _gmGroupLabel(group) {
+        return GROUP_LABELS[group] || String(group || 'Services');
+    }
+
+    function _gmServiceDetailHtml(s, showBack) {
+        var dist = '';
+        try {
+            var dd = typeof cmGetDistanceAndDirection === 'function' && cmGetDistanceAndDirection(s.lat, s.lng);
+            dist = dd ? dd.distanceText + ' ' + dd.direction : (s.dist || '');
+        } catch (e) { dist = s.dist || ''; }
+        return '<div style="font-family:inherit;padding:8px 6px;min-width:200px;max-width:260px;">'
+            + (showBack ? '<button onclick="window._lcdjpGroupBack();event.stopPropagation();" style="border:0;background:none;color:#1a237e;font-size:11px;font-weight:700;cursor:pointer;padding:0 0 6px;">&larr; Back to list</button>' : '')
+            + '<div style="font-weight:700;font-size:13px;color:#1a237e;margin-bottom:3px;">' + escapeHtml(s.label) + '</div>'
+            + '<div style="font-size:11px;color:#666;margin-bottom:6px;">' + escapeHtml(s.sub || s.vicinity || '') + '</div>'
+            + (dist ? '<div style="display:inline-block;background:#e8f0fe;color:#1a237e;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:10px;">' + escapeHtml(dist) + '</div>' : '')
+            + '<div style="display:flex;gap:8px;margin-top:2px;">'
+            + '<button onclick="window.cmContactPlace(' + escapeHtml(JSON.stringify(String(s.phone || ''))) + ',' + escapeHtml(JSON.stringify(String(s.place_id || ''))) + ',' + escapeHtml(JSON.stringify(String(s.label))) + ');event.stopPropagation();" '
+            + 'style="flex:1;background:#eef0f8;color:#1a237e;border:none;border-radius:14px;font-size:11px;font-weight:700;padding:9px 4px;cursor:pointer;">&#128222; Contact</button>'
+            + '<button onclick="window.cmDrawRouteOnMap(' + Number(s.lat) + ',' + Number(s.lng) + ',' + escapeHtml(JSON.stringify(String(s.label))) + ');event.stopPropagation();" '
+            + 'style="flex:1;background:#1a237e;color:#fff;border:none;border-radius:14px;font-size:11px;font-weight:700;padding:9px 4px;cursor:pointer;">&#128506; Directions</button>'
+            + '</div></div>';
+    }
+
+    function _gmGroupListHtml(group, services) {
+        var rows = services.map(function (s, i) {
+            return '<button onclick="window._lcdjpGroupPick(' + i + ');event.stopPropagation();" '
+                + 'style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:#f5f6fb;border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:pointer;font-family:inherit;">'
+                + '<span style="flex:none;width:10px;height:10px;border-radius:50%;background:' + escapeHtml(s.color || '#1a237e') + ';"></span>'
+                + '<span style="flex:1;min-width:0;">'
+                + '<span style="display:block;font-size:12px;font-weight:700;color:#1a237e;">' + escapeHtml(s.label) + '</span>'
+                + ((s.sub || s.vicinity) ? '<span style="display:block;font-size:10px;color:#666;margin-top:1px;">' + escapeHtml(s.sub || s.vicinity) + '</span>' : '')
+                + '</span>'
+                + '<span style="flex:none;color:#1a237e;font-size:14px;">&rsaquo;</span>'
+                + '</button>';
+        }).join('');
+        return '<div style="font-family:inherit;padding:6px 4px 0;min-width:220px;max-width:270px;">'
+            + '<div style="font-weight:700;font-size:13px;color:#1a237e;margin-bottom:8px;">' + escapeHtml(_gmGroupLabel(group)) + '</div>'
+            + '<div style="max-height:220px;overflow-y:auto;">' + rows + '</div></div>';
+    }
+
+    // Opens the picker for a group. One service skips straight to its details.
+    function _gmOpenGroupPopup(group, services, anchor) {
+        if (!_gmInfoWindow || !services || !services.length) return;
+        window._lcdjpGroupPopup = { group: group, services: services, anchor: anchor };
+        if (services.length === 1) {
+            _gmInfoWindow.setContent(_gmServiceDetailHtml(services[0], false));
+        } else {
+            _gmInfoWindow.setContent(_gmGroupListHtml(group, services));
+        }
+        _gmInfoWindow.open(_gmap, anchor);
+    }
+
+    window._lcdjpGroupPick = function (index) {
+        var st = window._lcdjpGroupPopup;
+        if (!st || !st.services[index]) return;
+        _gmInfoWindow.setContent(_gmServiceDetailHtml(st.services[index], true));
+    };
+
+    window._lcdjpGroupBack = function () {
+        var st = window._lcdjpGroupPopup;
+        if (!st) return;
+        _gmInfoWindow.setContent(_gmGroupListHtml(st.group, st.services));
+    };
 
     var MAP_STYLES = [
         { featureType:'poi', elementType:'labels', stylers:[{ visibility:'off' }] },
@@ -821,12 +1020,11 @@ function removeLocationMarker() {
     var _citizenPlacesRequestId = 0;
 
     function _loadNearbyPlaces(userCenter) {
-        if (!_gmap || !google.maps.places || !google.maps.places.PlacesService) {
+        if (!_gmap || !google.maps.places) {
             return;
         }
 
         var requestId = ++_citizenPlacesRequestId;
-        var placesService = new google.maps.places.PlacesService(_gmap);
         var queries = [
             { type: 'police',                  group: 'police',       color: '#1a237e' },
             { type: 'hospital',                group: 'hospitals',    color: '#c62828' },
@@ -851,30 +1049,23 @@ function removeLocationMarker() {
         var pending = queries.length;
 
         queries.forEach(function(query) {
-            var request = { location: userCenter, radius: NEARBY_RADIUS_KM * 1000 };
-            if (query.type) request.type = query.type;
-            if (query.keyword) request.keyword = query.keyword;
-
-            placesService.nearbySearch(request, function(items, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK && items) {
-                    items.slice(0, 10).forEach(function(place, index) {
-                        if (!place.geometry || !place.geometry.location) return;
-                        if (!_withinRadius(userCenter, place.geometry.location, NEARBY_RADIUS_KM)) return;
-                        results.push({
-                            id: query.group + '_place_' + index + '_' + requestId,
-                            lat: place.geometry.location.lat(),
-                            lng: place.geometry.location.lng(),
-                            label: place.name || 'Nearby place',
-                            sub: place.vicinity || '',
-                            dist: '',
-                            color: query.color,
-                            group: query.group,
-                            vicinity: place.vicinity || '',
-                            place_id: place.place_id || '',
-                            phone: ''
-                        });
+            lcdjpPlacesNearby({ center: userCenter, radiusM: NEARBY_RADIUS_KM * 1000, type: query.type, keyword: query.keyword, max: 10 }, function(items) {
+                items.forEach(function(place, index) {
+                    if (!_withinRadius(userCenter, place, NEARBY_RADIUS_KM)) return;
+                    results.push({
+                        id: query.group + '_place_' + index + '_' + requestId,
+                        lat: place.lat,
+                        lng: place.lng,
+                        label: place.name || 'Nearby place',
+                        sub: place.vicinity || '',
+                        dist: '',
+                        color: query.color,
+                        group: query.group,
+                        vicinity: place.vicinity || '',
+                        place_id: place.place_id || '',
+                        phone: ''
                     });
-                }
+                });
 
                 pending -= 1;
                 if (pending !== 0 || requestId !== _citizenPlacesRequestId) return;
@@ -899,7 +1090,7 @@ function removeLocationMarker() {
         var groupTotals = {};
         var groupPositions = {};
         serviceList.forEach(function(service) {
-            var marker = new google.maps.Marker({
+            var marker = lcdjpCreateMarker({
                 position: { lat: service.lat, lng: service.lng },
                 map: _gmap,
                 icon: {
@@ -911,11 +1102,11 @@ function removeLocationMarker() {
                 zIndex: 100
             });
             var content = '<div style="font-family:inherit;padding:8px 6px;min-width:190px;">'
-                + '<div style="font-weight:700;color:#1a237e;margin-bottom:4px;">' + service.label + '</div>'
-                + '<div style="font-size:11px;color:#666;">' + (service.sub || service.vicinity || '') + '</div>'
+                + '<div style="font-weight:700;color:#1a237e;margin-bottom:4px;">' + escapeHtml(service.label) + '</div>'
+                + '<div style="font-size:11px;color:#666;">' + escapeHtml(service.sub || service.vicinity || '') + '</div>'
                 + '<div style="margin-top:8px;display:flex;gap:6px;">'
-                + '<button onclick="window.cmContactPlace(\'' + (service.phone || '') + '\',\'' + (service.place_id || '') + '\',\'' + service.label.replace(/'/g, "\\'") + '\');event.stopPropagation();" style="flex:1;border:0;border-radius:10px;padding:7px 4px;background:#eef0f8;color:#1a237e;font-size:11px;font-weight:700;cursor:pointer;">Contact</button>'
-                + '<button onclick="window.cmDrawRouteOnMap(' + service.lat + ',' + service.lng + ',\'' + service.label.replace(/'/g, "\\'") + '\');event.stopPropagation();" style="flex:1;border:0;border-radius:10px;padding:7px 4px;background:#1a237e;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Directions</button>'
+                + '<button onclick="window.cmContactPlace(' + escapeHtml(JSON.stringify(String(service.phone || ''))) + ',' + escapeHtml(JSON.stringify(String(service.place_id || ''))) + ',' + escapeHtml(JSON.stringify(String(service.label))) + ');event.stopPropagation();" style="flex:1;border:0;border-radius:10px;padding:7px 4px;background:#eef0f8;color:#1a237e;font-size:11px;font-weight:700;cursor:pointer;">Contact</button>'
+                + '<button onclick="window.cmDrawRouteOnMap(' + Number(service.lat) + ',' + Number(service.lng) + ',' + escapeHtml(JSON.stringify(String(service.label))) + ');event.stopPropagation();" style="flex:1;border:0;border-radius:10px;padding:7px 4px;background:#1a237e;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Directions</button>'
                 + '</div></div>';
             marker.addListener('click', function() {
                 _gmInfoWindow.setContent(content);
@@ -940,7 +1131,7 @@ function removeLocationMarker() {
                 lat: groupPositions[group].lat / total,
                 lng: groupPositions[group].lng / total
             };
-            var groupMarker = new google.maps.Marker({
+            var groupMarker = lcdjpCreateMarker({
                 position: position,
                 map: _gmap,
                 label: { text: String(total), color: '#fff', fontSize: '12px', fontWeight: '700' },
@@ -955,10 +1146,9 @@ function removeLocationMarker() {
                 title: total + ' ' + group + ' services',
                 zIndex: 250
             });
+            var groupServices = serviceList.filter(function(service) { return service.group === group; });
             groupMarker.addListener('click', function() {
-                _gmInfoWindow.setContent('<div style="font-weight:700;padding:4px;">'
-                    + total + ' ' + group + ' service' + (total === 1 ? '' : 's') + ' nearby</div>');
-                _gmInfoWindow.open(_gmap, groupMarker);
+                _gmOpenGroupPopup(group, groupServices, groupMarker);
             });
             window._lcdjpMapGroups[group] = {
                 marker: groupMarker,
@@ -970,14 +1160,283 @@ function removeLocationMarker() {
         });
     }
 
+    // ---- In-app navigation: full-screen map, animated route line, live position following ----
+    function _cmHav(a, b) {
+        var R = 6371000, toRad = Math.PI / 180;
+        var dLat = (b.lat - a.lat) * toRad, dLng = (b.lng - a.lng) * toRad;
+        var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(a.lat * toRad) * Math.cos(b.lat * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
+    function _cmStopRouteAnim() {
+        if (_routeAnimRaf) { cancelAnimationFrame(_routeAnimRaf); _routeAnimRaf = null; }
+    }
+    function _cmStopNavWatch() {
+        if (_navWatchId != null && navigator.geolocation) { try { navigator.geolocation.clearWatch(_navWatchId); } catch (e) {} }
+        _navWatchId = null;
+        _navRerouteFn = null;
+    }
+    function _cmClearRouteGraphics() {
+        _cmStopRouteAnim();
+        _routeDrawIn = false;
+        if (_routeCasing) { _routeCasing.setMap(null); _routeCasing = null; }
+        if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+        if (_routeDestinationMarker) { _routeDestinationMarker.setMap(null); _routeDestinationMarker = null; }
+    }
+    function _cmResizeMapSoon() {
+        if (!_gmap) return;
+        setTimeout(function() { try { google.maps.event.trigger(_gmap, 'resize'); } catch (e) {} }, 80);
+    }
+    // Keep the app's own top bar, sidebar and bottom buttons visible: measure them and leave
+    // exactly that space around the full-screen map instead of covering them.
+    function _cmApplyNavInsets() {
+        var vh = window.innerHeight, top = 0, bottom = 0, left = 0;
+        function shown(sel) {
+            var el = document.querySelector(sel);
+            if (!el) return null;
+            var cs = getComputedStyle(el);
+            if (cs.display === 'none' || cs.visibility === 'hidden') return null;
+            var r = el.getBoundingClientRect();
+            return (r.width > 0 && r.height > 0) ? r : null;
+        }
+        var wide = window.innerWidth >= 900;
+        if (wide) {            // desktop keeps its top bar and sidebar
+            var bar = shown('header.topbar');
+            if (bar && bar.top < 80 && bar.bottom < vh * 0.4) top = Math.max(0, Math.round(bar.bottom));
+        }                      // phones: the top header is hidden so the map gets the whole top
+        // The sidebar can also be on screen on tablets narrower than 900px (it is ~220px there): keep the map and the
+        // route card clear of it. Full-width phone drawers (wider than half the screen) are ignored on purpose.
+        var side = shown('#mainSidebar');
+        if (side && side.left >= -1 && side.right > 0 && side.width < 420 && side.width < window.innerWidth * 0.5) left = Math.round(side.right);
+        var nav = shown('.cm-bottom-nav');
+        if (nav && nav.top > vh * 0.5) bottom = Math.max(0, Math.round(vh - nav.top));
+        var root = document.documentElement.style;
+        root.setProperty('--cm-nav-top', top + 'px');
+        root.setProperty('--cm-nav-bottom', bottom + 'px');
+        root.setProperty('--cm-nav-left', left + 'px');
+        root.setProperty('--cm-nav-lift', (bottom > 0 ? 52 : 12) + 'px');
+        var mapEl = document.getElementById('cmMobileMap');
+        if (mapEl) {
+            // Explicit pixel size (inline + !important) so no stylesheet rule or flex layout can shrink the map.
+            var mapH = Math.max(200, vh - top - bottom), mapW = Math.max(200, window.innerWidth - left);
+            mapEl.style.cssText = (_navSavedStyle || '') + ';position:fixed !important;top:' + top + 'px !important;left:' + left
+                + 'px !important;right:auto !important;bottom:auto !important;width:' + mapW + 'px !important;height:' + mapH
+                + 'px !important;min-height:0 !important;max-height:none !important;margin:0 !important;border-radius:0 !important;'
+                + 'flex:none !important;z-index:900 !important;';
+        }
+        _cmResizeMapSoon();
+    }
+    // Pressing Home / My Cases / Report / Alerts / Menu (or a sidebar item) ends navigation and then does its normal job.
+    function _cmNavNavClick(e) {
+        var t = e.target;
+        if (t && t.closest && t.closest('.cm-bottom-nav, #mainSidebar')) {
+            if (typeof window._cmClearRouteRenderer === 'function') window._cmClearRouteRenderer();
+        }
+    }
+    function _cmNavOnResize() {
+        if (document.body.classList.contains('cm-nav-active')) _cmApplyNavInsets();
+    }
+    function _cmScrollPageTop() {
+        try { window.scrollTo(0, 0); } catch (e) {}
+        var bar = document.querySelector('#citizenMobileView .cm-bar') || document.querySelector('header.topbar');
+        for (var n = bar && bar.parentNode; n && n !== document.documentElement; n = n.parentNode) {
+            if (n.scrollTop) n.scrollTop = 0;
+        }
+        if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+    }
+    function _cmEnterNavMode() {
+        var el = document.getElementById('cmMobileMap');
+        if (!el || document.body.classList.contains('cm-nav-active')) return;
+        _navMapPlaceholder = document.createElement('div');
+        _navMapPlaceholder.style.cssText = 'width:100%;height:' + (el.offsetHeight || 280) + 'px;';
+        if (el.parentNode) el.parentNode.insertBefore(_navMapPlaceholder, el);
+        _navSavedStyle = el.getAttribute('style') || '';
+        document.body.appendChild(el);
+        document.body.classList.add('cm-nav-active');
+        // Only "you" and the destination matter while navigating: hide the other service pins and the accuracy circle.
+        _navHiddenMarkers = [];
+        Object.keys(_gmMarkers).forEach(function(k) {
+            if (_gmMarkers[k]) { _navHiddenMarkers.push(_gmMarkers[k]); _gmMarkers[k].setMap(null); }
+        });
+        if (_gmAccuracyCircle) _gmAccuracyCircle.setMap(null);
+        if (_gmInfoWindow) { try { _gmInfoWindow.close(); } catch (e) {} }
+        document.addEventListener('click', _cmNavNavClick, true);
+        _cmScrollPageTop();
+        _cmApplyNavInsets();
+        window.addEventListener('resize', _cmNavOnResize);
+        window.addEventListener('orientationchange', _cmNavOnResize);
+        _navFollow = true;
+        var btn = document.createElement('button');
+        btn.className = 'cm-nav-recenter';
+        btn.type = 'button';
+        btn.title = 'Recenter';
+        btn.innerHTML = '&#10148; Recenter';
+        btn.onclick = function() {
+            _navFollow = true;
+            if (window._lcdjpUserPosition && _gmap) { _gmap.panTo(window._lcdjpUserPosition); if (_gmap.getZoom() < 16) _gmap.setZoom(17); }
+            btn.style.display = 'none';
+        };
+        btn.style.display = 'none';
+        el.appendChild(btn);
+        if (_gmap) {
+            _gmap.setOptions({ gestureHandling: 'greedy' });
+            google.maps.event.addListener(_gmap, 'dragstart', function() {
+                if (!document.body.classList.contains('cm-nav-active')) return;
+                _navFollow = false;
+                var b = el.querySelector('.cm-nav-recenter');
+                if (b) b.style.display = 'block';
+            });
+        }
+        _cmResizeMapSoon();
+    }
+    function _cmExitNavMode() {
+        var el = document.getElementById('cmMobileMap');
+        document.body.classList.remove('cm-nav-active');
+        document.removeEventListener('click', _cmNavNavClick, true);
+        if (el) el.setAttribute('style', _navSavedStyle || '');
+        Object.keys(_gmMarkers).forEach(function(k) {
+            if (_gmMarkers[k] && _navHiddenMarkers.indexOf(_gmMarkers[k]) >= 0) _gmMarkers[k].setMap(_gmap);
+        });
+        _navHiddenMarkers = [];
+        if (_gmAccuracyCircle && _gmap) _gmAccuracyCircle.setMap(_gmap);
+        window.removeEventListener('resize', _cmNavOnResize);
+        window.removeEventListener('orientationchange', _cmNavOnResize);
+        if (el) {
+            var b = el.querySelector('.cm-nav-recenter');
+            if (b && b.parentNode) b.parentNode.removeChild(b);
+            if (_navMapPlaceholder && _navMapPlaceholder.parentNode) {
+                _navMapPlaceholder.parentNode.replaceChild(el, _navMapPlaceholder);
+            }
+        }
+        _navMapPlaceholder = null;
+        if (_gmap) {
+            _gmap.setOptions({ gestureHandling: 'cooperative' });
+            if (typeof google !== 'undefined' && google.maps && google.maps.event) google.maps.event.clearListeners(_gmap, 'dragstart');
+        }
+        _cmResizeMapSoon();
+    }
+    // Draws the route progressively, then keeps white direction arrows flowing along it.
+    function _cmDrawRouteLine(path, animate) {
+        _cmStopRouteAnim();
+        if (_routeCasing) { _routeCasing.setMap(null); _routeCasing = null; }
+        if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+        _routeCasing = new google.maps.Polyline({
+            map: _gmap, path: animate ? [] : path, geodesic: false, clickable: false,
+            strokeColor: '#0b3d91', strokeOpacity: 1, strokeWeight: 11, zIndex: 18
+        });
+        _routePolyline = new google.maps.Polyline({
+            map: _gmap, path: animate ? [] : path, geodesic: false, clickable: false,
+            strokeColor: '#1a73e8', strokeOpacity: 1, strokeWeight: 7, zIndex: 20,
+            icons: [{
+                icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.4, strokeColor: '#ffffff',
+                        fillColor: '#ffffff', fillOpacity: 1, strokeWeight: 1 },
+                offset: '0px', repeat: '64px'
+            }]
+        });
+        function flow() {
+            var offset = 0, last = 0;
+            function tick(now) {
+                if (!_routePolyline) return;
+                if (now - last > 40) {
+                    last = now;
+                    offset = (offset + 2) % 64;
+                    var icons = _routePolyline.get('icons');
+                    if (icons && icons[0]) { icons[0].offset = offset + 'px'; _routePolyline.set('icons', icons); }
+                }
+                _routeAnimRaf = requestAnimationFrame(tick);
+            }
+            _routeAnimRaf = requestAnimationFrame(tick);
+        }
+        if (!animate || path.length < 3) { flow(); return; }
+        _routeDrawIn = true;
+        var start = performance.now(), dur = Math.min(1800, 600 + path.length * 2), total = path.length;
+        function frame(now) {
+            if (!_routePolyline) return;
+            var t = Math.min(1, (now - start) / dur);
+            var eased = 1 - Math.pow(1 - t, 3);
+            var sub = path.slice(0, Math.max(2, Math.ceil(eased * total)));
+            _routeCasing.setPath(sub);
+            _routePolyline.setPath(sub);
+            if (t < 1) _routeAnimRaf = requestAnimationFrame(frame);
+            else { _routeAnimRaf = null; _routeDrawIn = false; flow(); }
+        }
+        _routeAnimRaf = requestAnimationFrame(frame);
+    }
+    function _cmFormatDistance(m) { return m >= 1000 ? (m / 1000).toFixed(m >= 10000 ? 0 : 1) + ' km' : Math.round(m) + ' m'; }
+    function _cmFormatDuration(sec) {
+        var min = Math.max(1, Math.round(sec / 60));
+        return min >= 60 ? Math.floor(min / 60) + ' hr ' + (min % 60 ? min % 60 + ' min' : '') : min + ' min';
+    }
+    // Follows the person along the route: moves their dot, trims the part already travelled,
+    // updates time/distance left, re-routes if they leave the road, and announces arrival.
+    function _cmStartNavFollow() {
+        _cmStopNavWatch();
+        if (!navigator.geolocation) return;
+        _navOffCount = 0;
+        _navWatchId = navigator.geolocation.watchPosition(function(pos) {
+            if (!_gmap || !_routePath || _routePath.length < 2) return;
+            var me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            var acc = Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : 30;
+            window._lcdjpUserPosition = me;
+            if (_gmUserMarker) { _gmUserMarker.setPosition(me); _gmUserMarker.setMap(_gmap); }
+            if (_gmUserLabel) { _gmUserLabel.setPosition(me); _gmUserLabel.setMap(_gmap); }
+            if (_gmAccuracyCircle) { _gmAccuracyCircle.setCenter(me); _gmAccuracyCircle.setRadius(acc); }
+
+            var best = 0, bestD = Infinity, i, d;
+            for (i = 0; i < _routePath.length; i++) {
+                d = _cmHav(me, _routePath[i]);
+                if (d < bestD) { bestD = d; best = i; }
+            }
+            var toDest = _routeDestPoint ? _cmHav(me, _routeDestPoint) : Infinity;
+            var statEl = document.getElementById('cmNavTimeLeft'), distEl = document.getElementById('cmNavDistLeft');
+
+            if (toDest <= 30) {
+                _cmStopNavWatch();
+                if (statEl) statEl.textContent = 'Arrived';
+                if (distEl) distEl.textContent = '0 m';
+                if (typeof showToast === 'function') showToast('You have arrived.');
+                return;
+            }
+            if (bestD > Math.max(80, acc * 1.5)) {
+                _navOffCount++;
+                if (_navOffCount >= 2 && Date.now() - _navLastReroute > 15000 && typeof _navRerouteFn === 'function') {
+                    _navLastReroute = Date.now();
+                    _navOffCount = 0;
+                    _navRerouteFn(me);
+                }
+            } else {
+                _navOffCount = 0;
+                var remaining = [me].concat(_routePath.slice(best));
+                _routePath = remaining;
+                if (_routePolyline && !_routeDrawIn) {
+                    // trim the travelled part once the draw-in animation has finished
+                    _routePolyline.setPath(remaining);
+                    if (_routeCasing) _routeCasing.setPath(remaining);
+                }
+                var left = 0;
+                for (i = 1; i < remaining.length; i++) left += _cmHav(remaining[i - 1], remaining[i]);
+                if (distEl) distEl.textContent = _cmFormatDistance(left);
+                if (statEl && _routeTotalMeters > 0) statEl.textContent = (_routeApproximate ? '~' : '') + _cmFormatDuration(_routeTotalSeconds * Math.min(1, left / _routeTotalMeters));
+            }
+            if (_navFollow) _gmap.panTo(me);
+        }, function() {}, { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
+    }
+
     window.initCitizenMobileMap = function(locate) {
         var el = document.getElementById('cmMobileMap');
         if (!el) return;
 
         if (_initialized && _gmap) {
-            google.maps.event.trigger(_gmap, 'resize');
-            if (locate) geoLocate();
-            return;
+            var _mapDiv = (typeof _gmap.getDiv === 'function') ? _gmap.getDiv() : null;
+            if (_mapDiv && el.contains(_mapDiv)) {
+                google.maps.event.trigger(_gmap, 'resize');
+                if (locate) geoLocate();
+                return;
+            }
+            // The home view was re-rendered, so the old map is attached to a detached element: rebuild it.
+            _initialized = false;
+            _gmap = null;
+            _gmMarkers = {};
         }
 
         loadGoogleMapsSDK().then(function() {
@@ -995,7 +1454,7 @@ function removeLocationMarker() {
                 _initialized = true;
                 if (fallback) fallback.style.display = 'none';
 
-                _gmap = new google.maps.Map(el, {
+                _gmap = lcdjpCreateMap(el, {
                     center: center,
                     zoom: isLiveLocation ? 15 : 11,
                     minZoom: 10,
@@ -1010,7 +1469,7 @@ function removeLocationMarker() {
 
                 _gmInfoWindow = new google.maps.InfoWindow();
 
-                _gmUserMarker = new google.maps.Marker({
+                _gmUserMarker = lcdjpCreateMarker({
                     position: center,
                     map: isLiveLocation ? _gmap : null,
                     icon: { url: userDotSVG(), scaledSize: new google.maps.Size(20, 20), anchor: new google.maps.Point(10, 10) },
@@ -1018,7 +1477,7 @@ function removeLocationMarker() {
                     zIndex: 999
                 });
 
-                _gmUserLabel = new google.maps.Marker({
+                _gmUserLabel = lcdjpCreateMarker({
                     position: center,
                     map: isLiveLocation ? _gmap : null,
                     icon: { url: 'data:image/png;base64,iVBORw0KGgo=', scaledSize: new google.maps.Size(1, 1) },
@@ -1043,7 +1502,7 @@ function removeLocationMarker() {
                     var groupTotals = {}, groupPositions = {};
 
                     svcList.forEach(function(s) {
-                        var marker = new google.maps.Marker({
+                        var marker = lcdjpCreateMarker({
                             position: { lat: s.lat, lng: s.lng },
                             map: _gmap,
                             icon: { url: pinSVG(s.color), scaledSize: new google.maps.Size(28, 36), anchor: new google.maps.Point(14, 36) },
@@ -1058,13 +1517,13 @@ function removeLocationMarker() {
                         })();
                         var _safeLabel = s.label.replace(/'/g, "\'");
                         var infoContent = '<div style="font-family:inherit;padding:8px 6px;min-width:200px;max-width:260px;">'
-                            + '<div style="font-weight:700;font-size:13px;color:#1a237e;margin-bottom:3px;">' + s.label + '</div>'
-                            + '<div style="font-size:11px;color:#666;margin-bottom:6px;">' + (s.sub || s.vicinity || '') + '</div>'
+                            + '<div style="font-weight:700;font-size:13px;color:#1a237e;margin-bottom:3px;">' + escapeHtml(s.label) + '</div>'
+                            + '<div style="font-size:11px;color:#666;margin-bottom:6px;">' + escapeHtml(s.sub || s.vicinity || '') + '</div>'
                             + (_sDist ? '<div style="display:inline-block;background:#e8f0fe;color:#1a237e;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:10px;" id="cmDistLabel_' + s.id + '">' + _sDist + '</div>' : '')
                             + '<div style="display:flex;gap:8px;margin-top:2px;">'
-                            + '<button onclick="window.cmContactPlace(\'' + (s.phone||'').replace(/'/g,"'") + '\',\'' + (s.place_id||'') + '\',\'' + _safeLabel + '\');event.stopPropagation();" '
+                            + '<button onclick="window.cmContactPlace(' + escapeHtml(JSON.stringify(String(s.phone||''))) + ',' + escapeHtml(JSON.stringify(String(s.place_id||''))) + ',' + escapeHtml(JSON.stringify(String(s.label))) + ');event.stopPropagation();" '
                             + 'style="flex:1;background:#eef0f8;color:#1a237e;border:none;border-radius:14px;font-size:11px;font-weight:700;padding:9px 4px;cursor:pointer;">&#128222; Contact</button>'
-                            + '<button onclick="window.cmDrawRouteOnMap(' + s.lat + ',' + s.lng + ',\'' + _safeLabel + '\');event.stopPropagation();" '
+                            + '<button onclick="window.cmDrawRouteOnMap(' + Number(s.lat) + ',' + Number(s.lng) + ',' + escapeHtml(JSON.stringify(String(s.label))) + ');event.stopPropagation();" '
                             + 'style="flex:1;background:#1a237e;color:#fff;border:none;border-radius:14px;font-size:11px;font-weight:700;padding:9px 4px;cursor:pointer;">&#128506; Directions</button>'
                             + '</div></div>';
 
@@ -1086,15 +1545,15 @@ function removeLocationMarker() {
                     Object.keys(groupTotals).forEach(function(group) {
                         var total = groupTotals[group];
                         var gc = { lat: groupPositions[group].lat / total, lng: groupPositions[group].lng / total };
-                        var groupMarker = new google.maps.Marker({
+                        var groupMarker = lcdjpCreateMarker({
                             position: gc, map: _gmap,
                             label: { text: String(total), color: '#fff', fontSize: '12px', fontWeight: '700' },
                             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 15, fillColor: '#1a237e', fillOpacity: 0.95, strokeColor: '#fff', strokeWeight: 2 },
                             title: total + ' ' + group + ' services', zIndex: 250
                         });
+                        var groupServices = svcList.filter(function(s) { return s.group === group; });
                         groupMarker.addListener('click', function() {
-                            _gmInfoWindow.setContent('<div style="font-family:inherit;padding:4px 2px;font-size:13px;font-weight:700;">' + total + ' ' + group + ' service' + (total === 1 ? '' : 's') + ' in this area</div>');
-                            _gmInfoWindow.open(_gmap, groupMarker);
+                            _gmOpenGroupPopup(group, groupServices, groupMarker);
                         });
                         window._lcdjpMapGroups[group] = { marker: groupMarker, services: svcList.filter(function(s) { return s.group === group; }) };
                         document.querySelectorAll('[data-map-count="' + group + '"]').forEach(function(el) { el.textContent = total; });
@@ -1102,10 +1561,9 @@ function removeLocationMarker() {
                 }
 
                 function _loadNearbyPlaces(userCenter) {
-                    if (!google.maps.places || !google.maps.places.PlacesService) {
+                    if (!google.maps.places) {
                         _renderServices(SERVICES); return;
                     }
-                    var placesService = new google.maps.places.PlacesService(_gmap);
                     var PLACE_QUERIES = [
                         { type: 'police',                  group: 'police',       color: '#1a237e' },
                         { type: 'hospital',                group: 'hospitals',    color: '#c62828' },
@@ -1129,30 +1587,24 @@ function removeLocationMarker() {
                     var allResults = [], pending = PLACE_QUERIES.length, _ts = Date.now();
 
                     PLACE_QUERIES.forEach(function(q) {
-                        var req = { location: userCenter, radius: NEARBY_RADIUS_KM * 1000 };
-                        if (q.type)    req.type    = q.type;
-                        if (q.keyword) req.keyword = q.keyword;
-                        placesService.nearbySearch(req, function(results, status) {
+                        lcdjpPlacesNearby({ center: userCenter, radiusM: NEARBY_RADIUS_KM * 1000, type: q.type, keyword: q.keyword, max: 3 }, function(results) {
                             pending--;
-                            if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                                results.slice(0, 3).forEach(function(r, idx) {
-                                    if (!r.geometry || !r.geometry.location) return;
-                                    if (!_withinRadius(userCenter, r.geometry.location, NEARBY_RADIUS_KM)) return;
-                                    allResults.push({
-                                        id:       q.group + '_p' + idx + '_' + _ts,
-                                        lat:      r.geometry.location.lat(),
-                                        lng:      r.geometry.location.lng(),
-                                        label:    r.name,
-                                        sub:      r.vicinity || '',
-                                        dist:     '',
-                                        color:    q.color,
-                                        group:    q.group,
-                                        vicinity: r.vicinity || '',
-                                        place_id: r.place_id  || '',
-                                        phone:    ''
-                                    });
+                            results.forEach(function(r, idx) {
+                                if (!_withinRadius(userCenter, r, NEARBY_RADIUS_KM)) return;
+                                allResults.push({
+                                    id:       q.group + '_p' + idx + '_' + _ts,
+                                    lat:      r.lat,
+                                    lng:      r.lng,
+                                    label:    r.name,
+                                    sub:      r.vicinity || '',
+                                    dist:     '',
+                                    color:    q.color,
+                                    group:    q.group,
+                                    vicinity: r.vicinity || '',
+                                    place_id: r.place_id  || '',
+                                    phone:    ''
                                 });
-                            }
+                            });
                             if (pending === 0) {
                                 var nearbySeeded = SERVICES.filter(function(s) {
                                     return _withinRadius(userCenter, s, NEARBY_RADIUS_KM);
@@ -1206,22 +1658,29 @@ function removeLocationMarker() {
                 mode = ['WALKING', 'DRIVING', 'BICYCLING'].indexOf(String(mode || 'WALKING').toUpperCase()) >= 0
                     ? String(mode || 'WALKING').toUpperCase() : 'WALKING';
                 var panel = document.getElementById('cmRoutePanel');
-                if (!panel) return;
+                if (!panel) {
+                    panel = document.createElement('div');
+                    panel.id = 'cmRoutePanel';
+                }
+                // The panel is position:fixed, but it is authored inside the map card. Any hidden, clipped or
+                // transformed ancestor (a hidden view, overflow, transform) makes it invisible, so the
+                // Directions button seemed to do nothing. Hang it off <body> so it always shows.
+                if (panel.parentNode !== document.body) document.body.appendChild(panel);
 
                 function esc(value) {
                     return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
                         return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[ch];
                     });
                 }
-                function show(html, error) {
+                function show(html, error, nav) {
+                    var wasExpanded = panel.classList.contains('cm-route-expanded');
                     panel.innerHTML = html;
                     panel.classList.add('cm-route-visible');
                     panel.classList.toggle('cm-route-error-visible', !!error);
+                    panel.classList.toggle('cm-route-nav', !!nav);
+                    panel.classList.toggle('cm-route-expanded', !!nav && wasExpanded);
                 }
-                function clearRouteLine() {
-                    if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
-                    if (_routeDestinationMarker) { _routeDestinationMarker.setMap(null); _routeDestinationMarker = null; }
-                }
+                function clearRouteLine() { _cmClearRouteGraphics(); }
                 function errorPanel(message) {
                     show('<div class="cm-route-handle"></div>'
                         + '<div class="cm-route-header">'
@@ -1229,7 +1688,7 @@ function removeLocationMarker() {
                         + '<div class="cm-route-title"><strong>' + esc(destName || 'Nearby service') + '</strong><span>Directions</span></div>'
                         + '</div><div class="cm-route-error">' + esc(message)
                         + '<br><button class="cm-route-retry" onclick="window.cmDrawRouteOnMap('
-                        + Number(destLat) + ',' + Number(destLng) + ',\'' + esc(destName).replace(/'/g, "\\'") + '\',\'' + mode + '\')">Try again</button></div>', true);
+                        + Number(destLat) + ',' + Number(destLng) + ',' + esc(JSON.stringify(String(destName))) + ',\'' + mode + '\')">Try again</button></div>', true);
                 }
                 function distanceText(meters) {
                     return meters >= 1000 ? (meters / 1000).toFixed(meters >= 10000 ? 0 : 1) + ' km' : Math.round(meters) + ' m';
@@ -1245,22 +1704,41 @@ function removeLocationMarker() {
                         errorPanel('No road route was found for this service.');
                         return;
                     }
-                    clearRouteLine();
+                    var silent = _navSilent;
+                    _navSilent = false;
                     var path = coordinates.map(function(pair) {
                         return { lat: Number(pair[1]), lng: Number(pair[0]) };
                     }).filter(function(point) { return isFinite(point.lat) && isFinite(point.lng); });
-                    _routePolyline = new google.maps.Polyline({
-                        map: _gmap, path: path, geodesic: false,
-                        strokeColor: '#1a4080', strokeOpacity: 0.92, strokeWeight: 6, zIndex: 20
-                    });
-                    _routeDestinationMarker = new google.maps.Marker({
+                    if (path.length < 2) { errorPanel('No road route was found for this service.'); return; }
+                    _cmEnterNavMode();
+                    clearRouteLine();
+                    _routePath = path.slice();
+                    _routeTotalMeters = Number(route.distance || 0);
+                    _routeTotalSeconds = Number(route.duration || 0);
+                    _routeApproximate = !!route.approximate;   // fallback router: show the time as an estimate (~)
+                    _routeDestPoint = { lat: Number(destLat), lng: Number(destLng) };
+                    _cmDrawRouteLine(path, !silent);
+                    _routeDestinationMarker = lcdjpCreateMarker({
                         map: _gmap, position: { lat: Number(destLat), lng: Number(destLng) },
                         title: destName || 'Destination',
-                        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#e65100', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 3 }
+                        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 11, fillColor: '#e65100', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 3 }
                     });
                     var bounds = new google.maps.LatLngBounds();
                     path.forEach(function(point) { bounds.extend(point); });
-                    _gmap.fitBounds(bounds, { top: 70, right: 20, bottom: 260, left: 20 });
+                    if (!silent) {
+                        // The map is now full screen; leave room for the compact bottom panel.
+                        setTimeout(function() {
+                            try { google.maps.event.trigger(_gmap, 'resize'); } catch (e) {}
+                            var mh = (document.getElementById('cmMobileMap') || {}).clientHeight || window.innerHeight || 600;
+                            var wide = window.innerWidth >= 900;
+                            _gmap.fitBounds(bounds, {
+                                top: Math.min(80, Math.round(mh * 0.12)),
+                                right: Math.min(40, Math.round(mh * 0.08)),
+                                bottom: wide ? 60 : Math.min(210, Math.round(mh * 0.34)),
+                                left: wide ? 450 : 30
+                            });
+                        }, 150);
+                    }
 
                     var steps = (route.legs && route.legs[0] && route.legs[0].steps) || [];
                     var stepsHtml = steps.slice(0, 30).map(function(step, index) {
@@ -1272,28 +1750,32 @@ function removeLocationMarker() {
                             + '<div><div>' + esc(instruction) + '</div><div class="cm-route-step-dist">'
                             + distanceText(Number(step.distance || 0)) + '</div></div></div>';
                     }).join('');
-                    show('<div class="cm-route-handle"></div>'
+                    show('<div class="cm-route-handle" onclick="document.getElementById(\'cmRoutePanel\').classList.toggle(\'cm-route-expanded\')"></div>'
                         + '<div class="cm-route-header">'
                         + '<button class="cm-route-back" onclick="window._cmClearRouteRenderer&&window._cmClearRouteRenderer()">&#10005; End</button>'
                         + '<div class="cm-route-title"><strong>' + esc(destName || 'Nearby service') + '</strong>'
-                        + '<span>' + distanceText(Number(route.distance || 0)) + ' &bull; ' + durationText(Number(route.duration || 0)) + '</span></div>'
+                        + '<span><b id="cmNavTimeLeft">' + (route.approximate ? '~' : '') + durationText(Number(route.duration || 0)) + '</b> &bull; <b id="cmNavDistLeft">' + distanceText(Number(route.distance || 0)) + '</b> left</span></div>'
                         + '</div><div class="cm-route-modes">'
-                        + '<button class="cm-route-mode-btn' + (mode === 'WALKING' ? ' active' : '') + '" onclick="window.cmDrawRouteOnMap(' + Number(destLat) + ',' + Number(destLng) + ',\'' + esc(destName).replace(/'/g, "\\'") + '\',\'WALKING\')">&#128694; Walk</button>'
-                        + '<button class="cm-route-mode-btn' + (mode === 'DRIVING' ? ' active' : '') + '" onclick="window.cmDrawRouteOnMap(' + Number(destLat) + ',' + Number(destLng) + ',\'' + esc(destName).replace(/'/g, "\\'") + '\',\'DRIVING\')">&#128663; Drive</button>'
-                        + '<button class="cm-route-mode-btn' + (mode === 'BICYCLING' ? ' active' : '') + '" onclick="window.cmDrawRouteOnMap(' + Number(destLat) + ',' + Number(destLng) + ',\'' + esc(destName).replace(/'/g, "\\'") + '\',\'BICYCLING\')">&#128692; Bike</button>'
-                        + '</div><div class="cm-route-summary">'
-                        + '<div class="cm-route-stat"><strong>' + durationText(Number(route.duration || 0)) + '</strong><span>Duration</span></div>'
-                        + '<div class="cm-route-stat"><strong>' + distanceText(Number(route.distance || 0)) + '</strong><span>Distance</span></div>'
-                        + '</div><div class="cm-route-steps">' + stepsHtml + '</div>');
+                        + '<button class="cm-route-mode-btn' + (mode === 'WALKING' ? ' active' : '') + '" onclick="window.cmDrawRouteOnMap(' + Number(destLat) + ',' + Number(destLng) + ',' + esc(JSON.stringify(String(destName))) + ',\'WALKING\')">&#128694; Walk</button>'
+                        + '<button class="cm-route-mode-btn' + (mode === 'DRIVING' ? ' active' : '') + '" onclick="window.cmDrawRouteOnMap(' + Number(destLat) + ',' + Number(destLng) + ',' + esc(JSON.stringify(String(destName))) + ',\'DRIVING\')">&#128663; Drive</button>'
+                        + '<button class="cm-route-mode-btn' + (mode === 'BICYCLING' ? ' active' : '') + '" onclick="window.cmDrawRouteOnMap(' + Number(destLat) + ',' + Number(destLng) + ',' + esc(JSON.stringify(String(destName))) + ',\'BICYCLING\')">&#128692; Bike</button>'
+                        + '<button class="cm-route-mode-btn cm-route-steps-btn" onclick="document.getElementById(\'cmRoutePanel\').classList.toggle(\'cm-route-expanded\')">&#9776; Steps</button>'
+                        + '</div>'
+                        + '<div class="cm-route-steps">' + stepsHtml + '</div>', false, true);
+                    _navRerouteFn = function(me) { _navSilent = true; requestRoute(me, true); };
+                    _cmStartNavFollow();
                 }
-                function requestRoute(origin) {
+                function requestRoute(origin, silentReroute) {
                     if (!_gmap) { errorPanel('The map is still loading. Please try again in a moment.'); return; }
                     var requestId = ++_routeRequestId;
-                    clearRouteLine();
-                    show('<div class="cm-route-handle"></div><div class="cm-route-header">'
-                        + '<button class="cm-route-back" onclick="window._cmClearRouteRenderer&&window._cmClearRouteRenderer()">&#10005; Close</button>'
-                        + '<div class="cm-route-title"><strong>' + esc(destName || 'Nearby service') + '</strong><span>Calculating route…</span></div>'
-                        + '</div><div class="cm-route-spinner">&#128506;&#65039; Calculating route on this map…</div>');
+                    if (!silentReroute) {
+                        _cmStopNavWatch();
+                        clearRouteLine();
+                        show('<div class="cm-route-handle"></div><div class="cm-route-header">'
+                            + '<button class="cm-route-back" onclick="window._cmClearRouteRenderer&&window._cmClearRouteRenderer()">&#10005; Close</button>'
+                            + '<div class="cm-route-title"><strong>' + esc(destName || 'Nearby service') + '</strong><span>Calculating route…</span></div>'
+                            + '</div><div class="cm-route-spinner">&#128506;&#65039; Calculating route on this map…</div>');
+                    }
                     var base = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
                     var query = '?originLat=' + encodeURIComponent(origin.lat)
                         + '&originLng=' + encodeURIComponent(origin.lng)
@@ -1312,7 +1794,10 @@ function removeLocationMarker() {
                             else throw new Error('No road route was found for this service.');
                         })
                         .catch(function(error) {
-                            if (requestId === _routeRequestId) errorPanel(error.message || 'Could not calculate this route.');
+                            _navSilent = false;
+                            if (requestId !== _routeRequestId) return;
+                            if (silentReroute) return;   // keep the current line; try again on the next off-route check
+                            errorPanel(error.message || 'Could not calculate this route.');
                         });
                 }
 
@@ -1337,18 +1822,27 @@ function removeLocationMarker() {
             };
 
             window._cmClearRouteRenderer = function() {
-                if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
-                if (_routeDestinationMarker) { _routeDestinationMarker.setMap(null); _routeDestinationMarker = null; }
+                _cmStopNavWatch();
+                _cmClearRouteGraphics();
+                _routePath = null;
                 _routeRequestId++;
                 var panel = document.getElementById('cmRoutePanel');
-                if (panel) panel.classList.remove('cm-route-visible', 'cm-route-error-visible');
+                if (panel) panel.classList.remove('cm-route-visible', 'cm-route-error-visible', 'cm-route-nav', 'cm-route-expanded');
+                _cmExitNavMode();
                 if (_gmap && window._lcdjpUserPosition) {
-                    _gmap.panTo(window._lcdjpUserPosition);
-                    _gmap.setZoom(15);
+                    setTimeout(function() {
+                        _gmap.panTo(window._lcdjpUserPosition);
+                        _gmap.setZoom(15);
+                    }, 160);
                 }
             };
 
             window._lcdjpGetDirectionsInApp = function(destLat, destLng, destName, mode) {
+                // The assistant modal sits above the map; hide it so the route is visible.
+                var _aiModal = document.getElementById('aiAssistantModal');
+                if (_aiModal && _aiModal.classList.contains('open') && typeof window.closeAIAssistant === 'function') {
+                    try { window.closeAIAssistant(); } catch (e) {}
+                }
                 if (typeof showGISPage === 'function') showGISPage();
 
                 var draw = function() {
@@ -1357,7 +1851,7 @@ function removeLocationMarker() {
                     }
                 };
                 function isMapReady() {
-                    return !!(document.getElementById('cmRoutePanel') && typeof window.cmDrawRouteOnMap === 'function');
+                    return !!(_gmap && typeof window.cmDrawRouteOnMap === 'function');
                 }
 
                 if (isMapReady()) {
@@ -1385,13 +1879,13 @@ function removeLocationMarker() {
 
                 if (window._googleMapsSDKPromise) {
                     window._googleMapsSDKPromise.then(function() {
-                        pollForReady(15, 'Map is still loading - please try Directions again in a moment.');
+                        pollForReady(60, 'Map is still loading - please try Directions again in a moment.');
                     }, function(err) {
                         console.error('[LCDJP] directions_map_load_failed code=' + ((err && err.code) || 'unknown'));
                         if (typeof showToast === 'function') showToast(_lcdjpMapsErrorToUserMessage(err));
                     });
                 } else {
-                    pollForReady(75, 'Map is still loading - please try Directions again in a moment.');
+                    pollForReady(90, 'Map is still loading - please try Directions again in a moment.');
                 }
             };
 
@@ -1415,19 +1909,14 @@ function removeLocationMarker() {
                         _doInitCitizenMap(window._lcdjpUserPosition, true, Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null);
                     },
                     function() {
-                        if (fallback) {
-                            fallback.style.display = 'flex';
-                            fallback.innerHTML = '<span style="font-size:12px;color:#9b2c2c;font-weight:700;text-align:center;padding:16px;">'
-                                + 'Location access is required to show this map.<br>'
-                                + '<small style="font-weight:400;">Allow device GPS access, then tap Locate Me to try again.</small></span>';
-                        }
+                        // GPS denied/slow: still create the map (centered on Kampala) so Directions and
+                        // route drawing have a map to draw on instead of timing out.
+                        if (!_gmap) _doInitCitizenMap({ lat: 0.3476, lng: 32.5825 }, false, null);
                     },
                     { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
                 );
-            } else if (fallback) {
-                fallback.style.display = 'flex';
-                fallback.innerHTML = '<span style="font-size:12px;color:#9b2c2c;font-weight:700;text-align:center;padding:16px;">'
-                    + 'This device does not provide GPS location.</span>';
+            } else if (!_gmap) {
+                _doInitCitizenMap({ lat: 0.3476, lng: 32.5825 }, false, null);
             }
 
         }).catch(function(err) {
@@ -1583,8 +2072,8 @@ function removeLocationMarker() {
             return '<div class="cm-nearby-item" ' + onclick + ' style="' + (s.mapId ? 'cursor:pointer;' : '') + '">'
                 + '<div class="cm-nearby-dot" style="background:' + s.bg + ';font-size:14px;line-height:26px;text-align:center;">' + s.icon + '</div>'
                 + '<div class="cm-nearby-info">'
-                  + '<div class="cm-nearby-name">' + s.label + '</div>'
-                  + '<div class="cm-nearby-type">' + s.type + '</div>'
+                  + '<div class="cm-nearby-name">' + escapeHtml(s.label) + '</div>'
+                  + '<div class="cm-nearby-type">' + escapeHtml(s.type) + '</div>'
                 + '</div>'
                 + '<div class="cm-nearby-dist">' + fmtDist(s.km) + '</div>'
                 + '</div>';
@@ -2044,7 +2533,7 @@ function focusServiceOnMap(lat, lng, name) {
     if (typeof window.cmMapFlyToService === 'function') {
         window.cmMapFlyToService(null, lat, lng);
     }
-    if (typeof showToast === 'function') showToast(' ' + name);
+    if (typeof showToast === 'function') showToast('' + name);
     const modal = document.getElementById('serviceListModal');
     if (modal) modal.remove();
 }

@@ -66,7 +66,8 @@ async function authFetch(url, options) {
     var token = _activeAuthToken ? _activeAuthToken() : _getAuthToken();
     if (!token) throw new Error('Authentication required');
     
-    headers['Authorization'] = 'Bearer ' + token;
+    if (!_isDescriptor(token)) headers['Authorization'] = 'Bearer ' + token;
+    headers['X-Requested-With'] = 'XMLHttpRequest';
     
     if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
         headers['Content-Type'] = 'application/json';
@@ -100,7 +101,10 @@ window.authFetch = authFetch;
             path.indexOf('/api/notifications') === 0 ||
             path.indexOf('/api/cases') === 0 ||
             path.indexOf('/api/users') === 0 ||
-            path.indexOf('/api/auth/users/') === 0 ||
+            path.indexOf('/api/auth/users') === 0 ||
+            path.indexOf('/api/auth/chat') === 0 ||
+            path.indexOf('/api/translate') === 0 ||
+            path.indexOf('/api/verification') === 0 ||
             path.indexOf('/api/messages') === 0 ||
             path.indexOf('/api/chat') === 0 ||
             path.indexOf('/api/admin/') === 0 ||
@@ -142,6 +146,7 @@ window.authFetch = authFetch;
             window._lcdjpClearAccountState();
         } else {
             localStorage.removeItem('jwtToken');
+            localStorage.removeItem('lcdjp_session');
             localStorage.removeItem('lcdjp_username');
             localStorage.removeItem('lcdjp_userlevel');
             localStorage.removeItem('lcdjp_district');
@@ -198,7 +203,7 @@ function _activeAuthToken() {
     try {
         var token = typeof getAuthToken === 'function'
             ? getAuthToken()
-            : localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken');
+            : (typeof getAuthToken === 'function' ? getAuthToken() : null);
         if (!token || token === 'null' || token === 'undefined') return null;
         return String(token).trim() || null;
     } catch (e) {
@@ -242,9 +247,9 @@ function _refreshToken() {
     })
     .then(function(data) {
         if (data.token) {
-            localStorage.setItem('jwtToken', data.token);
-            sessionStorage.setItem('jwtToken', data.token);
-            return data.token;
+            // The new token is already in the HttpOnly cookie; keep only its public claims.
+            var descriptor = LcdjpSession.save(data.token);
+            if (descriptor) return descriptor;
         }
         throw new Error('No token in refresh response');
     });
@@ -281,6 +286,40 @@ function _refreshToken() {
             'Content-Type': 'application/json'
         };
     };
+
+    function _plainHeaders(h) {
+        var out = {};
+        if (!h) return out;
+        if (typeof Headers !== 'undefined' && h instanceof Headers) {
+            h.forEach(function(v, k) { out[k] = v; });
+        } else if (Array.isArray(h)) {
+            h.forEach(function(pair) { out[pair[0]] = pair[1]; });
+        } else {
+            Object.keys(h).forEach(function(k) { out[k] = h[k]; });
+        }
+        return out;
+    }
+
+    function _isDescriptor(value) {
+        return !!(window.LcdjpSession && window.LcdjpSession.isDescriptor(value));
+    }
+
+    function _dropDescriptorAuth(headers) {
+        Object.keys(headers).forEach(function(k) {
+            if (k.toLowerCase() !== 'authorization') return;
+            var v = String(headers[k] || '');
+            if (/^bearer\s+/i.test(v) && _isDescriptor(v.replace(/^bearer\s+/i, '').trim())) delete headers[k];
+        });
+    }
+
+    function _hasAuthHeader(headers) {
+        return Object.keys(headers).some(function(k) { return k.toLowerCase() === 'authorization'; });
+    }
+
+    function _apiIsCrossOrigin(url) {
+        try { return new URL(String(url), window.location.href).origin !== window.location.origin; }
+        catch (e) { return false; }
+    }
 
     function _normalizeApiUrl(input) {
         var isRequest = typeof Request !== 'undefined' && input instanceof Request;
@@ -340,18 +379,23 @@ function _refreshToken() {
             delete options.credentials;
         }
 
+       // Any same-origin API call may carry the login cookie, so always send the CSRF header.
+       if (/(^|\/)api\//.test(String(normalizedUrl)) && !_apiIsCrossOrigin(normalizedUrl)) {
+           options.headers = _plainHeaders(options.headers);
+           options.headers['X-Requested-With'] = 'XMLHttpRequest';
+       }
        if (_isProtectedApiPath(normalizedUrl)) {
+    // The HttpOnly login cookie authenticates the request; the CSRF guard needs this header with it.
+    options.headers = _plainHeaders(options.headers);
+    options.headers['X-Requested-With'] = 'XMLHttpRequest';
+    // A session descriptor is not a credential: never send it as one, whoever put it in the headers.
+    _dropDescriptorAuth(options.headers);
     var token = _activeAuthToken();
-    if (token && _isTokenValid()) {
-        options.headers = Object.assign({}, options.headers || {}, {
-            'Authorization': 'Bearer ' + token
-        });
-    } else {
-        var _headers = Object.assign({}, options.headers || {});
-        delete _headers['Authorization'];
-        delete _headers['authorization'];
-        options.headers = _headers;
+    if (token && !_isDescriptor(token) && _isTokenValid() && !_hasAuthHeader(options.headers)) {
+        // Only a not-yet-migrated legacy token reaches here.
+        options.headers['Authorization'] = 'Bearer ' + token;
     }
+    if (_apiIsCrossOrigin(normalizedUrl)) options.credentials = 'include';
     
     if (options.body && typeof options.body === 'string') {
         options.headers = Object.assign({}, options.headers || {}, {

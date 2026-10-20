@@ -6,8 +6,7 @@
 
 function _getVerificationToken() {
     try {
-        return localStorage.getItem('jwtToken') || 
-               sessionStorage.getItem('jwtToken') || 
+        return (typeof getAuthToken === 'function' ? getAuthToken() : null) || 
                null;
     } catch (e) {
         return null;
@@ -717,6 +716,7 @@ async function submitIdVerification() {
                     regShowToast('Authentication error. Please login again.', 'error');
                 }
                 localStorage.removeItem('jwtToken');
+                localStorage.removeItem('lcdjp_session');
                 sessionStorage.removeItem('jwtToken');
                 if (typeof _authRedirect === 'function') {
                     _authRedirect();
@@ -947,7 +947,7 @@ function _lcdjpRenderAccountStatus(name, type, verifStatus, rejectionReason) {
             msgBox.innerHTML = '<div class="step-alert step-alert-warning"> Your verification is under review. You will be notified within 24–48 hours once it is complete.</div>';
         } else if (verifStatus === 'rejected') {
             var reasonHtml = rejectionReason
-                ? '<p style="margin-top:8px;font-size:13px;color:#721c24;"><strong>Reason:</strong> ' + rejectionReason + '</p>'
+                ? '<p style="margin-top:8px;font-size:13px;color:#721c24;"><strong>Reason:</strong> ' + escapeHtml(rejectionReason) + '</p>'
                 : '';
             msgBox.innerHTML = '<div class="step-alert step-alert-error"> Your verification was rejected. Please re-submit with the correct documents.' + reasonHtml + '</div>';
         } else if (typeof _lcdjpVerificationDisabled === 'function' && _lcdjpVerificationDisabled()) {

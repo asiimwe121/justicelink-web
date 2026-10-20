@@ -425,19 +425,32 @@
     return batches;
   }
 
+  var failStreak = 0;
+  // Wait longer after each consecutive failure (15s, 30s, 60s ... up to 10 minutes).
+  function backOff() {
+    failStreak = Math.min(failStreak + 1, 6);
+    pausedUntil = now() + Math.min(15000 * Math.pow(2, failStreak - 1), 10 * 60 * 1000);
+  }
+
   function sendBatch(lang, entries) {
     var fetcher = window.authFetch || window.fetch;
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 25000) : null;
     return Promise.resolve().then(function () {
       return fetcher(endpoint(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texts: entries.map(function (e) { return e.core; }), target: lang })
+        body: JSON.stringify({ texts: entries.map(function (e) { return e.core; }), target: lang }),
+        suppressAuthRedirect: true, // a failed translation must never sign the person out
+        signal: ctrl ? ctrl.signal : undefined
       });
     }).then(function (resp) {
+      if (timer) clearTimeout(timer);
       if (resp.status === 503) { unavailableUntil = now() + 10 * 60 * 1000; return null; }
       if (resp.status === 401 || resp.status === 403) { pausedUntil = now() + 60 * 1000; return null; }
       if (resp.status === 429) { pausedUntil = now() + 45 * 1000; return null; }
-      if (!resp.ok) { pausedUntil = now() + 15 * 1000; return null; }
+      if (!resp.ok) { backOff(); return null; }
+      failStreak = 0;
       return resp.json();
     }).then(function (data) {
       if (!data) return;
@@ -453,7 +466,8 @@
         }
       });
     }).catch(function () {
-      pausedUntil = now() + 15 * 1000;
+      if (timer) clearTimeout(timer);
+      backOff();
     });
   }
 

@@ -15,6 +15,93 @@ function escapeHtml(value) {
 }
 window.escapeHtml = escapeHtml;
 
+// Shrinks a phone photo in the browser before upload (typically 3 MB -> 300 KB), so it takes less data to send and
+// less space on the server. Only JPEG/PNG/WebP above ~300 KB are touched; anything else, and any photo that would not
+// get smaller, comes back unchanged. Never rejects: on any problem the original file is returned.
+function lcdjpCompressImageFile(file, maxDim, quality) {
+    maxDim = maxDim || 1600;
+    quality = quality || 0.8;
+    return new Promise(function (resolve) {
+        try {
+            if (!file || !file.type || !/^image\/(jpeg|png|webp)$/i.test(file.type) || file.size < 300 * 1024) {
+                resolve(file);
+                return;
+            }
+            var objectUrl = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                try {
+                    var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                    var w = Math.max(1, Math.round(img.width * scale));
+                    var h = Math.max(1, Math.round(img.height * scale));
+                    var canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    var ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff'; // JPEG has no transparency
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(function (blob) {
+                        URL.revokeObjectURL(objectUrl);
+                        if (!blob || blob.size >= file.size) { resolve(file); return; }
+                        var name = String(file.name || 'photo').replace(/\.[^.\/\\]+$/, '') + '.jpg';
+                        resolve(new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() }));
+                    }, 'image/jpeg', quality);
+                } catch (e) {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(file);
+                }
+            };
+            img.onerror = function () { URL.revokeObjectURL(objectUrl); resolve(file); };
+            img.src = objectUrl;
+        } catch (e) {
+            resolve(file);
+        }
+    });
+}
+window.lcdjpCompressImageFile = lcdjpCompressImageFile;
+
+// Older cases were saved as "what: ... | where: ... | when: ... | immediate: ...". Show those as a readable
+// sentence ("Someone stole my land in Pece Gulu. It happened long time ago."). New narrative descriptions
+// pass through unchanged, and nothing is rewritten in the database.
+function lcdjpReadableDescription(text) {
+    var raw = String(text == null ? '' : text);
+    if (!/^\s*(what|issue|where|when|immediate|who|affected|witnesses|evidence|reportedBefore|outcome|details)\s*:/i.test(raw)) return raw;
+    var known = { what: 1, issue: 1, where: 1, when: 1, immediate: 1, who: 1, affected: 1, witnesses: 1,
+                  evidence: 1, reportedbefore: 1, outcome: 1, details: 1 };
+    var f = {}, extra = [];
+    raw.split(/\s*\|\s*/).forEach(function (seg) {
+        var m = /^([A-Za-z]+)\s*:\s*([\s\S]*)$/.exec(seg.trim());
+        if (m && known[m[1].toLowerCase()]) { if (!f[m[1].toLowerCase()]) f[m[1].toLowerCase()] = m[2].trim(); }
+        else if (seg.trim()) extra.push(seg.trim());
+    });
+    function strip(v) { return String(v || '').trim().replace(/[\s.!?;,:|]+$/, ''); }
+    var what = strip(f.what || f.issue), where = strip(f.where), when = strip(f.when);
+    var parts = [];
+    if (what) {
+        var sentence = what.charAt(0).toUpperCase() + what.slice(1);
+        if (where) sentence += ' ' + (/^(at|near|in|inside|along|behind|opposite|on|by|within|around|beside|next to|close to|outside|off)\b/i.test(where) ? '' : 'in ') + where;
+        parts.push(sentence + '.');
+    } else if (where) {
+        parts.push('This happened in ' + where + '.');
+    }
+    if (when) {
+        var lower = /^(today|yesterday|tonight|this|last|long|a|an|one|two|three|four|five|six|seven|eight|nine|ten|recently|earlier|about|around|since|over|in|on|at|before|after|during|several|many|few|some|the|just|not|more|less|almost|nearly|early|late)\b/i.test(when);
+        parts.push('It happened ' + (lower ? when.charAt(0).toLowerCase() + when.slice(1) : when) + '.');
+    }
+    if (/^yes/i.test(f.immediate || '')) parts.push('Someone was in immediate danger when this was reported.');
+    [['who', 'People involved'], ['affected', 'Who was affected'], ['witnesses', 'Witnesses'],
+     ['evidence', 'Evidence available'], ['reportedbefore', 'Reported before'], ['outcome', 'Outcome wanted']
+    ].forEach(function (p) { var v = strip(f[p[0]]); if (v) parts.push(p[1] + ': ' + v + '.'); });
+    var tail = [];
+    if (f.details && strip(f.details) !== what) tail.push(f.details.replace(/\s*\|\s*/g, ' ').trim());
+    tail = tail.concat(extra);
+    var out = parts.join(' ');
+    if (tail.length) out = out ? out + '\n\n' + tail.join(' ') : tail.join(' ');
+    return out || raw;
+}
+window.lcdjpReadableDescription = lcdjpReadableDescription;
+
 function _lcdjpSensitiveCaseAccessAllowed() {
     var role = String(
         sessionStorage.getItem('lcdjp_userlevel') ||
@@ -37,7 +124,7 @@ window._lcdjpSensitiveCaseAccessAllowed = _lcdjpSensitiveCaseAccessAllowed;
 function _lcdjpHasUsableToken() {
     var token = (typeof getLcdjpActiveToken === 'function')
         ? getLcdjpActiveToken()
-        : (localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken') || '');
+        : ((typeof getAuthToken === 'function' ? getAuthToken() : null) || '');
     if (!token) return false;
     try {
         var parts = token.split('.');
@@ -148,12 +235,12 @@ function determineLawyerSpecialization(caseType) {
 
 
     function getAuthToken() {
-    return localStorage.getItem('jwtToken') ||
-        sessionStorage.getItem('jwtToken');
+    return window.LcdjpSession ? window.LcdjpSession.token() : null;
 }
 
     function handleTokenExpired() {
         localStorage.removeItem('jwtToken');
+        localStorage.removeItem('lcdjp_session');
         localStorage.removeItem('lcdjp_username');
         localStorage.removeItem('lcdjp_userlevel');
         localStorage.removeItem('lcdjp_district');
@@ -220,7 +307,7 @@ function showLoading(message = 'Loading...') {
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <p id="loadingMessage" style="margin-top: 10px;">${message}</p>
+                <p id="loadingMessage" style="margin-top: 10px;">${escapeHtml(message)}</p>
             </div>
         `;
         document.body.appendChild(overlay);
@@ -463,3 +550,25 @@ function formatFileSize(bytes) {
 })();
 
 
+
+
+/** Current time as an ISO-8601 string (UTC) for message timestamps. */
+function _lcdjpNow() {
+    return new Date().toISOString();
+}
+window._lcdjpNow = _lcdjpNow;
+
+
+// Pasting a code into a single-line 6-digit code field: keep just the digits ("123 456" / "123-456" / " 123456\n" all work).
+// Without this the field's maxlength="6" cuts the pasted text before the digits are extracted.
+document.addEventListener('paste', function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== 'INPUT' || t.classList.contains('otp-digit')) return;
+    if (t.getAttribute('inputmode') !== 'numeric' || t.getAttribute('maxlength') !== '6') return;
+    var text = (e.clipboardData || window.clipboardData).getData('text') || '';
+    var digits = text.replace(/\D/g, '').slice(0, 6);
+    if (!digits) return;
+    e.preventDefault();
+    t.value = digits;
+    t.dispatchEvent(new Event('input', { bubbles: true }));
+}, true);

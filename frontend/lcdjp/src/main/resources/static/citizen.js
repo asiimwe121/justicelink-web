@@ -5,11 +5,42 @@
 
 
 
+// Plays one voice recording at a time; clicking the same button again pauses/resumes.
+// `src` is a /api/voice/{id} URL or a legacy base64 data URI.
+var _lcdjpVoiceAudio = null;
+var _lcdjpVoiceButton = null;
+function _lcdjpVoiceLabel(btn, playing) {
+    if (!btn) return;
+    var isIcon = btn.textContent.trim() === '\u25B6' || btn.textContent.trim() === '\u23F8';
+    btn.textContent = isIcon ? (playing ? '\u23F8' : '\u25B6') : (playing ? 'Pause' : 'Play');
+}
+function playVoiceMessage(src, btn) {
+    try {
+        if (!src) return;
+        if (_lcdjpVoiceAudio && _lcdjpVoiceButton === btn) {
+            if (_lcdjpVoiceAudio.paused) { _lcdjpVoiceAudio.play(); _lcdjpVoiceLabel(btn, true); }
+            else { _lcdjpVoiceAudio.pause(); _lcdjpVoiceLabel(btn, false); }
+            return;
+        }
+        if (_lcdjpVoiceAudio) { _lcdjpVoiceAudio.pause(); _lcdjpVoiceLabel(_lcdjpVoiceButton, false); }
+        var audio = new Audio(src);
+        _lcdjpVoiceAudio = audio;
+        _lcdjpVoiceButton = btn;
+        audio.addEventListener('ended', function () { _lcdjpVoiceLabel(btn, false); });
+        audio.addEventListener('error', function () { _lcdjpVoiceLabel(btn, false); });
+        _lcdjpVoiceLabel(btn, true);
+        var started = audio.play();
+        if (started && started.catch) started.catch(function () { _lcdjpVoiceLabel(btn, false); });
+    } catch (e) {
+        if (btn) _lcdjpVoiceLabel(btn, false);
+    }
+}
+window.playVoiceMessage = playVoiceMessage;
+
 function _getCitizenToken() {
     try {
         if (typeof getAuthToken === 'function') return getAuthToken();
-        return localStorage.getItem('jwtToken') ||
-            sessionStorage.getItem('jwtToken') || null;
+        return (typeof getAuthToken === 'function' ? getAuthToken() : null) || null;
     } catch (e) {
         return null;
     }
@@ -75,21 +106,21 @@ function toggleNotifications() {
     let userLevel = sessionStorage.getItem("lcdjp_userlevel");
     let username = sessionStorage.getItem("lcdjp_username");
     
-    console.log(" toggleNotifications called - UserLevel:", userLevel);
-    console.log(" Username from session:", username);
+    console.log("toggleNotifications called - UserLevel:", userLevel);
+    console.log("Username from session:", username);
     
     if (isAdmin(userLevel)) {
-        console.log(" Admin notifications toggled (bypassing username check)");
+        console.log("Admin notifications toggled (bypassing username check)");
 
         if (window.innerWidth <= 767 && typeof mobileAdminNotifications === 'function') {
             var mobileAdminPanel = document.getElementById('mobileAdminNotificationsPanel');
             if (mobileAdminPanel) {
                 var adminCloseBtn = mobileAdminPanel.querySelector('.mobile-role-panel-close');
                 if (adminCloseBtn) adminCloseBtn.click(); else mobileAdminPanel.remove();
-                console.log(" Admin Notifications hidden (mobile)");
+                console.log("Admin Notifications hidden (mobile)");
             } else {
                 mobileAdminNotifications();
-                console.log(" Admin Notifications shown (mobile)");
+                console.log("Admin Notifications shown (mobile)");
             }
             return;
         }
@@ -97,19 +128,19 @@ function toggleNotifications() {
         let page = document.getElementById("adminNotificationsPage");
         
         if (!page) {
-            console.log(" Creating admin notifications page...");
+            console.log("Creating admin notifications page...");
             createAdminNotificationsPage();
             page = document.getElementById("adminNotificationsPage");
         }
         
         if (!page) {
-            console.error(" Failed to create adminNotificationsPage");
+            console.error("Failed to create adminNotificationsPage");
             alert("Error loading notifications. Please refresh.");
             return;
         }
         
         const isVisible = page.style.display === 'block';
-        console.log(" Current page state - display:", page.style.display, "isVisible:", isVisible);
+        console.log("Current page state - display:", page.style.display, "isVisible:", isVisible);
         
         if (isVisible) {
             
@@ -121,7 +152,7 @@ function toggleNotifications() {
                 page.style.visibility = 'hidden';
             }
             showAdminHome();
-            console.log(" Admin Notifications hidden");
+            console.log("Admin Notifications hidden");
         } else {
             hideAllDashboardViews();
             const adminDashEl = document.getElementById('adminDashboard');
@@ -144,15 +175,15 @@ function toggleNotifications() {
                 renderNavbarNotifBadge();
             }
             
-            console.log(" Admin Notifications shown");
+            console.log("Admin Notifications shown");
         }
         return;
     }
     
     if (!username) {
         console.warn("No username found for non-admin user");
-        restoreSessionData();
-        username = sessionStorage.getItem("lcdjp_username");
+        if (typeof restoreSessionData === 'function') restoreSessionData();
+        username = sessionStorage.getItem("lcdjp_username") || localStorage.getItem("lcdjp_username");
         if (!username) {
             alert("Please login again to view notifications.");
             return;
@@ -160,16 +191,16 @@ function toggleNotifications() {
     }
     
     if (userLevel === 'Lawyer') {
-        console.log(" Lawyer notifications toggled");
+        console.log("Lawyer notifications toggled");
         if (window.innerWidth <= 767 && typeof mobileLawyerNotifications === 'function') {
             var mobilePanel = document.getElementById('mobileLawyerNotificationsPanel');
             if (mobilePanel) {
                 var closeBtn = mobilePanel.querySelector('.mobile-role-panel-close');
                 if (closeBtn) closeBtn.click(); else mobilePanel.remove();
-                console.log(' Lawyer Notifications hidden (mobile)');
+                console.log('Lawyer Notifications hidden (mobile)');
             } else {
                 mobileLawyerNotifications();
-                console.log(' Lawyer Notifications shown (mobile)');
+                console.log('Lawyer Notifications shown (mobile)');
             }
             return;
         }
@@ -177,22 +208,22 @@ function toggleNotifications() {
         if (page && page.style.display === 'block') {
             page.style.display = 'none';
             showLawyerDashboard();
-            console.log(' Lawyer Notifications hidden');
+            console.log('Lawyer Notifications hidden');
         } else {
             showLawyerNotificationsPage();
-            console.log(' Lawyer Notifications shown');
+            console.log('Lawyer Notifications shown');
         }
         return;
     }
     
     if (userLevel === 'LC') {
-        console.log(" LC notifications toggled");
+        console.log("LC notifications toggled");
         hideAllDashboardViews();
         let page = document.getElementById("lcNotificationsPage");
         if (page && page.style.display === 'block') {
             page.style.display = 'none';
             showLcDashboard();
-            console.log(' LC Notifications hidden');
+            console.log('LC Notifications hidden');
         } else {
             if (!page) {
                 const lcNotifPage = document.createElement('div');
@@ -214,19 +245,19 @@ function toggleNotifications() {
                 page.style.display = 'block';
             }
             if (typeof loadLcNotifications === 'function') loadLcNotifications().catch(console.error);
-            console.log(' LC Notifications shown');
+            console.log('LC Notifications shown');
         }
         return;
     }
 
     if (userLevel === 'Citizen') {
-        console.log(" Citizen notifications toggled");
+        console.log("Citizen notifications toggled");
         hideAllDashboardViews();
         let page = document.getElementById("citizenNotificationsPage");
         if (page && page.style.display === 'block') {
             page.style.display = 'none';
             showHome();
-            console.log(' Citizen Notifications hidden');
+            console.log('Citizen Notifications hidden');
         } else {
             if (!page) {
                 const citizenNotifPage = document.createElement('div');
@@ -248,7 +279,7 @@ function toggleNotifications() {
                 page.style.display = 'block';
             }
             loadCitizenNotifications().catch(console.error);
-            console.log(' Citizen Notifications shown');
+            console.log('Citizen Notifications shown');
         }
         return;
     }
@@ -369,27 +400,27 @@ async function loadCitizenNotifications() {
             if (nType === 'case_declined' && nCaseId) {
                 extraActions = `
                     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-                        <button onclick="event.stopPropagation(); showLawyerSelectionForDeclinedCase('${nCaseId}')" style="flex:1; padding:8px 14px; background:#1a4080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+                        <button onclick="event.stopPropagation(); showLawyerSelectionForDeclinedCase(${escapeHtml(JSON.stringify(String(nCaseId)))})" style="flex:1; padding:8px 14px; background:#1a4080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
                             \u2696\uFE0F Choose Another Lawyer
                         </button>
-                        <button onclick="event.stopPropagation(); viewCitizenCase('${nCaseId}')" style="flex:1; padding:8px 14px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px;">
+                        <button onclick="event.stopPropagation(); viewCitizenCase(${escapeHtml(JSON.stringify(String(nCaseId)))})" style="flex:1; padding:8px 14px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px;">
                             View Case Details
                         </button>
                     </div>`;
             } else if (nType === 'case_referred' && nCaseId) {
                 extraActions = `
                     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-                        <button onclick="event.stopPropagation(); reopenReferredCase('${nCaseId}')" style="flex:1; padding:8px 14px; background:#1a4080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+                        <button onclick="event.stopPropagation(); reopenReferredCase(${escapeHtml(JSON.stringify(String(nCaseId)))})" style="flex:1; padding:8px 14px; background:#1a4080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
                             \u{1F504} Choose New Handler
                         </button>
-                        <button onclick="event.stopPropagation(); viewCitizenCase('${nCaseId}')" style="flex:1; padding:8px 14px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px;">
+                        <button onclick="event.stopPropagation(); viewCitizenCase(${escapeHtml(JSON.stringify(String(nCaseId)))})" style="flex:1; padding:8px 14px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px;">
                             View Case Details
                         </button>
                     </div>`;
             } else if (isMessageType && nCaseId) {
                 extraActions = `
                     <div style="margin-top:8px;">
-                        <button onclick="event.stopPropagation(); toggleNotifications(); setTimeout(()=>openCitizenMessaging('${nCaseId}'), 200);" style="padding:6px 16px; background:#1a4080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;">
+                        <button onclick="event.stopPropagation(); toggleNotifications(); setTimeout(()=>openCitizenMessaging(${escapeHtml(JSON.stringify(String(nCaseId)))}), 200);" style="padding:6px 16px; background:#1a4080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;">
                             \u{1F4AC} Open Chat
                         </button>
                     </div>`;
@@ -400,7 +431,7 @@ async function loadCitizenNotifications() {
             
             
             
-            const openCall = `lcdjpOpenNotification(${JSON.stringify({ id: notification.id || notification._id, type: nType, caseId: nCaseId || '' }).replace(/"/g, '&quot;')})`;
+            const openCall = `lcdjpOpenNotification(${JSON.stringify({ id: notification.id || notification._id, type: nType, caseId: nCaseId || '' }).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')})`;
 
             if (isMobileNotif) {
                 
@@ -409,7 +440,7 @@ async function loadCitizenNotifications() {
                 
                 const mobileClick = nCaseId ? openCall : 'lcdjpToggleNotifCard(this)';
                 html += `
-                    <div class="notification-card" style="background:${isUnread ? '#f0f5ff' : 'white'}; border-radius:12px; padding:14px 15px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:pointer;"
+                    <div class="notification-card" style="display:block; background:${isUnread ? '#f0f5ff' : 'white'}; border-radius:12px; padding:14px 15px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:pointer;"
                          onclick="${mobileClick}">
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <span style="font-weight:700; color:${accent}; font-size:14px;">${title}</span>
@@ -417,9 +448,9 @@ async function loadCitizenNotifications() {
                             ${nCaseId ? '<span style="font-size:11px;color:#888;">Case: '+nCaseId+'</span>' : ''}
                             <span class="lcdjp-notif-chevron" style="margin-left:auto; font-size:11px; color:#999; transition:transform .2s;">&#9662;</span>
                         </div>
-                        <div style="margin-top:3px; font-size:11px; color:#aaa;">${notification.date || notification.timestamp || ''}</div>
+                        <div style="margin-top:3px; font-size:11px; color:#6b7280;">${escapeHtml(notification.date || notification.timestamp || '')}</div>
                         <div class="lcdjp-notif-body" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #eef0f6;">
-                            <div style="color:#333; line-height:1.5; font-size:13px;">${notification.message}</div>
+                            <div style="color:#333; line-height:1.5; font-size:13px;">${escapeHtml(notification.message)}</div>
                             ${extraActions}
                         </div>
                     </div>
@@ -439,8 +470,8 @@ async function loadCitizenNotifications() {
                                 ${isUnread ? '<span style="background:'+accent+';color:white;border-radius:8px;padding:1px 7px;font-size:10px;font-weight:700;">NEW</span>' : ''}
                                 ${nCaseId ? '<span style="font-size:11px;color:#888;">Case: '+nCaseId+'</span>' : ''}
                             </div>
-                            <div style="color:#333; line-height:1.5; font-size:13px;">${notification.message}</div>
-                            <div style="margin-top:6px; font-size:11px; color:#aaa;">${notification.date || notification.timestamp || ''}</div>
+                            <div style="color:#333; line-height:1.5; font-size:13px;">${escapeHtml(notification.message)}</div>
+                            <div style="margin-top:6px; font-size:11px; color:#6b7280;">${escapeHtml(notification.date || notification.timestamp || '')}</div>
                             ${extraActions}
                         </div>
                     </div>
@@ -504,18 +535,18 @@ async function showLawyerSelectionForDeclinedCase(caseId) {
         let bodyHtml = '';
         if (lawyerList.length > 0) {
             bodyHtml = `<h3 style="color:#1a4080;margin:0 0 8px;">Choose Another Lawyer</h3>
-                <p style="font-size:13px;color:#666;margin:0 0 16px;">Select a lawyer for case <strong>${caseId}</strong>.</p>
+                <p style="font-size:13px;color:#666;margin:0 0 16px;">Select a lawyer for case <strong>${escapeHtml(caseId)}</strong>.</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:50vh;overflow-y:auto;">
-                    ${lawyerList.map(l => `<div onclick="viewLawyerProfile('${l.username||''}','${caseId}'); document.querySelector('[data-lcdjp-decline-modal]').remove();" style="background:#f0f5ff;padding:14px;border-radius:10px;border:1px solid #cfe0ff;cursor:pointer;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-                        <div style="font-weight:700;color:#1a4080;">${(l.firstName||l.first_name||'')} ${(l.lastName||l.last_name||'')}</div>
-                        <div style="font-size:11px;color:#666;">${l.lawyerSpecialization||l.lawyer_specialization||'General'}</div>
-                        <div style="font-size:11px;color:#888;">${l.lawFirmName||l.law_firm_name||''}</div>
+                    ${lawyerList.map(l => `<div onclick="viewLawyerProfile(${escapeHtml(JSON.stringify(String(l.username||'')))},${escapeHtml(JSON.stringify(String(caseId)))}); document.querySelector('[data-lcdjp-decline-modal]').remove();" style="background:#f0f5ff;padding:14px;border-radius:10px;border:1px solid #cfe0ff;cursor:pointer;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                        <div style="font-weight:700;color:#1a4080;">${escapeHtml((l.firstName||l.first_name||''))} ${escapeHtml((l.lastName||l.last_name||''))}</div>
+                        <div style="font-size:11px;color:#666;">${escapeHtml(l.lawyerSpecialization||l.lawyer_specialization||'General')}</div>
+                        <div style="font-size:11px;color:#888;">${escapeHtml(l.lawFirmName||l.law_firm_name||'')}</div>
                         <div style="margin-top:6px;"><span style="background:#e3f2fd;padding:2px 8px;border-radius:10px;font-size:10px;color:#0d47a1;">Click to select</span></div>
                     </div>`).join('')}
                 </div>`;
         } else {
             bodyHtml = `<h3 style="color:#dc3545;margin:0 0 8px;">No Lawyers Available Right Now</h3>
-                <p style="font-size:13px;color:#666;margin:0 0 12px;">No lawyers are currently available for case <strong>${caseId}</strong>. You can find contact details for a nearby legal organisation below.</p>`;
+                <p style="font-size:13px;color:#666;margin:0 0 12px;">No lawyers are currently available for case <strong>${escapeHtml(caseId)}</strong>. You can find contact details for a nearby legal organisation below.</p>`;
         }
 
         if (legalOrgs.length > 0) {
@@ -527,10 +558,10 @@ async function showLawyerSelectionForDeclinedCase(caseId) {
                     ${legalOrgs.map(o => {
                         return `<div style="display:flex;align-items:center;justify-content:space-between;background:#fff3e0;border-radius:8px;padding:10px 12px;gap:10px;flex-wrap:wrap;">
                             <div>
-                                <div style="font-weight:600;color:#e65100;font-size:13px;">${o.orgName||o.name||'Organisation'}</div>
-                                <div style="font-size:11px;color:#888;">${o.orgType||o.type||'NGO'} &bull; ${o.district||''}</div>
+                                <div style="font-weight:600;color:#e65100;font-size:13px;">${escapeHtml(o.orgName||o.name||'Organisation')}</div>
+                                <div style="font-size:11px;color:#888;">${escapeHtml(o.orgType||o.type||'NGO')} &bull; ${escapeHtml(o.district||'')}</div>
                             </div>
-                            <span style="padding:6px 14px;background:#fff;border:1px solid #e65100;color:#e65100;border-radius:8px;font-size:12px;font-weight:600;flex-shrink:0;">${o.phone||'No phone listed'}</span>
+                            <span style="padding:6px 14px;background:#fff;border:1px solid #e65100;color:#e65100;border-radius:8px;font-size:12px;font-weight:600;flex-shrink:0;">${escapeHtml(o.phone||'No phone listed')}</span>
                         </div>`;
                     }).join('')}
                 </div>
@@ -734,18 +765,18 @@ async function showForwardRouterForm(caseId) {
             <div style="background:white;border-radius:16px;max-width:520px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto;">
                 <h3 style="color:#1a4080;margin:0 0 8px;">Refer Case</h3>
                 <p style="font-size:13px;color:#666;margin:0 0 14px;">
-                    Forward case <strong>${caseId}</strong> to the Police or a Lawyer. This does not assign
+                    Forward case <strong>${escapeHtml(caseId)}</strong> to the Police or a Lawyer. This does not assign
                     a new handler directly — add a short note on what you found and advise, the citizen will be notified
                     (email/SMS/in-app) and their AI Assistant will use your note to help them pick the next handler.
                 </p>
-                <textarea id="lcReferralNotes_${caseId}" placeholder="Notes for the next handler (required)…"
+                <textarea id="lcReferralNotes_${escapeHtml(caseId)}" placeholder="Notes for the next handler (required)…"
                     style="width:100%;min-height:100px;padding:10px;border:1px solid #cfd8ea;border-radius:8px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
-                <div id="lcReferralErr_${caseId}" style="color:#dc3545;font-size:12px;margin-top:6px;display:none;"></div>
+                <div id="lcReferralErr_${escapeHtml(caseId)}" style="color:#dc3545;font-size:12px;margin-top:6px;display:none;"></div>
                 <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
-                    <button onclick="_lcSubmitReferral('${caseId}','police')" style="flex:1;min-width:140px;padding:10px 16px;background:#fce4ec;color:#c62828;border:1px solid #c62828;border-radius:8px;cursor:pointer;font-weight:600;">
+                    <button onclick="_lcSubmitReferral(${escapeHtml(JSON.stringify(String(caseId)))},'police')" style="flex:1;min-width:140px;padding:10px 16px;background:#fce4ec;color:#c62828;border:1px solid #c62828;border-radius:8px;cursor:pointer;font-weight:600;">
                         Refer to Police
                     </button>
-                    <button onclick="_lcSubmitReferral('${caseId}','lawyer')" style="flex:1;min-width:140px;padding:10px 16px;background:#e8f5e9;color:#2e7d32;border:1px solid #2e7d32;border-radius:8px;cursor:pointer;font-weight:600;">
+                    <button onclick="_lcSubmitReferral(${escapeHtml(JSON.stringify(String(caseId)))},'lawyer')" style="flex:1;min-width:140px;padding:10px 16px;background:#e8f5e9;color:#2e7d32;border:1px solid #2e7d32;border-radius:8px;cursor:pointer;font-weight:600;">
                         Refer to Lawyer
                     </button>
                 </div>
@@ -895,13 +926,13 @@ async function reopenReferredCase(caseId) {
                     Who would you like to send it to now?
                 </p>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button onclick="_reopenCaseWithChoice('${caseId}','lc')" style="padding:12px 16px;background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;border-radius:8px;cursor:pointer;font-weight:600;text-align:left;">
+                    <button onclick="_reopenCaseWithChoice(${escapeHtml(JSON.stringify(String(caseId)))},'lc')" style="padding:12px 16px;background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;border-radius:8px;cursor:pointer;font-weight:600;text-align:left;">
                         Local Council (LC)
                     </button>
-                    <button onclick="_reopenCaseWithChoice('${caseId}','lawyer')" style="padding:12px 16px;background:#e8f5e9;color:#2e7d32;border:1px solid #2e7d32;border-radius:8px;cursor:pointer;font-weight:600;text-align:left;">
+                    <button onclick="_reopenCaseWithChoice(${escapeHtml(JSON.stringify(String(caseId)))},'lawyer')" style="padding:12px 16px;background:#e8f5e9;color:#2e7d32;border:1px solid #2e7d32;border-radius:8px;cursor:pointer;font-weight:600;text-align:left;">
                         Talk to a Lawyer
                     </button>
-                    <button onclick="_reopenCaseWithChoice('${caseId}','police')" style="padding:12px 16px;background:#fce4ec;color:#c62828;border:1px solid #c62828;border-radius:8px;cursor:pointer;font-weight:600;text-align:left;">
+                    <button onclick="_reopenCaseWithChoice(${escapeHtml(JSON.stringify(String(caseId)))},'police')" style="padding:12px 16px;background:#fce4ec;color:#c62828;border:1px solid #c62828;border-radius:8px;cursor:pointer;font-weight:600;text-align:left;">
                         Police
                     </button>
                 </div>
@@ -1004,11 +1035,9 @@ function renderNavbarNotifBadge() {
     .then(function(r) { 
         if (!r.ok) {
             
-            if (r.status === 401) {
-                console.log('[LCDJP] Not authenticated for notifications badge');
-                return null;
-            }
-            return r.json();
+            // 401, 500, anything: the badge is cosmetic, so a failed lookup just shows no count.
+            console.log('[LCDJP] Notifications badge unavailable (HTTP ' + r.status + ')');
+            return null;
         }
         return r.json(); 
     })
@@ -1187,24 +1216,24 @@ async function trackCitizenCaseId() {
         const _trackResp = await response.json();
         const foundCase = _trackResp.case || _trackResp;
 
-        const _caseRef    = foundCase.caseReference  || foundCase.caseId       || '';
-        const _caseType   = foundCase.case_type       || foundCase.caseType      || 'N/A';
-        const _citizen    = foundCase.citizen         || foundCase.citizen_name  || 'N/A';
-        const _level      = foundCase.level           || foundCase.current_level || 'N/A';
-        const _status     = foundCase.status          || 'Pending';
+        const _caseRef    = escapeHtml(foundCase.caseReference  || foundCase.caseId       || '');
+        const _caseType   = escapeHtml(foundCase.case_type       || foundCase.caseType      || 'N/A');
+        const _citizen    = escapeHtml(foundCase.citizen         || foundCase.citizen_name  || 'N/A');
+        const _level      = escapeHtml(foundCase.level           || foundCase.current_level || 'N/A');
+        const _status     = escapeHtml(foundCase.status          || 'Pending');
         const _village    = foundCase.village         || '';
         const _parish     = foundCase.parish          || '';
         const _subCounty  = foundCase.sub_county      || foundCase.subCounty     || '';
         const _district   = foundCase.district        || '';
-        const _location   = foundCase.full_location   || foundCase.fullLocation  ||
-                            [_village, _parish, _subCounty, _district].filter(Boolean).join(', ') || 'N/A';
+        const _location   = escapeHtml(foundCase.full_location   || foundCase.fullLocation  ||
+                            [_village, _parish, _subCounty, _district].filter(Boolean).join(', ') || 'N/A');
         const _description  = foundCase.description   || '';
         const _media        = foundCase.attached_media || foundCase.attachedMedia || 'None';
-        const _extraNotes   = foundCase.extra_notes   || foundCase.extraNotes    || '';
-        const _lcComments   = foundCase.lc_comments   || foundCase.lcComments    || '';
-        const _lcStatements = foundCase.lc_statements || foundCase.lcStatements  || '';
-        const _lcEvidence   = foundCase.lc_evidence_file || foundCase.lcEvidenceFile || '';
-        const _legalAdvice  = foundCase.legal_advice  || foundCase.legalAdvice   || '';
+        const _extraNotes   = escapeHtml(foundCase.extra_notes   || foundCase.extraNotes    || '');
+        const _lcComments   = escapeHtml(foundCase.lc_comments   || foundCase.lcComments    || '');
+        const _lcStatements = escapeHtml(foundCase.lc_statements || foundCase.lcStatements  || '');
+        const _lcEvidence   = escapeHtml(foundCase.lc_evidence_file || foundCase.lcEvidenceFile || '');
+        const _legalAdvice  = escapeHtml(foundCase.legal_advice  || foundCase.legalAdvice   || '');
         const _subDate      = foundCase.submissionDate|| foundCase.created_at    || '';
         const _isUrgent     = foundCase.is_urgent     || foundCase.isUrgent      || false;
 
@@ -1260,7 +1289,7 @@ async function trackCitizenCaseId() {
         <div><strong>Assigned Level:</strong> ${_level}</div>
         <div><strong>Location:</strong> ${_location}</div>
     </div>
-    <div style="margin-bottom:15px;"><strong style="color:#1a4080; display:block; margin-bottom:4px;">Original Claim Statement:</strong><p style="background:white; padding:10px; border-radius:4px; border:1px solid #eee; font-style:italic; font-size:14px;">&ldquo;${_description || 'No description provided.'}&rdquo;</p><span style="font-size:12px; color:#555; display:block; margin-top:4px;">Submitted Media: <strong>${_media}</strong></span></div>
+    <div style="margin-bottom:15px;"><strong style="color:#1a4080; display:block; margin-bottom:4px;">Original Claim Statement:</strong><p style="background:white; padding:10px; border-radius:4px; border:1px solid #eee; font-style:italic; font-size:14px;">&ldquo;${escapeHtml(_description || 'No description provided.')}&rdquo;</p><span style="font-size:12px; color:#555; display:block; margin-top:4px;">Submitted Media: <strong>${escapeHtml(_media)}</strong></span></div>
     ${_extraNotes ? `<div style="margin-bottom:15px;"><strong style="color:#1a4080; display:block; margin-bottom:4px;">Supplemental Notes:</strong><p style="background:#f0f2ff; padding:10px; border-radius:4px; border:1px solid rgba(26,35,126,0.15); font-size:14px;">${_extraNotes}</p></div>` : ''}
     <div style="margin-top:20px; border-top:1px solid #ddd; padding-top:15px;">
         <h4 style="color:#1a4080; text-transform:uppercase; font-size:13px; margin-bottom:10px;">Jurisdictional Feedback Ledger</h4>
@@ -1270,7 +1299,7 @@ async function trackCitizenCaseId() {
         ${_legalAdvice ? `<div style="margin-top:20px; background:#e8eaf6; padding:15px; border-radius:6px; border-left:5px solid #1a237e;"><strong>Legal Advice From Assigned Lawyer</strong><p style="margin-top:10px;">${_legalAdvice}</p></div>` : ''}
     </div>
     <div style="margin-top:20px; text-align:center;">
-    <button onclick="printCaseDetails('${_caseRef}')"
+    <button onclick="printCaseDetails(${escapeHtml(JSON.stringify(String(_caseRef)))})"
             style="padding:10px 25px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
         Print Case
     </button>
@@ -1278,7 +1307,7 @@ async function trackCitizenCaseId() {
 </div>`;
 
         if (_level === "Lawyer Panel Desk" || _status === "Forwarded to Lawyer") {
-            if (msgContainer) msgContainer.style.display = "block";
+            if (msgContainer) { msgContainer.dataset.caseId = idValue; msgContainer.style.display = "block"; if (typeof window.loadCitizenCaseThread === "function") window.loadCitizenCaseThread(idValue); }
         } else {
             if (msgContainer) msgContainer.style.display = "none";
         }
@@ -1349,7 +1378,7 @@ async function printCaseDetails(caseId) {
     var district   = foundCase.district || '';
     var location   = foundCase.full_location || foundCase.fullLocation ||
                       [village, parish, subCounty, district].filter(Boolean).join(', ') || 'N/A';
-    var description = foundCase.description || 'No description provided.';
+    var description = lcdjpReadableDescription(foundCase.description) || 'No description provided.';
     var extraNotes  = foundCase.extra_notes || foundCase.extraNotes || '';
     var subDate      = foundCase.submissionDate || foundCase.created_at || '';
     var subDateLabel = subDate ? new Date(subDate).toLocaleDateString() : 'N/A';
@@ -1489,13 +1518,13 @@ function updateMyCases() {
                 } else if (c.status === "Forwarded to Lawyer") {
                     displayStatusBadge = `<span class="badge badge-lawyer">Forwarded to Lawyer</span>`;
                 } else if (c.status && c.status.startsWith("Forwarded to")) {
-                    displayStatusBadge = `<span class="badge badge-higher">${c.status}</span>`;
+                    displayStatusBadge = `<span class="badge badge-higher">${escapeHtml(c.status)}</span>`;
                 } else {
-                    displayStatusBadge = `<span class="badge badge-pending">${c.status || 'Pending'}</span>`;
+                    displayStatusBadge = `<span class="badge badge-pending">${escapeHtml(c.status || 'Pending')}</span>`;
                 }
 
                 const locationInfo = c.village && c.parish ? 
-                    `<span style="font-size:10px; color:#888; display:block;"> ${c.village}, ${c.parish}</span>` : '';
+                    `<span style="font-size:10px; color:#888; display:block;"> ${escapeHtml(c.village)}, ${escapeHtml(c.parish)}</span>` : '';
 
                 const showAppointmentBtn = viewerRole !== 'Citizen' && !isAdmin(viewerRole);
                 
@@ -1505,29 +1534,29 @@ function updateMyCases() {
                 table.innerHTML += `
                 <tr>
                     <td data-label="Case ID">
-                        <strong>${displayCaseRef}</strong>
+                        <strong>${escapeHtml(displayCaseRef)}</strong>
                         ${locationInfo}
                     </td>
-                    <td data-label="Case Type">${c.case_type || c.caseType}</td>
+                    <td data-label="Case Type">${escapeHtml(c.case_type || c.caseType)}</td>
                     <td data-label="Status Desk">${displayStatusBadge}</td>
-                    <td data-label="Extra Notes" title="${extraNotes}"><i style="color:#555;">${extraNotes}</i></td>
+                    <td data-label="Extra Notes" title="${escapeHtml(extraNotes)}"><i style="color:#555;">${escapeHtml(extraNotes)}</i></td>
                     <td data-label="Media File">
-                        <div style="font-size:10px; margin-bottom:3px; color:#444;">${attachedMedia}</div>
-                        <input type="file" style="font-size:10px; width:100%; max-width:100%;" onchange="processInlineTableUpload(this, '${ref || ''}')">
+                        <div style="font-size:10px; margin-bottom:3px; color:#444;">${escapeHtml(attachedMedia)}</div>
+                        <input type="file" style="font-size:10px; width:100%; max-width:100%;" onchange="processInlineTableUpload(this, ${escapeHtml(JSON.stringify(String(ref || '')))})">
                     </td>
                     <td data-label="Actions">
                         <div class="cases-table-actions">
                         ${ref && ref !== 'N/A' && ref !== 'null'
                             ? `<button class="btn" style="background:#fff;color:#16305c;border:1px solid #16305c;" 
-                                    onclick="viewCitizenCase('${ref}')">View</button>`
+                                    onclick="viewCitizenCase(${escapeHtml(JSON.stringify(String(ref)))})">View</button>`
                             : '<span style="color:#888;font-size:10px;">No case reference</span>'}
                         <button class="btn" style="background:#1a4080;color:white;" 
-                                onclick="openCitizenMessaging('${ref || ''}')">Msg</button>
+                                onclick="openCitizenMessaging(${escapeHtml(JSON.stringify(String(ref || '')))})">Msg</button>
                         <button class="btn case-row-secondary-action" style="background:#23508f;color:white;" 
-                                onclick="showDocumentManager('${ref || ''}')">Docs</button>
+                                onclick="showDocumentManager(${escapeHtml(JSON.stringify(String(ref || '')))})">Docs</button>
                         <button class="btn case-row-secondary-action" style="background:#2c5fa3;color:white;" 
-                                onclick="showAppendDetailsForm('${ref || ''}')">Add Info</button>
-                        <button class="case-row-secondary-action" onclick="printCaseDetails('${ref || ''}')" 
+                                onclick="showAppendDetailsForm(${escapeHtml(JSON.stringify(String(ref || '')))})">Add Info</button>
+                        <button class="case-row-secondary-action" onclick="printCaseDetails(${escapeHtml(JSON.stringify(String(ref || '')))})" 
                                 style="background:#3a6bc7;color:white;border:none;cursor:pointer;">Print</button>
                         </div>
                     </td>
@@ -1540,7 +1569,7 @@ function updateMyCases() {
     .catch(error => {
         console.error('Error fetching cases:', error);
         table.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#dc3545; padding: 20px;">
-             Error loading cases: ${error.message}
+             Error loading cases: ${escapeHtml(error.message)}
             <br><button onclick="updateMyCases()" style="margin-top:10px; padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;"> Retry</button>
         </td></tr>`;
     });
@@ -1786,10 +1815,10 @@ async function viewCitizenCase(caseRef) {
                 hasEntries = true;
                 timelineHtml += `
                     <div style='border:1px solid #e2e5eb;padding:10px;margin:10px 0;background:#f8f9fa;border-radius:8px;'>
-                        <b>${entry.action}</b>
-                        <br><b>Details:</b> ${entry.details || ''}
-                        <br><b>Actor:</b> ${entry.actor || 'Unknown'}
-                        <br><small>${entry.timestamp || ''}</small>
+                        <b>${escapeHtml(entry.action)}</b>
+                        <br><b>Details:</b> ${escapeHtml(entry.details || '')}
+                        <br><b>Actor:</b> ${escapeHtml(entry.actor || 'Unknown')}
+                        <br><small>${escapeHtml(entry.timestamp || '')}</small>
                     </div>
                 `;
             });
@@ -1842,24 +1871,27 @@ async function viewCitizenCase(caseRef) {
             return true;
         });
 
+        window._citizenCaseDocCache = window._citizenCaseDocCache || {};
+        uniqueDocs.forEach(function (d) { window._citizenCaseDocCache[String(d.id)] = d; });
+
         if (uniqueDocs.length > 0) {
             documentsHtml = `
                 <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
-                    <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Attached Documents (${uniqueDocs.length})</h3>
+                    <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Attached Documents (${escapeHtml(uniqueDocs.length)})</h3>
                     <div style="display:flex; flex-wrap:wrap; gap:10px;">
                         ${uniqueDocs.map(doc => `
                             <div style="background:#f8f9fa; padding:10px 15px; border-radius:8px; border:1px solid #e2e5eb; display:flex; align-items:center; gap:10px;">
                                 <span style="font-size:24px;">${getFileIcon(doc.name)}</span>
                                 <div>
-                                    <div style="font-size:12px; color:#888; margin-bottom:2px;">${doc.label || 'File'}</div>
-                                    <div style="font-size:13px; font-weight:600;">${doc.name}</div>
+                                    <div style="font-size:12px; color:#888; margin-bottom:2px;">${escapeHtml(doc.label || 'File')}</div>
+                                    <div style="font-size:13px; font-weight:600;">${escapeHtml(doc.name)}</div>
                                     <div style="font-size:11px; color:#888;">${formatFileSize(doc.size)}</div>
                                 </div>
-                                <button onclick="viewCaseDocument('${caseId}', '${doc.id}')" 
+                                <button onclick="viewCaseDocument(${escapeHtml(JSON.stringify(String(caseId)))}, ${escapeHtml(JSON.stringify(String(doc.id)))})" 
                                         style="padding:4px 10px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:4px; cursor:pointer; font-size:11px;">
                                     View
                                 </button>
-                                <button onclick="downloadCaseDocument('${caseId}', '${doc.id}')" 
+                                <button onclick="downloadCaseDocument(${escapeHtml(JSON.stringify(String(caseId)))}, ${escapeHtml(JSON.stringify(String(doc.id)))})" 
                                         style="padding:4px 10px; background:#17a2b8; color:white; border:none; border-radius:4px; cursor:pointer; font-size:11px;">
                                     Download
                                 </button>
@@ -1878,14 +1910,14 @@ async function viewCitizenCase(caseRef) {
                     <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Voice Statement</h3>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb;">
                         <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
-                            <button onclick="playVoiceMessage('${foundCase.voice_statement}', this)" 
+                            <button onclick="playVoiceMessage(${escapeHtml(JSON.stringify(String(foundCase.voice_statement)))}, this)" 
                                     style="background:#1a4080; color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;">
                                 ▶
                             </button>
                             <div>
                                 <span style="font-weight:bold;">Voice Statement</span>
                                 <br>
-                                <span style="font-size:12px; color:#666;">Duration: ${foundCase.voice_duration || 0} seconds</span>
+                                <span style="font-size:12px; color:#666;">Duration: ${escapeHtml(foundCase.voice_duration || 0)} seconds</span>
                             </div>
                         </div>
                     </div>
@@ -1901,13 +1933,13 @@ async function viewCitizenCase(caseRef) {
                     <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Video Statement</h3>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb;">
                         <video controls style="max-width:300px; max-height:200px; border-radius:6px; background:#000;">
-                            <source src="${foundCase.video_statement}" type="video/webm">
+                            <source src="${escapeHtml(foundCase.video_statement)}" type="video/webm">
                             Your browser does not support the video tag.
                         </video>
                         <div style="margin-top:8px;">
                             <span style="font-weight:bold;">Video Statement</span>
                             <br>
-                            <span style="font-size:12px; color:#666;">Duration: ${foundCase.video_duration || 0} seconds</span>
+                            <span style="font-size:12px; color:#666;">Duration: ${escapeHtml(foundCase.video_duration || 0)} seconds</span>
                         </div>
                     </div>
                 </div>
@@ -1927,15 +1959,15 @@ async function viewCitizenCase(caseRef) {
                         <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Attached Media</h3>
                         <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb;">
                             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                                <span style="font-size:13px;"><strong>File:</strong> ${foundCase.attached_media}</span>
+                                <span style="font-size:13px;"><strong>File:</strong> ${escapeHtml(foundCase.attached_media)}</span>
                                 <button onclick="var p=this.parentElement.nextElementSibling; p.style.display=p.style.display==='none'?'block':'none'; this.textContent=p.style.display==='none'?'View Media':'Hide Media';"
                                         style="padding:6px 14px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer; font-size:12px;">View Media</button>
-                                <button onclick="downloadFile('${foundCase.attached_file_data}', '${foundCase.attached_media}')"
+                                <button onclick="downloadFile(${escapeHtml(JSON.stringify(String(foundCase.attached_file_data)))}, ${escapeHtml(JSON.stringify(String(foundCase.attached_media)))})"
                                         style="padding:6px 14px; background:#17a2b8; color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">Download</button>
                             </div>
                             <div style="display:none; margin-top:12px;">
-                                ${isImage ? `<img src="${foundCase.attached_file_data}" style="max-width:100%; max-height:400px; border-radius:6px;">` : 
-                                            `<embed src="${foundCase.attached_file_data}" type="application/pdf" style="width:100%; height:400px; border-radius:6px;">`}
+                                ${isImage ? `<img src="${escapeHtml(foundCase.attached_file_data)}" style="max-width:100%; max-height:400px; border-radius:6px;">` : 
+                                            `<embed src="${escapeHtml(foundCase.attached_file_data)}" type="application/pdf" style="width:100%; height:400px; border-radius:6px;">`}
                             </div>
                         </div>
                     </div>
@@ -1953,7 +1985,7 @@ async function viewCitizenCase(caseRef) {
                     <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Additional Voice Note</h3>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb;">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <button onclick="playVoiceMessage('${vnData}', this)"
+                            <button onclick="playVoiceMessage(${escapeHtml(JSON.stringify(String(vnData)))}, this)"
                                     style="padding:6px 14px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">Play</button>
                             <span style="font-size:12px; color:#666;">Duration: ${vnDuration} seconds</span>
                         </div>
@@ -1966,10 +1998,10 @@ async function viewCitizenCase(caseRef) {
             <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
                 <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Next of Kin</h3>
                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb;">
-                    <p><strong>Name:</strong> ${foundCase.kin_name || foundCase.kinName || 'Not Provided'}</p>
-                    <p><strong>Phone:</strong> ${foundCase.kin_phone || foundCase.kinPhone || 'Not Provided'}</p>
-                    <p><strong>Email:</strong> ${foundCase.kin_email || foundCase.kinEmail || 'Not Provided'}</p>
-                    <p><strong>Relationship:</strong> ${foundCase.kin_relationship || foundCase.kinRelationship || 'Not Specified'}</p>
+                    <p><strong>Name:</strong> ${escapeHtml(foundCase.kin_name || foundCase.kinName || 'Not Provided')}</p>
+                    <p><strong>Phone:</strong> ${escapeHtml(foundCase.kin_phone || foundCase.kinPhone || 'Not Provided')}</p>
+                    <p><strong>Email:</strong> ${escapeHtml(foundCase.kin_email || foundCase.kinEmail || 'Not Provided')}</p>
+                    <p><strong>Relationship:</strong> ${escapeHtml(foundCase.kin_relationship || foundCase.kinRelationship || 'Not Specified')}</p>
                 </div>
             </div>
         `;
@@ -1978,11 +2010,11 @@ async function viewCitizenCase(caseRef) {
         let citizenInfoHtml = `
             <div style="margin-top:15px;">
                 <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Citizen Information</h3>
-                <p><strong>Name:</strong> ${foundCase.citizen || foundCase.citizen_name || 'N/A'}</p>
-                <p><strong>Username:</strong> @${foundCase.citizen_id || foundCase.citizenUsername || foundCase.citizenId || 'N/A'}</p>
-                <p><strong>Phone:</strong> ${foundCase.citizen_phone || foundCase.citizenPhone || 'Not Provided'}</p>
-                <p><strong>Email:</strong> ${foundCase.citizen_email || foundCase.citizenEmail || 'Not Provided'}</p>
-                <p><strong>Location:</strong> ${foundCase.full_location || foundCase.fullLocation || `${foundCase.village || 'N/A'}, ${foundCase.parish || 'N/A'}`}</p>
+                <p><strong>Name:</strong> ${escapeHtml(foundCase.citizen || foundCase.citizen_name || 'N/A')}</p>
+                <p><strong>Username:</strong> @${escapeHtml(foundCase.citizen_id || foundCase.citizenUsername || foundCase.citizenId || 'N/A')}</p>
+                <p><strong>Phone:</strong> ${escapeHtml(foundCase.citizen_phone || foundCase.citizenPhone || 'Not Provided')}</p>
+                <p><strong>Email:</strong> ${escapeHtml(foundCase.citizen_email || foundCase.citizenEmail || 'Not Provided')}</p>
+                <p><strong>Location:</strong> ${escapeHtml(foundCase.full_location || foundCase.fullLocation || `${foundCase.village || 'N/A'}, ${foundCase.parish || 'N/A'}`)}</p>
             </div>
         `;
 
@@ -1991,7 +2023,7 @@ async function viewCitizenCase(caseRef) {
             <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
                 <h3 style="color:#1a4080; font-size:15px; margin:0 0 10px;">Case Description</h3>
                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb;">
-                    <p style="margin:0; line-height:1.6;">${foundCase.description || "No description provided"}</p>
+                    <p style="margin:0; line-height:1.6;">${escapeHtml(lcdjpReadableDescription(foundCase.description) || "No description provided")}</p>
                 </div>
             </div>
         `;
@@ -2016,24 +2048,24 @@ async function viewCitizenCase(caseRef) {
                 ${(foundCase.legal_advice || foundCase.legalAdvice) ? `
                 <div style="background:#f8f9fa; padding:12px; border-radius:8px; border:1px solid #e2e5eb; margin-bottom:10px;">
                     <div style="font-weight:600; color:#1a4080; font-size:12px; margin-bottom:6px;">Official Legal Advice</div>
-                    ${foundCase.legal_advice || foundCase.legalAdvice}
+                    ${escapeHtml(foundCase.legal_advice || foundCase.legalAdvice)}
                     ${_advProvidedBy ? `<p style="margin:8px 0 0 0; font-size:12px; color:#555; border-top:1px solid #e2e5eb; padding-top:6px;"><strong>Provided by:</strong> ${_advProvidedBy} (${_advRole})</p>` : `<p style="margin:8px 0 0 0; font-size:12px; color:#777; border-top:1px solid #e2e5eb; padding-top:6px;"><strong>Handler:</strong> ${_advHandler} (${_advRole})</p>`}
                 </div>` : '<div style="padding:12px; background:#f8f9fa; border-radius:8px; color:#999; font-style:italic; border:1px solid #e2e5eb;">No legal advice recorded yet.</div>'}
                 ${(foundCase.lc_comments || foundCase.lcComments) ? `
                 <div style="background:#f8f9fa; padding:12px; border-radius:8px; border:1px solid #e2e5eb; margin-top:10px;">
                     <div style="font-weight:600; color:#1a4080; font-size:12px; margin-bottom:6px;">LC Official Notes</div>
-                    ${foundCase.lc_comments || foundCase.lcComments}
+                    ${escapeHtml(foundCase.lc_comments || foundCase.lcComments)}
                 </div>` : ''}
                 ${(foundCase.lawyerNotes || foundCase.lawyer_notes) ? `
                 <div style="background:#f8f9fa; padding:12px; border-radius:8px; border:1px solid #e2e5eb; margin-top:10px;">
                     <div style="font-weight:600; color:#1a4080; font-size:12px; margin-bottom:6px;">Lawyer Notes</div>
-                    ${foundCase.lawyerNotes || foundCase.lawyer_notes}
-                    ${foundCase.assignedLawyerName ? `<p style="margin:6px 0 0 0; font-size:11px; color:#555;">Lawyer: ${foundCase.assignedLawyerName}</p>` : ''}
+                    ${escapeHtml(foundCase.lawyerNotes || foundCase.lawyer_notes)}
+                    ${foundCase.assignedLawyerName ? `<p style="margin:6px 0 0 0; font-size:11px; color:#555;">Lawyer: ${escapeHtml(foundCase.assignedLawyerName)}</p>` : ''}
                 </div>` : ''}
                 ${(foundCase.orgNotes || foundCase.org_notes || foundCase.organizationNotes) ? `
                 <div style="background:#f8f9fa; padding:12px; border-radius:8px; border:1px solid #e2e5eb; margin-top:10px;">
                     <div style="font-weight:600; color:#1a4080; font-size:12px; margin-bottom:6px;">Organisation Notes</div>
-                    ${foundCase.orgNotes || foundCase.org_notes || foundCase.organizationNotes}
+                    ${escapeHtml(foundCase.orgNotes || foundCase.org_notes || foundCase.organizationNotes)}
                 </div>` : ''}
             </div>
         `;
@@ -2082,17 +2114,17 @@ async function viewCitizenCase(caseRef) {
                                 const _sm = _cd && _ld && _cd === _ld;
                                 return `
                                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e5eb; cursor:pointer; transition:all 0.3s;"
-                                     onclick="viewLawyerProfile('${l.username}', '${caseId}')"
+                                     onclick="viewLawyerProfile(${escapeHtml(JSON.stringify(String(l.username)))}, ${escapeHtml(JSON.stringify(String(caseId)))})"
                                      onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)';"
                                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                        <div style="font-weight:bold; color:#1a4080; font-size:15px;">${l.firstName || l.first_name || ''} ${l.lastName || l.last_name || ''}</div>
+                                        <div style="font-weight:bold; color:#1a4080; font-size:15px;">${escapeHtml(l.firstName || l.first_name || '')} ${escapeHtml(l.lastName || l.last_name || '')}</div>
                                          ${_sm ? '<span style="color:#1a4080;font-size:10px;white-space:nowrap;">Same District</span>' : ''}
                                     </div>
-                                    <div style="font-size:12px; color:#666;">${l.lawyerSpecialization || l.lawyer_specialization || 'N/A'}</div>
-                                    <div style="font-size:12px; color:#888;">${l.lawFirmName || l.law_firm_name || 'N/A'}</div>
+                                    <div style="font-size:12px; color:#666;">${escapeHtml(l.lawyerSpecialization || l.lawyer_specialization || 'N/A')}</div>
+                                    <div style="font-size:12px; color:#888;">${escapeHtml(l.lawFirmName || l.law_firm_name || 'N/A')}</div>
                                     <div style="font-size:11px; color:#999; margin-top:4px;">
-                                        ${l.district || 'N/A'} 
+                                        ${escapeHtml(l.district || 'N/A')} 
                                         ${l.yearsExperience || l.years_experience ? '• ' + (l.yearsExperience || l.years_experience) + ' years' : ''}
                                     </div>
                                     <div style="margin-top:8px;">
@@ -2130,7 +2162,7 @@ async function viewCitizenCase(caseRef) {
                             <strong style="color:#28a745;">${messagingStatus}</strong>
                         </div>
                         <div>
-                            <button onclick="openMessagingForCase('${caseId}')" style="padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                            <button onclick="openMessagingForCase(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
                                 Open Messaging
                             </button>
                         </div>
@@ -2141,7 +2173,7 @@ async function viewCitizenCase(caseRef) {
             messagingHtml = `
                 <div style="margin:15px 0; padding:12px 15px; background:#f8f9fa; border-radius:8px; border:1px solid #e2e5eb;">
                     <strong style="color:#666;">${messagingStatus}</strong>
-                    <span style="font-size:12px; color:#666; margin-left:10px;">Current Handler: ${foundCase.handlerRole || 'Unknown'}</span>
+                    <span style="font-size:12px; color:#666; margin-left:10px;">Current Handler: ${escapeHtml(foundCase.handlerRole || 'Unknown')}</span>
                 </div>
             `;
         }
@@ -2153,10 +2185,10 @@ async function viewCitizenCase(caseRef) {
 
         if (canAcceptOrDecline) {
             actionButtonsHtml += `
-                <button onclick="acceptSelectedCase('${caseId}')" style="padding:10px 20px; background:#28a745; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                <button onclick="acceptSelectedCase(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#28a745; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
                     &#10003; Accept Case
                 </button>
-                <button onclick="declineSelectedCase('${caseId}')" style="padding:10px 20px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                <button onclick="declineSelectedCase(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
                     &#10007; Decline Case
                 </button>
             `;
@@ -2164,7 +2196,7 @@ async function viewCitizenCase(caseRef) {
 
         if (isCitizen && foundCase.status !== 'Resolved' && foundCase.status !== 'Awaiting Lawyer Selection') {
             actionButtonsHtml += `
-                <button onclick="showAppendDetailsForm('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
+                <button onclick="showAppendDetailsForm(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
                     Add Info
                 </button>
             `;
@@ -2174,7 +2206,7 @@ async function viewCitizenCase(caseRef) {
             const _fmaCaseType = (foundCase.case_type || foundCase.caseType || '').replace(/'/g, "\\'");
             const _fmaDistrict = (foundCase.district || '').replace(/'/g, "\\'");
             actionButtonsHtml += `
-                <button onclick="typeof openFindMoreAssistance==='function' && openFindMoreAssistance('${caseId}', '${_fmaCaseType}', '${_fmaDistrict}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer; font-weight:bold;">
+                <button onclick="typeof openFindMoreAssistance==='function' && openFindMoreAssistance(${escapeHtml(JSON.stringify(String(caseId)))}, ${escapeHtml(JSON.stringify(String(_fmaCaseType)))}, ${escapeHtml(JSON.stringify(String(_fmaDistrict)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer; font-weight:bold;">
                     Find More Assistance
                 </button>
             `;
@@ -2182,7 +2214,7 @@ async function viewCitizenCase(caseRef) {
 
         if (canAddInfo && !isCitizen && foundCase.status !== 'Resolved' && foundCase.status !== 'Awaiting Lawyer Selection') {
             actionButtonsHtml += `
-                <button onclick="showAppendDetailsForm('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
+                <button onclick="showAppendDetailsForm(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
                     Add Info
                 </button>
             `;
@@ -2190,7 +2222,7 @@ async function viewCitizenCase(caseRef) {
 
         if (canResolve && foundCase.status !== 'Resolved') {
             actionButtonsHtml += `
-                <button onclick="resolveCase('${caseId}')" style="padding:10px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">
+                <button onclick="resolveCase(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">
                     Resolve Case
                 </button>
             `;
@@ -2198,7 +2230,7 @@ async function viewCitizenCase(caseRef) {
 
         if (canForward && foundCase.status !== 'Resolved' && foundCase.status !== 'Awaiting Lawyer Selection') {
             actionButtonsHtml += `
-                <button onclick="showForwardRouterForm('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
+                <button onclick="showForwardRouterForm(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
                     Forward Case
                 </button>
             `;
@@ -2209,7 +2241,7 @@ async function viewCitizenCase(caseRef) {
                 ? ', Handler: ' + (foundCase.assigned_lawyer_name || foundCase.assigned_lawyer)
                 : '';
             actionButtonsHtml += `
-                <button onclick="openLegalAdvice('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
+                <button onclick="openLegalAdvice(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
                     Legal Advice${_adviceLawyerLabel}
                 </button>
             `;
@@ -2217,17 +2249,17 @@ async function viewCitizenCase(caseRef) {
 
         if (canMessage && foundCase.status !== 'Resolved' && foundCase.status !== 'Awaiting Lawyer Selection') {
             actionButtonsHtml += `
-                <button onclick="openMessagingForCase('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer; font-weight:bold;">
+                <button onclick="openMessagingForCase(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer; font-weight:bold;">
                     Messages
                 </button>
             `;
         }
 
         actionButtonsHtml += `
-                <button onclick="showDocumentManager('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
+                <button onclick="showDocumentManager(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
                     Docs
                 </button>
-                <button onclick="printCaseDetails('${caseId}')" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
+                <button onclick="printCaseDetails(${escapeHtml(JSON.stringify(String(caseId)))})" style="padding:10px 20px; background:#fff; color:#1a4080; border:1px solid #1a4080; border-radius:6px; cursor:pointer;">
                     Print
                 </button>
                 <button onclick="closeCaseDetails()" style="padding:10px 20px; background:#fff; color:#6c757d; border:1px solid #ccc; border-radius:6px; cursor:pointer;">
@@ -2249,7 +2281,7 @@ async function viewCitizenCase(caseRef) {
         } else if (foundCase.status === "Referred to Police") {
             statusBadge = '<span class="badge badge-higher" style="font-size:14px; padding:6px 16px; background:#fce4ec; color:#c62828;">Referred to Police</span>';
         } else {
-            statusBadge = `<span class="badge badge-pending" style="font-size:14px; padding:6px 16px;">${foundCase.status || 'Pending'}</span>`;
+            statusBadge = `<span class="badge badge-pending" style="font-size:14px; padding:6px 16px;">${escapeHtml(foundCase.status || 'Pending')}</span>`;
         }
 
         let readOnlyBanner = '';
@@ -2274,7 +2306,7 @@ async function viewCitizenCase(caseRef) {
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #e2e5eb; padding-bottom:15px;">
                     <div>
                         <h2 style="color:#1a4080; margin:0;">Case File: ${resolvedRef}</h2>
-                        <p style="color:#666; margin:5px 0 0 0;">${foundCase.case_type || foundCase.caseType || 'General'}</p>
+                        <p style="color:#666; margin:5px 0 0 0;">${escapeHtml(foundCase.case_type || foundCase.caseType || 'General')}</p>
                     </div>
                     <div>
                         ${statusBadge}
@@ -2286,7 +2318,7 @@ async function viewCitizenCase(caseRef) {
                 
                 
                 <div style="margin:15px 0; padding:12px 15px; background:#f8f9fa; border-radius:8px; border:1px solid #e2e5eb;">
-                    <strong>Current Handler:</strong> ${foundCase.currentHandler || 'Not Assigned Yet'} 
+                    <strong>Current Handler:</strong> ${escapeHtml(foundCase.currentHandler || 'Not Assigned Yet')} 
                     ${foundCase.handlerRole ? `(${foundCase.handlerRole})` : ''}
                     ${foundCase.messaging_enabled || foundCase.messagingEnabled ? '<span style="color:#28a745; margin-left:10px;">Messaging Active</span>' : '<span style="color:#dc3545; margin-left:10px;">Messaging Locked</span>'}
                 </div>
@@ -2314,7 +2346,7 @@ async function viewCitizenCase(caseRef) {
                 
                 
                 <div style="margin-top:15px; padding:12px; background:#f8f9fa; border-radius:8px; font-size:12px; color:#666; text-align:center;">
-                    Case Status: <strong>${foundCase.status || 'Pending'}</strong> • 
+                    Case Status: <strong>${escapeHtml(foundCase.status || 'Pending')}</strong> • 
                     Submitted: ${foundCase.created_at ? new Date(foundCase.created_at).toLocaleDateString() : 'N/A'} • 
                     Last Updated: ${foundCase.updated_at ? new Date(foundCase.updated_at).toLocaleString() : 'N/A'}
                 </div>
@@ -2328,9 +2360,9 @@ async function viewCitizenCase(caseRef) {
         console.error('Error fetching case:', error);
         finalContent.innerHTML = `
             <div style="text-align:center; padding:40px; color:#dc3545;">
-                <p>Error loading case: ${error.message}</p>
-                <p style="font-size:12px; color:#888; margin-top:5px;">Case Reference: ${caseId}</p>
-                <button onclick="viewCitizenCase('${caseId}')" style="margin-top:15px; padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">Retry</button>
+                <p>Error loading case: ${escapeHtml(error.message)}</p>
+                <p style="font-size:12px; color:#888; margin-top:5px;">Case Reference: ${escapeHtml(caseId)}</p>
+                <button onclick="viewCitizenCase(${escapeHtml(JSON.stringify(String(caseId)))})" style="margin-top:15px; padding:8px 20px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer;">Retry</button>
                 <button onclick="closeCaseDetails()" style="margin-top:15px; padding:8px 20px; background:#6c757d; color:white; border:none; border-radius:6px; cursor:pointer; margin-left:10px;">Close</button>
             </div>
         `;
@@ -2816,6 +2848,7 @@ async function _dmRefreshDocuments(caseId) {
 async function uploadCitizenCaseDocument(caseId, inputEl) {
     var file = inputEl && inputEl.files && inputEl.files[0];
     if (!file) return;
+    file = await window.lcdjpCompressImageFile(file);
     var status = document.getElementById('citizenDocUploadStatus');
 
     if (file.size > 5 * 1024 * 1024) {
@@ -2873,6 +2906,7 @@ async function viewCitizenCaseDocument(docId) {
         var data = await response.json();
         var doc = data.document || data;
         var fileData = doc.file_data || doc.fileData;
+        if (fileData && String(fileData).indexOf('/api/files/') === 0) fileData = API_BASE_URL + fileData;
         if (fileData) {
             var win = window.open();
             if (win) {
@@ -3179,7 +3213,7 @@ async function uploadDocumentsPage() {
     var failed = 0;
 
     for (var i = 0; i < _docPageSelectedFiles.length; i++) {
-        var file = _docPageSelectedFiles[i];
+        var file = await window.lcdjpCompressImageFile(_docPageSelectedFiles[i]);
         if (statusText) statusText.textContent = 'Uploading "' + file.name + '"…';
         try {
             var fileData = await new Promise(function (resolve, reject) {
@@ -3391,19 +3425,19 @@ function viewLawyerProfile(username, caseId) {
                 </div>
                 
                 <div style="display:grid; gap:10px;">
-                    <div><strong>Name:</strong> ${lawyer.first_name || lawyer.firstName || ''} ${lawyer.last_name || lawyer.lastName || ''}</div>
-                    <div><strong>Specialization:</strong> ${lawyer.lawyer_specialization || lawyer.lawyerSpecialization || 'N/A'}</div>
-                    <div><strong>Law Firm:</strong> ${lawyer.law_firm_name || lawyer.lawFirmName || 'N/A'}</div>
-                    <div><strong>Law School:</strong> ${lawyer.law_school || lawyer.lawSchool || 'Not specified'}</div>
-                    <div><strong>Years Experience:</strong> ${lawyer.years_experience || lawyer.yearsExperience || '0'}</div>
-                    <div><strong>District:</strong> ${lawyer.district || 'N/A'}</div>
-                    <div><strong>Phone:</strong> ${lawyer.phone || lawyer.phoneNumber || 'N/A'}</div>
-                    <div><strong>Email:</strong> ${lawyer.email || 'N/A'}</div>
-                    ${lawyer.cv_data || lawyer.cvData ? `<div><strong>CV:</strong> <button onclick="viewLawyerCV('${username}')" style="color:#1a4080; text-decoration:underline; background:none; border:none; cursor:pointer;">View CV</button></div>` : ''}
+                    <div><strong>Name:</strong> ${escapeHtml(lawyer.first_name || lawyer.firstName || '')} ${escapeHtml(lawyer.last_name || lawyer.lastName || '')}</div>
+                    <div><strong>Specialization:</strong> ${escapeHtml(lawyer.lawyer_specialization || lawyer.lawyerSpecialization || 'N/A')}</div>
+                    <div><strong>Law Firm:</strong> ${escapeHtml(lawyer.law_firm_name || lawyer.lawFirmName || 'N/A')}</div>
+                    <div><strong>Law School:</strong> ${escapeHtml(lawyer.law_school || lawyer.lawSchool || 'Not specified')}</div>
+                    <div><strong>Years Experience:</strong> ${escapeHtml(lawyer.years_experience || lawyer.yearsExperience || '0')}</div>
+                    <div><strong>District:</strong> ${escapeHtml(lawyer.district || 'N/A')}</div>
+                    <div><strong>Phone:</strong> ${escapeHtml(lawyer.phone || lawyer.phoneNumber || 'N/A')}</div>
+                    <div><strong>Email:</strong> ${escapeHtml(lawyer.email || 'N/A')}</div>
+                    ${lawyer.cv_data || lawyer.cvData ? `<div><strong>CV:</strong> <button onclick="viewLawyerCV(${escapeHtml(JSON.stringify(String(username)))})" style="color:#1a4080; text-decoration:underline; background:none; border:none; cursor:pointer;">View CV</button></div>` : ''}
                 </div>
                 
                 <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <button onclick="selectLawyerForCase('${caseId}', '${username}')" 
+                    <button onclick="selectLawyerForCase(${escapeHtml(JSON.stringify(String(caseId)))}, ${escapeHtml(JSON.stringify(String(username)))})" 
                             style="padding:12px 25px; background:#1a4080; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
                         Select This Lawyer
                     </button>
@@ -3503,3 +3537,161 @@ async function selectLawyerForCase(caseId, username) {
         alert('Failed to select lawyer: ' + error.message);
     }
 }
+
+// Track Case page: send a direct message to the lawyer/handler of the case that was just looked up.
+window.sendCitizenMessage = async function () {
+    var box = document.getElementById('citizenMessageToLawyer');
+    var container = document.getElementById('messagingContainer');
+    if (!box || !container) return;
+    var text = box.value.trim();
+    var caseId = container.dataset.caseId || (document.getElementById('trackSearchInput') || {}).value || '';
+    caseId = caseId.trim();
+    var notify = function (m) { if (typeof showToast === 'function') showToast(m); else alert(m); };
+
+    if (!caseId) { notify('Search for your case first, then send your message.'); return; }
+    if (!text) { notify('Please type a message first.'); return; }
+    if (text.length > 5000) { notify('Message is too long (5000 characters maximum).'); return; }
+
+    var btn = container.querySelector('button');
+    if (btn) btn.disabled = true;
+    try {
+        var resp = await fetch(API_ENDPOINTS.messages(caseId), {
+            method: 'POST',
+            headers: _getCitizenAuthHeaders(),
+            body: JSON.stringify({ text: text, timestamp: new Date().toISOString(), read: false, preAcceptance: false })
+        });
+        if (resp.status === 401) { notify('Your session has expired. Please log in again.'); return; }
+        if (resp.status === 403) {
+            var err403 = await resp.json().catch(function () { return {}; });
+            notify(err403.error || 'You cannot message on this case right now.');
+            return;
+        }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        box.value = '';
+        notify('Message sent.');
+        if (typeof window.loadCitizenCaseThread === 'function') window.loadCitizenCaseThread(caseId);
+    } catch (e) {
+        console.error('sendCitizenMessage error:', e);
+        notify('Message could not be sent. Please check your connection and try again.');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+};
+
+
+// Track Case page: show the conversation on the case (messages from the citizen and from the lawyer/handler).
+window.loadCitizenCaseThread = async function (caseId) {
+    var el = document.getElementById('citizenMessageThread');
+    if (!el || !caseId) return;
+    var me = (typeof getLcdjpActiveUsername === 'function' ? getLcdjpActiveUsername() : '') ||
+             sessionStorage.getItem('lcdjp_username') || localStorage.getItem('lcdjp_username') || '';
+    var esc = typeof _cmEsc === 'function' ? _cmEsc : function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (ch) { return '&#' + ch.charCodeAt(0) + ';'; }); };
+    try {
+        var resp = await fetch(API_ENDPOINTS.messages(caseId), { headers: _getCitizenAuthHeaders(), credentials: 'include' });
+        if (!resp.ok) { el.style.display = 'none'; return; }
+        var rows = await resp.json();
+        if (!Array.isArray(rows) || !rows.length) {
+            el.style.display = 'block';
+            el.innerHTML = '<div style="color:#6b7280;font-size:13px;text-align:center;padding:8px 0;">No messages yet. Write to your lawyer below.</div>';
+            return;
+        }
+        rows.sort(function (a, b) { return new Date(a.timestamp || 0) - new Date(b.timestamp || 0); });
+        el.innerHTML = rows.map(function (m) {
+            var mine = (m.from_username || m.fromUsername || '') === me;
+            var text = m.message_text || m.text || m.message || '';
+            var ts = m.timestamp ? new Date(String(m.timestamp).replace(' ', 'T')).toLocaleString() : '';
+            var who = mine ? 'You' : (m.from_name || m.fromName || m.from_user || 'Lawyer');
+            return '<div style="display:flex;justify-content:' + (mine ? 'flex-end' : 'flex-start') + ';margin-bottom:8px;">' +
+                '<div style="max-width:80%;padding:8px 12px;border-radius:' + (mine ? '12px 12px 2px 12px' : '12px 12px 12px 2px') +
+                ';background:' + (mine ? '#1a4080' : '#fff') + ';color:' + (mine ? '#fff' : '#1f2937') +
+                ';border:' + (mine ? 'none' : '1px solid #e3e7f0') + ';font-size:14px;word-wrap:break-word;">' +
+                '<div style="font-size:11px;opacity:.75;margin-bottom:2px;">' + esc(who) + (ts ? ' &middot; ' + esc(ts) : '') + '</div>' +
+                '<div>' + esc(text) + '</div></div></div>';
+        }).join('');
+        el.style.display = 'block';
+        el.scrollTop = el.scrollHeight;
+    } catch (e) {
+        console.error('loadCitizenCaseThread error:', e);
+        el.style.display = 'none';
+    }
+};
+
+
+// ---- Case documents (Track Case): view / download -------------------------------------------------------------
+
+function _docToBlob(data, mime) {
+    var raw = String(data || '');
+    var m = /^data:([^;,]+)?(;base64)?,/.exec(raw);
+    var type = (m && m[1]) || mime || 'application/octet-stream';
+    var b64 = m ? raw.slice(m[0].length) : raw;
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: type });
+}
+
+// Files kept in object storage arrive as short-lived /api/files/... URLs instead of inline data; fetch those.
+async function _docToBlobAsync(data, mime) {
+    var raw = String(data || '');
+    if (raw.indexOf('/api/files/') === 0) {
+        var resp = await fetch(API_BASE_URL + raw, { credentials: 'include' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var blob = await resp.blob();
+        return (mime && !blob.type) ? new Blob([blob], { type: mime }) : blob;
+    }
+    return _docToBlob(raw, mime);
+}
+
+async function _resolveCaseDocument(docId) {
+    var cached = (window._citizenCaseDocCache || {})[String(docId)];
+    if (cached && cached.data) return { name: cached.name, data: cached.data, type: cached.type };
+    var resp = await fetch(API_BASE_URL + '/api/auth/documents/' + encodeURIComponent(docId),
+        { headers: _getCitizenAuthHeaders(), credentials: 'include' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var body = await resp.json();
+    var d = body && body.document;
+    if (!d || !d.file_data) throw new Error('empty document');
+    return { name: d.file_name || (cached && cached.name) || 'document', data: d.file_data, type: d.file_type || '' };
+}
+
+window.viewCaseDocument = async function (caseId, docId) {
+    var tab = window.open('', '_blank');   // open synchronously so popup blockers allow it
+    try {
+        var doc = await _resolveCaseDocument(docId);
+        var url = URL.createObjectURL(await _docToBlobAsync(doc.data, doc.type));
+        if (tab) tab.location.href = url; else window.location.href = url;
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    } catch (e) {
+        if (tab) tab.close();
+        console.error('viewCaseDocument error:', e);
+        alert('This document could not be opened right now. Please try again.');
+    }
+};
+
+window.downloadCaseDocument = async function (caseId, docId) {
+    try {
+        var doc = await _resolveCaseDocument(docId);
+        var url = URL.createObjectURL(await _docToBlobAsync(doc.data, doc.type));
+        var a = document.createElement('a');
+        a.href = url; a.download = doc.name || 'document';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    } catch (e) {
+        console.error('downloadCaseDocument error:', e);
+        alert('This document could not be downloaded right now. Please try again.');
+    }
+};
+
+// Used by the "Attached Media" Download button, which passes the file's data URI and name directly.
+window.downloadFile = async function (dataUri, fileName) {
+    try {
+        var url = URL.createObjectURL(await _docToBlobAsync(dataUri));
+        var a = document.createElement('a');
+        a.href = url; a.download = fileName || 'download';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    } catch (e) {
+        console.error('downloadFile error:', e);
+        alert('This file could not be downloaded.');
+    }
+};

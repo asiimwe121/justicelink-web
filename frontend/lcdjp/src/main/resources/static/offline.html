@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>You're offline | JusticeLink Uganda</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1a237e">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/justicelink-apple-touch-180.png">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(160deg, #0d2c5c, #1d4d91); color: #fff; text-align: center;
+  }
+  main { max-width: 420px; width: 100%; }
+  img { width: 88px; height: 88px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  h1 { font-size: 26px; margin: 22px 0 10px; }
+  p { font-size: 16px; line-height: 1.55; color: #dbe6f7; margin: 0 0 14px; }
+  button {
+    margin-top: 10px; background: linear-gradient(180deg, #ffe38a, #f0b93d); color: #0d2c5c; font-weight: 800;
+    font-size: 16px; padding: 14px 30px; border: 0; border-radius: 999px; cursor: pointer; min-height: 48px;
+  }
+  button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .emergency { margin-top: 26px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.12); font-size: 15px; }
+  .emergency a { color: #ffe38a; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <img src="/images/justicelink-icon-192.png" alt="JusticeLink" width="88" height="88">
+  <h1>You're offline</h1>
+  <p>JusticeLink can't reach the internet right now. Check your mobile data or Wi-Fi, then try again.</p>
+  <button type="button" id="retry">Try again</button>
+  <div class="emergency">
+    In an emergency, don't wait for the app: call
+    <a href="tel:999">999</a> or <a href="tel:112">112</a>.
+  </div>
+</main>
+<script>
+  document.getElementById('retry').addEventListener('click', function () { location.href = '/'; });
+  window.addEventListener('online', function () { location.href = '/'; });
+</script>
+</body>
+</html>

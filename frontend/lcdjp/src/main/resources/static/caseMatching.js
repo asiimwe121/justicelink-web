@@ -203,29 +203,30 @@ function _aiNormalizeLocPart(v) {
     return (v || '').toString().trim().toLowerCase();
 }
 
-async function aiFindRegisteredLCForVillage(location) {
+/**
+ * Registered LC officials who serve the citizen's own area at the given level (LC1, LC2 or LC3). The server
+ * matches the whole area chain, so the LC of a different village, parish or sub-county is never returned.
+ */
+async function aiFindRegisteredLCForLevel(location, level) {
     location = location || {};
-    var village = _aiNormalizeLocPart(location.village);
-    if (!village) return [];
-
-    var allLC = await _aiFetchAllLCOfficials();
-    var matches = allLC.filter(function (lc) {
-        return _aiNormalizeLocPart(lc.village) === village;
-    });
-
-    if (matches.length > 1) {
-        var parish = _aiNormalizeLocPart(location.parish);
-        var subCounty = _aiNormalizeLocPart(location.subCounty || location.sub_county);
-        var district = _aiNormalizeLocPart(location.district);
-        var refined = matches.filter(function (lc) {
-            return (!parish || _aiNormalizeLocPart(lc.parish) === parish) &&
-                (!subCounty || _aiNormalizeLocPart(lc.subCounty || lc.sub_county) === subCounty) &&
-                (!district || _aiNormalizeLocPart(lc.district) === district);
-        });
-        if (refined.length) matches = refined;
+    level = level || 'LC1';
+    if (!location.district) return [];
+    var params = { level: level, district: location.district,
+        subCounty: location.subCounty || location.sub_county, parish: location.parish, village: location.village };
+    var qs = Object.keys(params).filter(function (k) { return params[k]; })
+        .map(function (k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+    try {
+        var response = await fetch(API_BASE_URL + '/api/map/lcs?' + qs);
+        if (!response.ok) return [];
+        var rows = await response.json();
+        return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+        return [];
     }
+}
 
-    return matches;
+async function aiFindRegisteredLCForVillage(location) {
+    return aiFindRegisteredLCForLevel(location, 'LC1');
 }
 
 var _AI_ADVICE_SPEC_KEYWORDS = {
@@ -297,5 +298,6 @@ function aiEvaluatePreviousAdvice(caseData) {
 window.aiRankLawyerCandidates = aiRankLawyerCandidates;
 window.getAllLegalOrganizations = getAllLegalOrganizations;
 window.aiFindRegisteredLCForVillage = aiFindRegisteredLCForVillage;
+window.aiFindRegisteredLCForLevel = aiFindRegisteredLCForLevel;
 window.aiGetLatestHandlerAdvice = aiGetLatestHandlerAdvice;
 window.aiEvaluatePreviousAdvice = aiEvaluatePreviousAdvice;

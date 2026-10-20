@@ -1,0 +1,1266 @@
+{
+  "_readme": "Human-reviewed glossary for legal terms. Only entries with reviewed=true are ever applied to machine translation output. To use: a qualified speaker fills in 'text', sets reviewed=true, and fills reviewer + reviewedOn. Entries with reviewed=false or empty text are ignored at runtime.",
+  "version": 1,
+  "terms": [
+    {
+      "en": "Local Council Court",
+      "note": "Court at village/parish/sub-county level under the Local Council Courts Act",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Magistrate court",
+      "note": "Lower court above LC courts",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "High Court",
+      "note": "Court above magistrates",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Police",
+      "note": "Law enforcement",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Case",
+      "note": "A dispute or complaint reported on the platform",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Complainant",
+      "note": "Person making the complaint",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Defendant",
+      "note": "Person complained against",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Witness",
+      "note": "Person who saw or knows about events",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Evidence",
+      "note": "Documents or items that support a claim",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Mediation",
+      "note": "Helping both sides reach agreement",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Appeal",
+      "note": "Asking a higher court to review a decision",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Bail",
+      "note": "Temporary release while waiting for trial",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Arrest",
+      "note": "Taking a person into police custody",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Detention",
+      "note": "Being held in custody",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Summons",
+      "note": "Official order to appear",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Judgment",
+      "note": "Court's decision",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Land title",
+      "note": "Document proving land ownership",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Customary land",
+      "note": "Land held under customary tenure",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Boundary dispute",
+      "note": "Disagreement about where land borders lie",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Eviction",
+      "note": "Forced removal from land or home",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Domestic violence",
+      "note": "Violence between people in the same household",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Child protection",
+      "note": "Protecting children from abuse and neglect",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Defilement",
+      "note": "Sexual act with a child (statutory offence)",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Legal aid",
+      "note": "Free or low-cost legal help",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Lawyer",
+      "note": "Legal practitioner",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Your rights",
+      "note": "A person's legal entitlements",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Confidential",
+      "note": "Kept private",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Consent",
+      "note": "Voluntary agreement",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Emergency",
+      "note": "Immediate danger needing urgent help",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Report a case",
+      "note": "Primary action label",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Case status",
+      "note": "Where the case stands",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "District admin",
+      "note": "Administrator for a district",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Verification",
+      "note": "Confirming identity or role",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Wage claim",
+      "note": "Claim for unpaid wages",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    },
+    {
+      "en": "Mobile money fraud",
+      "note": "Theft or deception involving mobile money",
+      "translations": {
+        "lug": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "ach": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "teo": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "lgg": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        },
+        "nyn": {
+          "text": "",
+          "reviewed": false,
+          "reviewer": "",
+          "reviewedOn": ""
+        }
+      }
+    }
+  ]
+}

@@ -31,14 +31,29 @@ public class LcdjpApplication {
         log.info("🔍 Environment Configuration Status");
         log.info("========================================");
 
+        String groqKey = System.getenv("GROQ_API_KEY");
+        String geminiKey = System.getenv("GEMINI_API_KEY");
         String huggingFaceKey = System.getenv("HUGGINGFACE_API_KEY");
         String googleMapsKey = System.getenv("GOOGLE_MAPS_API_KEY");
         String dbPassword = System.getenv("DB_PASSWORD");
 
-        if (huggingFaceKey != null && !huggingFaceKey.isEmpty() && !huggingFaceKey.startsWith("your_")) {
-            log.info("✅ HUGGINGFACE_API_KEY: {}", maskKey(huggingFaceKey));
+        if (groqKey != null && !groqKey.isEmpty() && !groqKey.startsWith("your_")) {
+            log.info("✅ GROQ_API_KEY (AI chat): {}", maskKey(groqKey));
         } else {
-            log.warn("⚠️ HUGGINGFACE_API_KEY is not set in environment variables");
+            log.warn("⚠️ GROQ_API_KEY is not set in environment variables, AI chat will return the fallback reply");
+            log.warn("   Set it using: export GROQ_API_KEY=your_key_here");
+        }
+
+        if (geminiKey != null && !geminiKey.isEmpty() && !geminiKey.startsWith("your_")) {
+            log.info("✅ GEMINI_API_KEY (AI chat failover): {}", maskKey(geminiKey));
+        } else {
+            log.warn("⚠️ GEMINI_API_KEY is not set, so there is no backup AI provider if Groq fails");
+        }
+
+        if (huggingFaceKey != null && !huggingFaceKey.isEmpty() && !huggingFaceKey.startsWith("your_")) {
+            log.info("✅ HUGGINGFACE_API_KEY (embeddings only): {}", maskKey(huggingFaceKey));
+        } else {
+            log.warn("⚠️ HUGGINGFACE_API_KEY is not set in environment variables (needed for legal-knowledge embeddings)");
             log.warn("   Set it using: export HUGGINGFACE_API_KEY=your_key_here");
         }
 

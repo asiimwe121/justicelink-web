@@ -53,7 +53,7 @@ function showLawyerForwardForm(caseId) {
                 style="width:100%;min-height:100px;padding:10px;border:1px solid #cfd8ea;border-radius:8px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
             <div id="lawyerForwardErr_${caseId}" style="color:#dc3545;font-size:12px;margin-top:6px;display:none;"></div>
             <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
-                <button onclick="_lawyerSubmitForward('${caseId}')" style="flex:1;min-width:140px;padding:10px 16px;background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;border-radius:8px;cursor:pointer;font-weight:600;">
+                <button onclick="_lawyerSubmitForward(${escapeHtml(JSON.stringify(String(caseId)))})" style="flex:1;min-width:140px;padding:10px 16px;background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;border-radius:8px;cursor:pointer;font-weight:600;">
                     Forward Case
                 </button>
             </div>

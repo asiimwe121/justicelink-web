@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Get the JusticeLink App | JusticeLink Uganda</title>
+<meta name="description" content="Install JusticeLink Uganda on your phone: download the Android app or add it to your iPhone Home Screen. Report incidents, find police and LC offices, and get legal aid.">
+<link rel="canonical" href="https://justicelinkug.org/download.html">
+
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="images/justicelink-icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/justicelink-icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/justicelink-apple-touch-180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a237e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="JusticeLink">
+
+<meta property="og:title" content="Get the JusticeLink App" />
+<meta property="og:description" content="Install JusticeLink Uganda on Android or iPhone and reach the right help faster." />
+<meta property="og:url" content="https://justicelinkug.org/download.html" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="JusticeLink Uganda" />
+
+<style>
+  :root {
+    --navy-deep: #0d2c5c; --navy: #1d4d91; --navy-pale: #eef3fb;
+    --gold: #c8891a; --gold-light: #f0b93d; --gold-pale: #ffe38a;
+    --ink: #16213e; --muted: #5a6784; --card: #ffffff; --bg: #f5f8fd; --line: #dbe4f3;
+    --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #e8eaf2; --muted: #a4a8c0; --card: #1a1d2b; --bg: #12141f; --line: #333750; --navy-pale: #232636; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--ink); line-height: 1.55;
+         padding-bottom: env(safe-area-inset-bottom); }
+  a { color: var(--navy); }
+  @media (prefers-color-scheme: dark) { a { color: #9fc0ff; } }
+
+  .hero { background: linear-gradient(160deg, var(--navy-deep), var(--navy)); color: #fff; text-align: center;
+          padding: calc(36px + env(safe-area-inset-top)) 20px 64px; }
+  .hero img.logo { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  .hero h1 { font-size: clamp(26px, 6vw, 38px); margin: 18px 0 10px; font-weight: 800; letter-spacing: -.3px; }
+  .hero p { max-width: 56ch; margin: 0 auto; font-size: 17px; color: #dbe6f7; }
+
+  main { max-width: 760px; margin: -40px auto 0; padding: 0 16px 40px; }
+  .detected { text-align: center; font-size: 14px; color: var(--muted); margin: 0 0 14px; min-height: 20px; }
+
+  .choices { display: grid; gap: 16px; }
+  @media (min-width: 700px) { .choices { grid-template-columns: 1fr 1fr; } }
+  .choice { background: var(--card); border: 2px solid var(--line); border-radius: 20px; padding: 20px;
+            box-shadow: 0 6px 20px rgba(13,44,92,.08); position: relative; }
+  .choice.recommended { border-color: var(--gold-light); box-shadow: 0 8px 28px rgba(240,185,61,.35); }
+  .badge { display: none; position: absolute; top: -12px; left: 18px; background: var(--gold-light); color: var(--navy-deep);
+           font-size: 12px; font-weight: 800; padding: 3px 12px; border-radius: 999px; }
+  .recommended .badge { display: inline-block; }
+  .choice h2 { margin: 0 0 4px; font-size: 19px; display: flex; align-items: center; gap: 10px; }
+  .choice h2 svg { width: 26px; height: 26px; flex: none; }
+  .choice .sub { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
+
+  .big-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 58px; padding: 14px 18px;
+             border: 0; border-radius: 16px; font: 800 17px var(--font); text-decoration: none; cursor: pointer; text-align: center;
+             background: linear-gradient(180deg, var(--gold-pale), var(--gold-light)); color: var(--navy-deep); }
+  .big-btn:hover { filter: brightness(1.04); }
+  .big-btn:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
+  .big-btn[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+  .big-btn.alt { background: var(--navy); color: #fff; }
+  .meta { margin: 8px 0 0; font-size: 13px; color: var(--muted); text-align: center; min-height: 18px; }
+
+  details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+  summary { cursor: pointer; font-weight: 700; font-size: 15px; padding: 6px 0; list-style-position: inside; }
+  summary:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; border-radius: 6px; }
+  ol.steps { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: s; }
+  ol.steps li { counter-increment: s; display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; font-size: 15px; }
+  ol.steps li + li { border-top: 1px dashed var(--line); }
+  .ico { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--navy-pale); color: var(--navy);
+         display: flex; align-items: center; justify-content: center; }
+  @media (prefers-color-scheme: dark) { .ico { color: #9fc0ff; } }
+  .ico svg { width: 23px; height: 23px; }
+  .note { background: #fff7e0; color: #5b4300; border-radius: 12px; padding: 10px 14px; font-size: 14px; margin: 12px 0 0; }
+  @media (prefers-color-scheme: dark) { .note { background: #3a3220; color: #ffe9a8; } }
+
+  .extra { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; margin-top: 18px; font-size: 15px; }
+  .extra h3 { margin: 0 0 6px; font-size: 16px; }
+  .extra p { margin: 0 0 10px; }
+  .extra .big-btn { min-height: 48px; font-size: 15px; }
+  #pwaBox { display: none; }
+
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding: 10px 16px 30px; }
+  footer a { margin: 0 8px; }
+  .skip { position: absolute; left: -999px; top: 0; background: #fff; color: #000; padding: 8px 12px; z-index: 10; }
+  .skip:focus { left: 8px; top: 8px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#choices">Skip to downloads</a>
+
+<header class="hero">
+  <img class="logo" src="images/justicelink-icon-192.png" alt="JusticeLink logo" width="84" height="84">
+  <h1>Get the JusticeLink app</h1>
+  <p>JusticeLink Uganda connects you to the right help: report incidents, find nearby police and Local Council (LC) offices,
+     and get legal aid. Install it on your phone to open it in one tap, like any other app.</p>
+</header>
+
+<main>
+  <p class="detected" id="detected" aria-live="polite"></p>
+
+  <div class="choices" id="choices">
+
+    <!-- ANDROID -->
+    <section class="choice" id="cardAndroid" aria-labelledby="hAndroid">
+      <span class="badge">Recommended for your phone</span>
+      <h2 id="hAndroid">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 8v6"/><path d="M9.5 11.500L12 14l2.5-2.5"/></svg>
+        Android
+      </h2>
+      <p class="sub">Download the app file (APK) and install it directly. No Google Play needed.</p>
+
+      <a class="big-btn" id="btnAndroid" href="/downloads/JusticeLink.apk" download="JusticeLink.apk">Download for Android</a>
+      <p class="meta" id="apkMeta"></p>
+
+      <details id="detAndroid">
+        <summary>How to install on Android</summary>
+        <ol class="steps">
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg></span>
+              <span>Tap <b>Download for Android</b>. If your browser asks to keep the file, choose <b>Download</b> or <b>OK</b>.</span></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+              <span>Open <b>JusticeLink.apk</b> from the download notification, or from the <b>Downloads</b> / <b>Files</b> app.
+              If Android says <b>"For your security, your phone isn't allowed to install unknown apps from this source"</b>, tap <b>Settings</b> and switch on <b>Allow from this source</b> for your browser (Chrome, Samsung Internet, etc.), then go back.</span></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
+              <span>Tap <b>Install</b>, then <b>Open</b>. If Google Play Protect shows a warning because the app isn't from the Play Store, tap <b>More details</b> then <b>Install anyway</b>.</span></li>
+        </ol>
+        <p class="note">You can switch the "unknown apps" permission off again after installing. Only install the file from <b>justicelinkug.org</b>.</p>
+      </details>
+    </section>
+
+    <!-- IPHONE -->
+    <section class="choice" id="cardIos" aria-labelledby="hIos">
+      <span class="badge">Recommended for your phone</span>
+      <h2 id="hIos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 8v6M9 11h6"/></svg>
+        iPhone &amp; iPad
+      </h2>
+      <p class="sub">Add JusticeLink to your Home Screen from Safari. It takes about 10 seconds.</p>
+
+      <button type="button" class="big-btn alt" id="btnIos" aria-expanded="false" aria-controls="iosSteps">Install on iPhone</button>
+
+      <div id="iosSteps" hidden>
+        <p class="note" id="iosSafariNote" hidden>You must use <b>Safari</b> for this. Open <b>justicelinkug.org/download.html</b> in Safari, then follow the steps.</p>
+        <ol class="steps">
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span>
+              <span>Open this page in <b>Safari</b>.</span></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></span>
+              <span>Tap the <b>Share</b> button (a square with an arrow pointing up). It is at the bottom of the screen on iPhone and at the top on iPad.</span></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span>
+              <span>Scroll down in the menu and tap <b>Add to Home Screen</b>.</span></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
+              <span>Tap <b>Add</b> in the top-right corner. The JusticeLink icon now appears on your Home Screen. Open it from there.</span></li>
+        </ol>
+        <p class="note">Apple doesn't allow app files to be installed outside the App Store, so this Home Screen version is the way to install JusticeLink on iPhone.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Android alternative that needs no download -->
+  <section class="extra" id="pwaBox" aria-labelledby="hPwa">
+    <h3 id="hPwa">Prefer not to download a file?</h3>
+    <p>Your browser can install JusticeLink directly, with no APK.</p>
+    <button type="button" class="big-btn alt" id="btnPwa">Install from browser</button>
+  </section>
+
+  <section class="extra">
+    <h3>Troubleshooting</h3>
+    <details>
+      <summary>The download is blocked or the file won't open</summary>
+      <p>Open this page in <b>Chrome</b> (not inside WhatsApp, Facebook or another app), tap download again, and allow the install permission when asked.
+         If the file still fails, delete it from <b>Downloads</b> and download it again on a stable connection.</p>
+    </details>
+    <details>
+      <summary>How do I update the app?</summary>
+      <p>Download the newest file from this page and install it over the old one. Your account and data stay safe on the server.</p>
+    </details>
+    <details>
+      <summary>Need help?</summary>
+      <p>Email <a href="mailto:support@justicelinkug.org">support@justicelinkug.org</a> or visit our <a href="contact.html">contact page</a>.</p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <a href="/">Home</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a>
+  <div style="margin-top:8px">&copy; 2026 JusticeLink Uganda</div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var UA = navigator.userAgent || '';
+  var isIos = /iphone|ipad|ipod/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroid = /android/i.test(UA);
+  var inApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|Snapchat|MicroMessenger|TikTok|musical_ly|Pinterest|LinkedInApp/i.test(UA);
+  var iosSafari = isIos && !inApp && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//i.test(UA);
+  var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+
+  var cardAndroid = document.getElementById('cardAndroid');
+  var cardIos = document.getElementById('cardIos');
+  var detected = document.getElementById('detected');
+  var choices = document.getElementById('choices');
+  var btnIos = document.getElementById('btnIos');
+  var iosSteps = document.getElementById('iosSteps');
+  var detAndroid = document.getElementById('detAndroid');
+
+  function setIosOpen(open) {
+    iosSteps.hidden = !open;
+    btnIos.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btnIos.textContent = open ? 'Hide instructions' : 'Install on iPhone';
+  }
+  btnIos.addEventListener('click', function () { setIosOpen(iosSteps.hidden); });
+
+  // ---- device detection: highlight the matching card and put it first on phones
+  if (standalone) {
+    detected.textContent = 'JusticeLink is already installed on this device. Thank you!';
+  } else if (isIos) {
+    cardIos.classList.add('recommended');
+    choices.insertBefore(cardIos, cardAndroid);
+    detected.textContent = 'We detected an iPhone or iPad. Follow the steps below to add JusticeLink to your Home Screen.';
+    setIosOpen(true);
+    if (!iosSafari) document.getElementById('iosSafariNote').hidden = false;
+    detAndroid.open = false;
+  } else if (isAndroid) {
+    cardAndroid.classList.add('recommended');
+    detected.textContent = 'We detected an Android phone. Tap the download button to get the app.';
+    detAndroid.open = true;
+  } else {
+    detected.textContent = 'Open this page on your phone to install, or use the options below.';
+  }
+
+  // ---- APK availability + size (never leave a dead button)
+  var apk = document.getElementById('btnAndroid');
+  var meta = document.getElementById('apkMeta');
+  fetch(apk.getAttribute('href'), { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+    var type = (r.headers.get('content-type') || '').toLowerCase();
+    if (!r.ok || type.indexOf('text/html') === 0) throw new Error('missing');
+    var len = parseInt(r.headers.get('content-length') || '0', 10);
+    meta.textContent = len ? 'JusticeLink.apk \u00B7 ' + (len / 1048576).toFixed(1) + ' MB' : 'JusticeLink.apk';
+  }).catch(function () {
+    if (location.protocol === 'file:') return;
+    apk.setAttribute('aria-disabled', 'true');
+    apk.removeAttribute('download');
+    apk.addEventListener('click', function (e) { e.preventDefault(); });
+    meta.textContent = 'The Android file is not available right now. Use "Install from browser" below, or try again later.';
+  });
+
+  // ---- install straight from the browser (Android Chrome / Edge / Samsung Internet)
+  var pwaBox = document.getElementById('pwaBox');
+  var btnPwa = document.getElementById('btnPwa');
+  function refreshPwaBox() {
+    if (standalone || isIos) return;
+    if (window.JusticeLinkPWA && window.JusticeLinkPWA.canPromptInstall()) pwaBox.style.display = 'block';
+  }
+  window.addEventListener('beforeinstallprompt', function () { setTimeout(refreshPwaBox, 50); });
+  window.addEventListener('appinstalled', function () { pwaBox.style.display = 'none'; });
+  btnPwa.addEventListener('click', function () {
+    if (window.JusticeLinkPWA) window.JusticeLinkPWA.install();
+  });
+  refreshPwaBox();
+})();
+</script>
+<script src="pwa.js?v=6b3f0c91e5"></script>
+</body>
+</html>
